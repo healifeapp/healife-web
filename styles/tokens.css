@@ -1,0 +1,77 @@
+/* Healife — tasarım değişkenleri.
+   Renkler lib/config/colors.dart ile birebir eşleşir; uygulamada bir ton
+   değişirse buradaki karşılığı da değişmeli. */
+
+:root {
+  /* Marka */
+  --lime: #bbe448;
+  --lime-bright: #d4f07e;
+  --lime-deep: #8fb81c;
+  --lime-olive: #7e9f14;
+
+  /* Koyu yüzeyler — uygulamanın dark teması */
+  --ink: #0b0b0c;
+  --bg: #121214;
+  --surface: #202024;
+  --surface-2: #2e2e33;
+  --hairline: rgba(255, 255, 255, 0.09);
+  --hairline-strong: rgba(255, 255, 255, 0.16);
+
+  /* Açık bölümler */
+  --paper: #f4f5f0;
+  --paper-2: #e9ebe2;
+  --paper-ink: #14150f;
+  --paper-muted: #55584c;
+  --paper-line: rgba(20, 21, 15, 0.12);
+
+  /* Metin */
+  --text: #f2f2f7;
+  --text-2: #aeaeb2;
+  --text-3: #86868b;
+  --on-lime: #0a0a0a;
+
+  /* Semantik (uygulamadaki karşılıkları) */
+  --flame: #ff7a1a;
+  --warning: #ffd60a;
+  --protein: #ff453a;
+  --carb: #0a84ff;
+  --fat: #ffd60a;
+
+  /* Tipografi */
+  --font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Akışkan tipografi ölçeği */
+  --fs-display: clamp(2.75rem, 1.2rem + 7.2vw, 8rem);
+  --fs-h1: clamp(2.25rem, 1.2rem + 4.6vw, 5rem);
+  --fs-h2: clamp(1.85rem, 1.1rem + 3.2vw, 3.5rem);
+  --fs-h3: clamp(1.25rem, 1rem + 1.1vw, 1.75rem);
+  --fs-lead: clamp(1.0625rem, 0.98rem + 0.55vw, 1.375rem);
+  --fs-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --fs-small: 0.875rem;
+  --fs-micro: 0.75rem;
+
+  /* Aralık */
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --section-y: clamp(4.5rem, 9vw, 9rem);
+  --max: 1240px;
+  --max-narrow: 780px;
+
+  /* Şekil */
+  --r-sm: 12px;
+  --r: 20px;
+  --r-lg: 28px;
+  --r-xl: 40px;
+  --r-pill: 999px;
+
+  /* Hareket */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur: 0.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0.01ms;
+  }
+}

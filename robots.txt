@@ -1,0 +1,5 @@
+# Healife — tanıtım sitesi
+User-agent: *
+Allow: /
+
+Sitemap: https://hea-life.com/sitemap.xml

@@ -1,0 +1,2371 @@
+/* Bölüme özel düzenler */
+
+/* ══ Sayfa başı marka şeridi ════════════════════════════
+   Sayfanın tepesinde duran sade katman: logo + tek CTA. Menü linki yok —
+   kaydırınca yerini yüzen dock alır ve bu şerit yukarı kayıp kaybolur. */
+
+.topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 45;
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease),
+    visibility 0.4s;
+}
+
+.topbar.is-gone {
+  opacity: 0;
+  transform: translateY(-100%);
+  visibility: hidden;
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 84px;
+}
+
+.topbar__logo img {
+  height: clamp(20px, 2.4vw, 26px);
+  width: auto;
+}
+
+.topbar__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-2);
+  transition: color 0.25s var(--ease);
+}
+.topbar__cta svg {
+  width: 17px;
+  height: 17px;
+  transition: transform 0.3s var(--ease);
+}
+.topbar__cta:hover {
+  color: var(--lime);
+}
+.topbar__cta:hover svg {
+  transform: translateY(2px);
+}
+
+@media (max-width: 560px) {
+  .topbar__cta span,
+  .topbar__cta {
+    font-size: 0.875rem;
+  }
+}
+
+/* ══ Yüzen dock ═════════════════════════════════════════
+   Cam kapsül. Kenarlığı düz bir çizgi değil, lime'dan beyaza geçen bir
+   degrade — mask ile yalnızca 1px'lik çerçeve olarak boyanıyor. */
+
+.dock {
+  position: fixed;
+  z-index: 50;
+  top: 18px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border-radius: var(--r-pill);
+  background: rgba(18, 18, 20, 0.72);
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 30px 70px -40px rgba(187, 228, 72, 0.55);
+
+  /* Görünürlük: JS `is-in` (hero geçildi) ve `is-hidden` (aşağı kaydırılıyor)
+     sınıflarını yönetir. İkisi de yokken dock yukarıda gizli bekler. */
+  translate: -50% 0;
+  opacity: 0;
+  transform: translateY(-140%) scale(0.94);
+  visibility: hidden;
+  transition: opacity 0.45s var(--ease), transform 0.55s var(--ease),
+    visibility 0.55s;
+}
+
+.dock.is-in {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+.dock.is-in.is-hidden {
+  opacity: 0;
+  transform: translateY(-140%) scale(0.94);
+  visibility: hidden;
+}
+
+/* Degrade hairline */
+.dock::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    130deg,
+    rgba(187, 228, 72, 0.65),
+    rgba(255, 255, 255, 0.14) 38%,
+    rgba(255, 255, 255, 0.05) 62%,
+    rgba(212, 240, 126, 0.4)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.dock__links {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.dock__links a {
+  position: relative;
+  z-index: 1;
+  padding: 0.6rem 1.05rem;
+  border-radius: var(--r-pill);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-2);
+  white-space: nowrap;
+  transition: color 0.3s var(--ease);
+}
+.dock__links a:hover,
+.dock__links a.is-active {
+  color: var(--text);
+}
+
+/* Aktif bölümü gösteren kayan hap. Konum ve genişlik JS'ten gelir. */
+.dock__pill {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 0;
+  height: calc(100% + 2px);
+  width: var(--pill-w, 0px);
+  border-radius: var(--r-pill);
+  background: linear-gradient(
+    140deg,
+    rgba(187, 228, 72, 0.24),
+    rgba(187, 228, 72, 0.1) 55%,
+    rgba(255, 255, 255, 0.06)
+  );
+  box-shadow: 0 0 0 1px rgba(187, 228, 72, 0.3) inset,
+    0 6px 18px -8px rgba(187, 228, 72, 0.55);
+  translate: var(--pill-x, 0px) -50%;
+  opacity: 0;
+  transition: translate 0.45s var(--ease), width 0.45s var(--ease),
+    opacity 0.3s var(--ease);
+  pointer-events: none;
+}
+.dock__pill.is-on {
+  opacity: 1;
+}
+
+.dock__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--r-pill);
+  background: var(--lime);
+  color: var(--on-lime);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px -10px rgba(187, 228, 72, 0.9);
+  transition: background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.dock__cta:hover {
+  background: var(--lime-bright);
+  box-shadow: 0 12px 28px -10px rgba(187, 228, 72, 1);
+}
+.dock__cta svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+/* Mobil: dock alta iner — uygulamanın kendi alt menüsünün yankısı.
+   CTA metni gizlenir, lime daire olarak kalır. */
+@media (max-width: 720px) {
+  .dock {
+    top: auto;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: calc(100% - 2 * var(--gutter));
+    max-width: 460px;
+    justify-content: space-between;
+  }
+  .dock,
+  .dock.is-in.is-hidden {
+    transform: translateY(160%) scale(0.94);
+  }
+  .dock.is-in {
+    transform: none;
+  }
+  .dock__links {
+    flex: 1;
+    justify-content: space-around;
+  }
+  .dock__links a {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+  .dock__cta {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    flex: none;
+  }
+  .dock__cta span {
+    display: none;
+  }
+  .dock__cta svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* 320–400px: dört bağlantı + CTA kapsüle sığmıyordu, dock taşıyordu. */
+@media (max-width: 400px) {
+  .dock {
+    gap: 0.25rem;
+    padding: 0.3rem;
+  }
+  .dock__links a {
+    padding: 0.55rem 0.3rem;
+    font-size: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .dock__cta {
+    width: 36px;
+    height: 36px;
+  }
+  .dock__cta svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock,
+  .dock__pill,
+  .topbar {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* ══ Hero — sinematik fotoğraf ══════════════════════════
+   İki ayrı çekim var: geniş olan masaüstünde (sporcu solda, sağ taraf
+   metin için boş), dikey olan mobilde (sporcu altta, üst taraf boş).
+   Seçimi <picture> yapıyor; burada sadece kadraj ve karartma var. */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  padding-block: clamp(7rem, 14vh, 10rem) clamp(5rem, 10vh, 8rem);
+}
+
+.hero__media,
+.hero__media picture {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.hero__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 44%;
+}
+
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    /* sağ tarafa lime sıcaklık */
+    radial-gradient(58% 70% at 76% 44%, rgba(187, 228, 72, 0.1), transparent 70%),
+    /* metnin oturduğu sağ taraf koyulaşsın */
+    linear-gradient(
+      90deg,
+      rgba(11, 11, 12, 0.45) 0%,
+      rgba(11, 11, 12, 0.1) 22%,
+      rgba(11, 11, 12, 0.55) 52%,
+      rgba(11, 11, 12, 0.86) 78%,
+      rgba(11, 11, 12, 0.94) 100%
+    ),
+    /* üstte logo, altta bir sonraki bölüme geçiş */
+    linear-gradient(
+      180deg,
+      rgba(11, 11, 12, 0.72) 0%,
+      rgba(11, 11, 12, 0.08) 22%,
+      rgba(11, 11, 12, 0.2) 60%,
+      rgba(11, 11, 12, 0.97) 100%
+    );
+}
+
+.hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+}
+
+@media (min-width: 940px) {
+  .hero__inner {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  }
+  .hero__copy {
+    grid-column: 2;
+    text-align: center;
+    align-items: center;
+  }
+}
+
+.hero__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Hero etiketi. Bilerek düğmeye benzemiyor: zemin, kenarlık ve dolu çip
+   yok — onlar varken tıklanabilir okunuyordu. Kalan sinyal yalnızca nabız
+   atan lime nokta. */
+.hero__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 2.1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--text-2);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
+}
+.hero__kicker b {
+  color: var(--lime);
+  font-weight: 800;
+}
+.hero__kicker span {
+  opacity: 0.45;
+  margin-inline: 0.15rem;
+}
+
+.hero__pulse {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  flex: none;
+  box-shadow: 0 0 12px rgba(187, 228, 72, 0.9);
+}
+.hero__pulse::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--lime);
+  animation: pulse 2.6s var(--ease) infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero__kicker {
+    font-size: 0.6875rem;
+    letter-spacing: 0.11em;
+  }
+}
+
+.hero__title {
+  font-size: clamp(3rem, 1rem + 8.6vw, 7.5rem);
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  text-shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
+}
+
+.hero__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1.15rem 2.4rem;
+  border-radius: var(--r-pill);
+  background: var(--lime);
+  color: var(--on-lime);
+  font-size: clamp(0.9375rem, 0.9rem + 0.3vw, 1.0625rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 44px -18px rgba(187, 228, 72, 0.95);
+  transition: transform 0.28s var(--ease), background-color 0.28s var(--ease),
+    box-shadow 0.28s var(--ease);
+}
+.hero__cta svg {
+  width: 19px;
+  height: 19px;
+  transition: transform 0.3s var(--ease);
+}
+.hero__cta:hover {
+  background: var(--lime-bright);
+  transform: translateY(-3px);
+  box-shadow: 0 24px 54px -18px rgba(187, 228, 72, 1);
+}
+.hero__cta:hover svg {
+  transform: translateX(4px);
+}
+
+.hero__note {
+  margin-top: 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lime);
+  letter-spacing: -0.005em;
+}
+
+.hero__actions {
+  margin-top: 2.25rem;
+}
+@media (min-width: 940px) {
+  .hero__actions {
+    justify-content: center;
+  }
+}
+
+.hero__laurels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.6rem;
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  width: 100%;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+@media (min-width: 940px) {
+  .hero__laurels {
+    justify-content: center;
+  }
+}
+.hero__laurels b {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  margin-right: 0.3rem;
+}
+
+/* Kaydırma işareti */
+.hero__cue {
+  position: absolute;
+  left: 50%;
+  bottom: 1.75rem;
+  translate: -50% 0;
+  width: 26px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--r-pill);
+  display: grid;
+  justify-items: center;
+  padding-top: 8px;
+  z-index: 2;
+  transition: border-color 0.3s var(--ease);
+}
+.hero__cue:hover {
+  border-color: var(--lime);
+}
+.hero__cue span {
+  width: 3px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--lime);
+  animation: cue 1.9s var(--ease-in-out) infinite;
+}
+@keyframes cue {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+
+/* Dar ekran: dikey çekim kullanılıyor — sporcu altta, üst yarısı boş.
+   Bu yüzden metin masaüstünün aksine ÜSTTE duruyor. */
+@media (max-width: 939px) {
+  .hero {
+    padding-block: clamp(6.5rem, 16vh, 9rem) clamp(4rem, 10vh, 6rem);
+    align-items: start;
+  }
+  .hero__photo {
+    object-position: 50% 62%;
+  }
+  .hero__scrim {
+    background: radial-gradient(
+        70% 45% at 50% 18%,
+        rgba(187, 228, 72, 0.1),
+        transparent 70%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(11, 11, 12, 0.9) 0%,
+        rgba(11, 11, 12, 0.78) 34%,
+        rgba(11, 11, 12, 0.42) 58%,
+        rgba(11, 11, 12, 0.55) 78%,
+        rgba(11, 11, 12, 0.97) 100%
+      );
+  }
+  .hero__title {
+    font-size: clamp(2.75rem, 1rem + 11vw, 4.5rem);
+  }
+  .hero__cue {
+    display: none;
+  }
+  /* Alt dock'un altında kalmasın */
+  .hero__laurels {
+    margin-bottom: 3.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__cue span {
+    animation: none;
+  }
+}
+
+/* ── Cihaz çerçevesi ──────────────────────────────────────
+   Metalik gövde, yan tuş ve çentik denendi; ekran görüntüsüyle
+   çakışıyordu (kaynakta telefonun kendi kamerası da vardı). Artık
+   sadece ince kenar + geniş yuvarlaklık + gölge — abdusamedakgul.com'daki
+   `rounded-[3rem] p-[3px] shadow-2xl` yaklaşımının oransal karşılığı.
+   Yüzdelik border-radius eliptik olduğu için yatay/dikey ayrı veriliyor
+   (gövde oranı 1 : 2.13), böylece 152px'lik HIIT telefonunda da
+   700px'lik olanda da aynı köşe oranı çıkıyor. */
+
+.device {
+  position: relative;
+  border-radius: 12% / 5.6%;
+  padding: 1%;
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.26),
+    rgba(255, 255, 255, 0.07) 32%,
+    rgba(255, 255, 255, 0.03) 62%,
+    rgba(255, 255, 255, 0.2)
+  );
+  box-shadow: 0 30px 60px -18px rgba(0, 0, 0, 0.9),
+    0 12px 26px -14px rgba(0, 0, 0, 0.7);
+}
+
+.device__screen {
+  position: relative;
+  border-radius: 11% / 5.2%;
+  overflow: hidden;
+  background: var(--bg);
+  aspect-ratio: 560 / 1195;
+}
+.device__screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* ══ Rakam şeridi ═══════════════════════════════════════ */
+
+.stats {
+  border-block: 1px solid var(--hairline);
+  background: var(--bg);
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+  overflow: hidden;
+}
+
+.stats__grid {
+  display: grid;
+  /* Alt sınır 160px iken 375px'lik telefonda iki sütun sığmıyor ve dört
+     rakam alt alta diziliyordu (2×160 + 24 boşluk = 344 > 335). */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 138px), 1fr));
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  text-align: center;
+}
+
+.stat b {
+  display: block;
+  font-size: clamp(2.25rem, 1.4rem + 3vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: var(--lime);
+  font-variant-numeric: tabular-nums;
+}
+.stat span {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.marquee {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+.marquee__track {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  animation: marquee 42s linear infinite;
+}
+.marquee__group {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding-right: 2.5rem;
+  flex: none;
+}
+.marquee span {
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.375rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.marquee i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  flex: none;
+}
+.marquee:hover .marquee__track {
+  animation-play-state: paused;
+}
+
+/* ══ Nasıl çalışır ══════════════════════════════════════ */
+
+.how {
+  padding-block: var(--section-y);
+  position: relative;
+}
+
+.how__grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  /* Sabitlenen bant: bölüm ekrana çakılır, kaydırma adımı ilerletir.
+     Yükseklik burada belirlenir — büyütmek geçişi yavaşlatır. */
+  .how {
+    padding-block: 0;
+  }
+  .how__track {
+    /* Adım başına düşen kaydırma yolu. Büyütmek yavaşlatır, küçültmek hızlandırır. */
+    height: 280vh;
+  }
+  .how__sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    align-items: center;
+    /* Üstte yüzen dock'un altında kalmasın */
+    padding-block: 92px 40px;
+    box-sizing: border-box;
+  }
+  .how__grid {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: clamp(2rem, 4vw, 3.5rem);
+  }
+}
+
+/* Kısa ekranlarda 100vh'ye sığması için ölçüleri kıs */
+@media (min-width: 900px) and (max-height: 820px) {
+  .how__aside .device__screen {
+    height: clamp(260px, 58vh, 480px);
+  }
+  .how .step {
+    padding: 1rem 1.15rem;
+  }
+  .how .steps {
+    gap: 0.6rem;
+  }
+}
+
+/* Adım listesi ve ilerleme rayı */
+.how__panel {
+  position: relative;
+}
+.how__rail {
+  display: none;
+}
+@media (min-width: 900px) {
+  .how__rail {
+    display: block;
+    position: absolute;
+    left: -1.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--hairline);
+    overflow: hidden;
+  }
+  .how__rail span {
+    display: block;
+    width: 100%;
+    height: var(--rail, 0%);
+    background: linear-gradient(180deg, var(--lime-bright), var(--lime));
+    border-radius: 2px;
+    box-shadow: 0 0 12px rgba(187, 228, 72, 0.7);
+    transition: height 0.25s linear;
+  }
+}
+
+.how__aside .device {
+  width: min(260px, 78%);
+  margin-top: 2.5rem;
+}
+
+/* ── Dar ekranda da sabitlenmiş bant ──────────────────────
+   Önceden telefon adımların ÜSTÜNDE duruyor, kaydırılınca ekrandan
+   çıkıyordu: adım değişirken telefonun ekranının da değiştiği hiç
+   görülmüyordu. Artık bölüm telefonda da ekrana çakılıyor; telefon
+   ortada durur, altındaki tek adım kaydırmayla değişir.
+
+   `.js` altında: betik çalışmıyorsa adım seçilemez, o zaman eski
+   akıcı düzen (telefon üstte, dört adım alt alta) geçerli kalır. */
+
+@media (max-width: 899px) {
+  .js .how {
+    padding-block: 0;
+  }
+  .js .how__track {
+    /* Adım başına ~75svh kaydırma yolu. Büyütmek yavaşlatır. */
+    height: 400svh;
+  }
+  .js .how__sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: grid;
+    align-content: center;
+    padding-block: 40px 88px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .js .how__grid {
+    gap: clamp(0.9rem, 2.2vh, 1.4rem);
+  }
+
+  /* Sabit bantta yer telefona ayrıldı: açıklama paragrafı kalkıyor,
+     başlık tek satıra iniyor — aynı bilgi zaten adımlarda var. */
+  .js .how__aside {
+    text-align: center;
+  }
+  .js .how__aside .eyebrow {
+    margin-bottom: 0.5rem;
+  }
+  .js .how__aside .h2 {
+    font-size: clamp(1.35rem, 0.9rem + 2.6vw, 1.9rem);
+  }
+  .js .how__aside .h2 br {
+    display: none;
+  }
+  .js .how__aside .lead {
+    display: none;
+  }
+  .js .how__aside .device {
+    width: fit-content;
+    margin: clamp(0.6rem, 1.8vh, 1.1rem) auto 0;
+  }
+  .js .how__aside .device__screen {
+    /* Yüksekliğe göre ölçülüyor: telefon her zaman tek ekrana sığsın.
+       Adım açıklamaları kalktığı için burada kalan bütün yer telefonun. */
+    height: clamp(250px, 56svh, 560px);
+    width: auto;
+  }
+
+  /* Adımlar üst üste duruyor; yalnızca sıradaki görünür. */
+  .js .how .steps {
+    display: grid;
+  }
+  .js .how .how__panel .steps .step {
+    grid-area: 1 / 1;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    /* Giden adım HIZLI çıkar. İkisi de 0.45s'de solarken iki adımın
+       yazıları birbirinin üstüne biniyordu. */
+    transition: opacity 0.18s var(--ease), transform 0.18s var(--ease),
+      visibility 0.18s;
+  }
+  .js .how .how__panel .steps .step.is-current {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    /* Gelen adım, giden tamamen kaybolduktan SONRA girer. */
+    transition: opacity 0.3s var(--ease) 0.18s,
+      transform 0.3s var(--ease) 0.18s, visibility 0s 0.18s;
+  }
+  .js .how .how__panel .steps .step__no {
+    width: 38px;
+    height: 38px;
+    font-size: 0.875rem;
+  }
+  /* Telefona yer açmak için açıklama paragrafı yok — başlık yeterli. */
+  .js .how .how__panel .steps .step p {
+    display: none;
+  }
+  .js .how .how__panel .steps .step h3 {
+    margin-bottom: 0;
+    font-size: clamp(1.0625rem, 0.9rem + 1.2vw, 1.375rem);
+  }
+
+  /* İlerleme rayı burada yatay: telefonun altında ince bir şerit. */
+  .js .how__rail {
+    display: block;
+    position: static;
+    width: 100%;
+    height: 3px;
+    margin-bottom: 1.1rem;
+    border-radius: 2px;
+    background: var(--hairline);
+    overflow: hidden;
+  }
+  .js .how__rail span {
+    display: block;
+    height: 100%;
+    width: var(--rail, 0%);
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--lime-bright), var(--lime));
+    box-shadow: 0 0 12px rgba(187, 228, 72, 0.7);
+    transition: width 0.25s linear;
+  }
+}
+
+/* Tablet: tek sütun ekranın yarısını boş bırakıyordu — telefon solda,
+   sıradaki adım sağda. Dört adımın hepsi yan yana ancak 900px'ten
+   itibaren sığıyor, o düzen yukarıdaki bloktan geliyor. */
+@media (min-width: 620px) and (max-width: 899px) {
+  .js .how__grid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    align-items: center;
+    gap: clamp(1.75rem, 4vw, 3rem);
+  }
+  .js .how__panel {
+    text-align: left;
+  }
+  .js .how__aside .h2 {
+    font-size: clamp(1.5rem, 0.9rem + 2vw, 2.25rem);
+  }
+  .js .how__aside .device__screen {
+    height: clamp(300px, 56svh, 540px);
+  }
+}
+
+/* Tek sütunda telefon ortada duruyor; altındaki adım da ortalansın. */
+@media (max-width: 619px) {
+  .js .how .steps {
+    justify-items: center;
+  }
+}
+
+/* Kısa telefonlarda (SE gibi) tek ekrana sığması için ölçüleri kıs */
+@media (max-width: 899px) and (max-height: 720px) {
+  .js .how__sticky {
+    padding-block: 28px 78px;
+  }
+  .js .how__aside .eyebrow {
+    display: none;
+  }
+  .js .how__aside .device__screen {
+    height: clamp(200px, 54svh, 460px);
+  }
+  .js .how__rail {
+    margin-bottom: 0.85rem;
+  }
+}
+
+@media (min-width: 900px) {
+  /* Sabitlenmiş bantta yer telefona ayrıldı: başlık küçüldü, açıklama
+     paragrafı kaldırıldı — aynı bilgi zaten sağdaki adımlarda var. */
+  .how__aside .lead {
+    display: none;
+  }
+  .how__aside .h2 {
+    font-size: clamp(1.6rem, 1rem + 1.7vw, 2.5rem);
+  }
+  .how__aside .device {
+    width: fit-content;
+    margin-top: clamp(1.25rem, 3.5vh, 2.5rem);
+  }
+  .how__aside .device__screen {
+    height: clamp(300px, 64vh, 700px);
+    width: auto;
+    aspect-ratio: 560 / 1195;
+  }
+}
+
+/* Kaynak ekran görüntülerinin altı eksikti: yakalama sırasında uygulamanın
+   alt menü etiketleri resmin kenarında ortadan kesilmişti ve "Öğle" satırı
+   yarım kalıyordu. Görüntüler her birinin kendi temiz satır sınırından
+   kesilip ortak 560x1112'ye zeminle dolduruldu — bu yüzden bu çerçevenin
+   oranı diğerlerinden farklı. (hiit sağlamdı, 560x1195 kaldı.) */
+.how__device .device__screen {
+  aspect-ratio: 560 / 1112;
+}
+
+/* Ekranlar üst üste duruyor; aktif olan görünür oluyor. */
+.how__device .device__screen img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease), scale 1.1s var(--ease);
+  scale: 1.05;
+}
+.how__device .device__screen img.is-on {
+  opacity: 1;
+  scale: 1;
+}
+
+.steps {
+  display: grid;
+  gap: 1rem;
+  counter-reset: step;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent);
+  transition: border-color 0.35s var(--ease), background-color 0.35s var(--ease),
+    transform 0.35s var(--ease);
+}
+.step:hover {
+  border-color: var(--hairline-strong);
+  transform: translateX(4px);
+}
+
+/* Kaydırılan adım vurgulanır — sol taraftaki ekran da onunla değişir.
+   Opaklık `.js .how .steps .step` ile veriliyor: `.step` aynı zamanda
+   `.reveal` ve animations.css'teki `.js .reveal.is-visible { opacity: 1 }`
+   daha yüksek özgüllükte + sonra yüklendiği için sade `.step` kuralı
+   eziliyordu — soluklaştırma hiç çalışmıyordu. */
+.step {
+  transition: border-color 0.35s var(--ease), background-color 0.35s var(--ease),
+    transform 0.35s var(--ease), opacity 0.45s var(--ease);
+}
+.js .how .steps .step {
+  opacity: 0.42;
+}
+.js .how .steps .step.is-current {
+  opacity: 1;
+}
+.step.is-current {
+  opacity: 1;
+  border-color: rgba(187, 228, 72, 0.45);
+  background: linear-gradient(180deg, rgba(187, 228, 72, 0.09), transparent 70%);
+}
+.step.is-current .step__no {
+  background: var(--lime);
+  color: var(--on-lime);
+  border-color: var(--lime);
+  box-shadow: 0 0 24px -6px rgba(187, 228, 72, 0.8);
+}
+.step.is-current p {
+  color: var(--text);
+}
+.step__no {
+  transition: background-color 0.35s var(--ease), color 0.35s var(--ease),
+    box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+
+.step__no {
+  counter-increment: step;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  flex: none;
+}
+.step__no::before {
+  content: counter(step, decimal-leading-zero);
+}
+
+.step h3 {
+  margin-bottom: 0.4rem;
+}
+.step p {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+}
+
+/* ══ Özellikler — bento ═════════════════════════════════ */
+
+.bento {
+  display: grid;
+  gap: clamp(0.875rem, 1.4vw, 1.25rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 760px) {
+  .bento {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: minmax(200px, auto);
+  }
+  .b-hero {
+    grid-column: span 4;
+    grid-row: span 2;
+  }
+  .b-tall {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .b-wide {
+    grid-column: span 3;
+  }
+  .b-third {
+    grid-column: span 2;
+  }
+}
+
+/* Telefonda iki sütun kalan kutucukları okunmaz yapıyordu: "Su takibi ve
+   hatırlatıcılar" 110px'lik bir alanda beş satıra iniyordu. Tek sütuna geç. */
+@media (max-width: 599px) {
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .b-hero,
+  .b-tall,
+  .b-wide,
+  .b-third {
+    /* Tek sütunlu ızgarada `span 2` örtük ikinci bir sütun yaratırdı. */
+    grid-column: auto;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 759px) {
+  .b-hero,
+  .b-tall {
+    grid-column: span 2;
+  }
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: clamp(1.35rem, 2.2vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
+  isolation: isolate;
+}
+.tile:hover {
+  border-color: var(--hairline-strong);
+  transform: translateY(-4px);
+}
+
+.tile__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(187, 228, 72, 0.13);
+  color: var(--lime);
+  margin-bottom: 0.5rem;
+  flex: none;
+}
+.tile__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tile h3 {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.tile p {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.tile__meta {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  /* Flex kutu olduğunda kalın kısım ayrı bir öğe sayılıp "Tek / çağrı"
+     diye ikiye bölünüyordu; bu satır düz metin gibi aksın. */
+  line-height: 1.5;
+}
+.tile__meta b {
+  color: var(--lime);
+  font-weight: 700;
+}
+
+/* Bento içi görseller */
+.tile__shot {
+  margin: 1.25rem -1px -1px;
+  border-radius: var(--r) var(--r) 0 0;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-bottom: 0;
+  background: var(--bg);
+  /* Burada bir maske vardı: görüntü kartın alt kenarında uygulamanın alt
+     menü etiketlerini tam ortadan bölüyordu. Ekran görüntüsünün kendisi
+     temiz satır sınırından kesildiği için artık gerek kalmadı — alt kenar
+     zaten düz zemin, kartın rengiyle dikişsiz birleşiyor. */
+}
+.tile__shot img {
+  width: 100%;
+  display: block;
+}
+
+.tile--dark {
+  background: linear-gradient(160deg, #1b2410, #121214 55%);
+}
+
+.tile__art {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+.tile__art--runner {
+  right: -14%;
+  bottom: -6%;
+  width: 62%;
+  opacity: 0.85;
+}
+.tile__art--athlete {
+  right: -8%;
+  bottom: -8%;
+  width: 54%;
+  opacity: 0.55;
+  mask-image: linear-gradient(180deg, #000 55%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+}
+
+/* Makro çubukları — Bugün ekranındaki renklerle */
+.macros {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1.25rem;
+}
+.macro {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+.macro__bar {
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.macro__bar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  width: 0;
+  transition: width 1.1s var(--ease);
+}
+.is-visible .macro__bar i {
+  width: var(--w);
+}
+.macro__val {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ══ Move ve egzersiz kütüphanesi ═══════════════════════ */
+
+/* Üstündeki Yöntem bölümü de koyu; iki koyu bölüm arasında ince bir ayrım. */
+.moveex {
+  border-top: 1px solid var(--hairline);
+}
+
+.moveex__grid {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1000px) {
+  .moveex__grid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    align-items: stretch;
+  }
+}
+
+/* Sağ sütun: egzersiz duvarı + HIIT, alt alta ve sola eşit boyda */
+.moveex__stack {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  grid-template-rows: auto auto;
+  min-height: 0;
+}
+
+.movecard,
+.exwall,
+.hiitcard {
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.movecard {
+  background: linear-gradient(165deg, #1b2410, #17181b 55%);
+  align-items: center;
+  text-align: center;
+}
+.movecard .device {
+  width: min(260px, 72%);
+  flex: none;
+}
+.movecard__copy p {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  margin-top: 0.6rem;
+}
+.movecard__list {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+.movecard__list li {
+  position: relative;
+  padding-left: 1.35rem;
+}
+.movecard__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+}
+
+/* Move ekranının stilize çizimi */
+.movescreen {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 50% 0%, #1a1c17, #0d0e0c 60%);
+  display: flex;
+  flex-direction: column;
+  padding: 13% 7% 7%;
+}
+.movescreen__top {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: center;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.movescreen__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.movescreen__map {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  margin-block: 6%;
+}
+.movescreen__streets path {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 8;
+  fill: none;
+}
+.movescreen__route {
+  stroke: url(#routeGrad);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px rgba(187, 228, 72, 0.55));
+  stroke-dasharray: 900;
+  stroke-dashoffset: 900;
+  animation: draw-route 4.5s var(--ease) forwards;
+}
+@keyframes draw-route {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.movescreen__start {
+  fill: #0d0e0c;
+  stroke: var(--lime);
+  stroke-width: 3;
+}
+.movescreen__now {
+  fill: var(--lime);
+  stroke: rgba(187, 228, 72, 0.25);
+  stroke-width: 8;
+}
+
+.movescreen__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2%;
+  text-align: center;
+}
+.movescreen__stats b {
+  display: block;
+  font-size: clamp(0.6875rem, 1.6vw, 0.875rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.movescreen__stats span {
+  display: block;
+  font-size: 0.5rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 0.15rem;
+}
+
+/* Egzersiz duvarı */
+.exwall {
+  gap: 1.25rem;
+}
+.exwall__copy p {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  margin-top: 0.6rem;
+}
+.exwall__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+@media (max-width: 520px) {
+  .exwall__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.exwall__grid figure {
+  position: relative;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+  aspect-ratio: 4 / 5;
+}
+.exwall__grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: scale 0.5s var(--ease);
+}
+.exwall__grid figure:hover img {
+  scale: 1.07;
+}
+.exwall__grid figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.4rem 0.5rem 0.45rem;
+  background: linear-gradient(0deg, rgba(11, 11, 12, 0.92), transparent);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text);
+  text-align: center;
+}
+.exwall__more {
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movescreen__route {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .movescreen__dot {
+    animation: none;
+  }
+}
+
+/* HIIT kartı — turuncu, uygulamadaki HIIT kartının rengiyle aynı aile */
+.hiitcard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: center;
+  background: linear-gradient(150deg, #2a1a0d, #1c1613 58%);
+  border-color: rgba(255, 122, 26, 0.22);
+  overflow: hidden;
+  position: relative;
+}
+@media (min-width: 560px) {
+  .hiitcard {
+    grid-template-columns: minmax(0, 1fr) 152px;
+    gap: 1.75rem;
+  }
+}
+
+.hiitcard__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--r-pill);
+  background: var(--flame);
+  color: #1a0d03;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.hiitcard__copy p {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin-top: 0.5rem;
+}
+.hiitcard__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+.hiitcard__stats b {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--flame);
+  line-height: 1.1;
+}
+.hiitcard__stats span {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+/* Telefon önce karttan taşırılıyordu; kart `overflow: hidden` olduğu için
+   telefonun altı ve ekranındaki alt menü ortadan kesik görünüyordu. Artık
+   tamamı kartın içinde duruyor. */
+.hiitcard__device {
+  align-self: center;
+}
+
+/* 560px altında ızgara tek sütuna düşüyor; telefon kart genişliğine
+   yayılınca 640px boyunda bir dikdörtgen oluyordu. */
+@media (max-width: 559px) {
+  .hiitcard__device {
+    width: min(190px, 56%);
+    justify-self: center;
+  }
+}
+
+/* ══ Ekran turu (açık zemin) ════════════════════════════ */
+
+.tour {
+  overflow: hidden;
+}
+
+.tour__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.tour__nav {
+  display: flex;
+  gap: 0.6rem;
+}
+.tour__nav button {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--paper-line);
+  display: grid;
+  place-items: center;
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease),
+    color 0.25s var(--ease), opacity 0.25s var(--ease);
+}
+.tour__nav button:hover:not(:disabled) {
+  background: var(--paper-ink);
+  border-color: var(--paper-ink);
+  color: var(--paper);
+}
+.tour__nav button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.tour__nav svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tour__rail {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  overflow-x: auto;
+  /* Şeridin sonuna gelince kaydırma tarayıcının "geri" hareketine
+     devrolmasın — iOS'ta ekran turu sayfadan çıkarıyordu. */
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 1rem;
+  /* kenardan kenara taşsın */
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+}
+.tour__rail::-webkit-scrollbar {
+  display: none;
+}
+
+.tour__item {
+  flex: none;
+  width: clamp(230px, 30vw, 300px);
+  scroll-snap-align: center;
+}
+.tour__item img {
+  width: 100%;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--paper-line);
+  background: var(--paper-2);
+  box-shadow: 0 30px 50px -34px rgba(20, 21, 15, 0.55);
+  transition: transform 0.4s var(--ease);
+}
+.tour__item:hover img {
+  transform: translateY(-6px);
+}
+.tour__item figcaption {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.tour__item p {
+  font-size: 0.8125rem;
+  color: var(--paper-muted);
+  margin-top: 0.15rem;
+}
+
+/* ══ Bilim / metodoloji ═════════════════════════════════ */
+
+.science {
+  position: relative;
+  overflow: hidden;
+}
+.science__grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+@media (min-width: 940px) {
+  .science__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+  }
+}
+
+.science__art {
+  position: relative;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+}
+.science__art img {
+  width: 100%;
+  filter: saturate(0.85) contrast(1.05);
+}
+.science__art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(200deg, rgba(187, 228, 72, 0.16), transparent 55%),
+    linear-gradient(0deg, rgba(11, 11, 12, 0.85), transparent 55%);
+}
+
+/* auto-fit, 1440px'de üç sütun + tek başına kalan dördüncü veriyordu.
+   2×2 her genişlikte dengeli duruyor ve logolara yer bırakıyor. */
+.refs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+.ref {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ref img {
+  height: 26px;
+  width: auto;
+  margin-bottom: 0.6rem;
+  /* Logolar açık zemin için üretilmiş; koyu bölümde parlaklık dengelemesi */
+  filter: brightness(0) invert(1) opacity(0.92);
+  transition: filter 0.3s var(--ease);
+}
+.ref:hover img {
+  filter: brightness(0) invert(1) opacity(1);
+}
+.ref b {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.ref span {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.notes {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 2.25rem;
+}
+.note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+.note svg {
+  width: 22px;
+  height: 22px;
+  color: var(--lime);
+  flex: none;
+  margin-top: 2px;
+}
+.note b {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.note p {
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+/* Yöntem bölümünün 3B nokta alanı — içeriğin arkasında, kenarları maskeli */
+.science__field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 55%,
+    #000 25%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 55%,
+    #000 25%,
+    transparent 78%
+  );
+}
+.science .wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* ══ İçerik vitrini ═════════════════════════════════════ */
+
+.showcase__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.showcase__tabs button {
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--paper-line);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.25s var(--ease), color 0.25s var(--ease),
+    border-color 0.25s var(--ease);
+}
+.showcase__tabs button[aria-selected="true"] {
+  background: var(--paper-ink);
+  border-color: var(--paper-ink);
+  color: var(--paper);
+}
+
+.showcase__grid {
+  display: grid;
+  /* 200px alt sınır, 1240px'lik kapsayıcıda tam 5 sütun veriyor —
+     her panelde 5 kart var, geniş ekranda tek sıra oluyor. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: clamp(0.875rem, 1.6vw, 1.5rem);
+  animation: panelIn 0.45s var(--ease) both;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase__grid {
+    animation: none;
+  }
+}
+
+.recipe {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+.recipe:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 26px 44px -30px rgba(20, 21, 15, 0.6);
+}
+.recipe__img {
+  aspect-ratio: 4 / 3;
+  background: var(--paper-2);
+  position: relative;
+  overflow: hidden;
+}
+.recipe__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.recipe__kcal {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--r-pill);
+  background: rgba(11, 11, 12, 0.78);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.recipe__body {
+  padding: 1rem 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+.recipe__body h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+.recipe__body p {
+  font-size: 0.8125rem;
+  color: var(--paper-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.recipe__foot {
+  margin-top: auto;
+  padding-top: 0.9rem;
+  display: flex;
+  gap: 0.9rem;
+  font-size: 0.75rem;
+  color: var(--paper-muted);
+  font-weight: 600;
+}
+.recipe__foot span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.guide {
+  border-radius: var(--r-lg);
+  padding: 1.4rem 1.5rem;
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+.guide:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 26px 44px -30px rgba(20, 21, 15, 0.6);
+}
+.guide .micro {
+  color: var(--lime-olive);
+}
+.guide h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+.guide p {
+  font-size: 0.8125rem;
+  color: var(--paper-muted);
+  line-height: 1.55;
+}
+
+/* ══ Neden Healife ══════════════════════════════════════
+   Eskiden yorum kartlarıydı; sahte yorumlar kaldırılınca yerine
+   uygulamadan doğrulanabilir üç madde geldi. Kart iskeleti aynı. */
+
+.whys {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: clamp(0.875rem, 1.6vw, 1.25rem);
+}
+
+.why {
+  padding: clamp(1.5rem, 2.4vw, 2rem);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+.why:hover {
+  border-color: var(--hairline-strong);
+  transform: translateY(-4px);
+}
+
+.why__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(187, 228, 72, 0.13);
+  color: var(--lime);
+  margin-bottom: 0.35rem;
+  flex: none;
+}
+.why__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.why h3 {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.why p {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.why__meta {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+/* ══ Fiyatlandırma ══════════════════════════════════════ */
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(0.875rem, 1.6vw, 1.25rem);
+  align-items: start;
+}
+
+/* Tek sütuna düşünce "En kapsamlı" etiketi üstteki karta değiyordu. */
+@media (max-width: 719px) {
+  .plans {
+    gap: 1.75rem;
+  }
+}
+
+.plan {
+  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+.plan--featured {
+  border-color: rgba(187, 228, 72, 0.45);
+  background: linear-gradient(180deg, rgba(187, 228, 72, 0.08), var(--surface) 45%);
+  box-shadow: 0 30px 60px -40px rgba(187, 228, 72, 0.5);
+}
+.plan__tag {
+  position: absolute;
+  top: -11px;
+  left: clamp(1.5rem, 2.6vw, 2.25rem);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--r-pill);
+  background: var(--lime);
+  color: var(--on-lime);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.plan h3 {
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.plan__price {
+  font-size: 0.875rem;
+  color: var(--text-3);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.plan ul {
+  display: grid;
+  gap: 0.7rem;
+  font-size: 0.9375rem;
+}
+.plan li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+  color: var(--text-2);
+}
+.plan li svg {
+  width: 18px;
+  height: 18px;
+  color: var(--lime);
+  flex: none;
+  margin-top: 3px;
+}
+.plan li.is-off {
+  color: var(--text-3);
+}
+.plan li.is-off svg {
+  color: var(--text-3);
+  opacity: 0.5;
+}
+.plan .btn {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* ── Ne, hangi pakette ────────────────────────────────────
+   Üç kartın altındaki ayrıntı: her kapı için ücretsizde ne var, hangi
+   abonelik neyi açıyor. Tablo yerine tanım listesi — dört sütunlu bir
+   tablo telefonda okunmuyor, bu düzen her genişlikte aynı kalıyor. */
+
+.gates {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+  gap: clamp(0.875rem, 1.6vw, 1.25rem);
+  /* Kartlar satırdaki en uzuna göre uzayınca kısa olanların altında
+     400px boşluk kalıyordu; her kart kendi boyunda dursun. */
+  align-items: start;
+}
+
+.gates__title {
+  grid-column: 1 / -1;
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.gate {
+  padding: clamp(1.35rem, 2.2vw, 1.85rem);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.gate h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.gate dl {
+  display: grid;
+  gap: 0.9rem;
+  margin: 1.1rem 0 0;
+}
+.gate dl > div {
+  display: grid;
+  /* Etiket sütunu içeriğe göre ölçülüyor — satırlar aynı ızgarayı
+     paylaştığı için "Ücretsiz" ve "Program" alt alta hizalı kalıyor. */
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+}
+.gate dt {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--r-pill);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+.gate__free {
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.gate__on {
+  background: var(--lime);
+  color: var(--on-lime);
+}
+.gate dd {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.gate dd b {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.gates__note {
+  margin-top: clamp(1.5rem, 3vw, 2rem);
+  padding: clamp(1.1rem, 2vw, 1.5rem);
+  border: 1px solid rgba(187, 228, 72, 0.28);
+  border-radius: var(--r);
+  background: rgba(187, 228, 72, 0.06);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--text-2);
+  max-width: 74ch;
+}
+.gates__note b {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* ══ SSS ════════════════════════════════════════════════ */
+
+.faq {
+  max-width: 860px;
+  margin-inline: auto;
+}
+.faq__item {
+  border-bottom: 1px solid var(--hairline);
+}
+.faq__q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  text-align: left;
+  font-size: clamp(1rem, 0.95rem + 0.35vw, 1.1875rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  transition: color 0.25s var(--ease);
+}
+.faq__q:hover {
+  color: var(--lime);
+}
+.faq__icon {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  position: relative;
+}
+.faq__icon::before,
+.faq__icon::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transform: translateY(-50%);
+  transition: transform 0.35s var(--ease), opacity 0.25s var(--ease);
+}
+.faq__icon::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+.faq__q[aria-expanded="true"] .faq__icon {
+  color: var(--lime);
+}
+.faq__q[aria-expanded="true"] .faq__icon::after {
+  transform: translateY(-50%) rotate(0);
+  opacity: 0;
+}
+
+.faq__a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s var(--ease);
+}
+.faq__a > div {
+  overflow: hidden;
+}
+.faq__a[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.faq__a p {
+  color: var(--text-2);
+  padding-bottom: 1.75rem;
+  max-width: 68ch;
+}
+
+/* ══ Final CTA ══════════════════════════════════════════ */
+
+.final {
+  position: relative;
+  overflow: hidden;
+  background: var(--lime);
+  color: var(--on-lime);
+  text-align: center;
+}
+.final .lead {
+  color: rgba(10, 10, 10, 0.72);
+  margin-inline: auto;
+  max-width: 52ch;
+}
+.final__art {
+  position: absolute;
+  bottom: -6%;
+  right: -4%;
+  width: min(420px, 44vw);
+  opacity: 0.16;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+.final .stores {
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+.final .store {
+  background: var(--ink);
+  color: var(--text);
+}
+.final__note {
+  margin-top: 1.75rem;
+  font-size: 0.8125rem;
+  color: rgba(10, 10, 10, 0.6);
+}
+
+/* ══ Footer ═════════════════════════════════════════════ */
+
+.footer {
+  background: var(--ink);
+  padding-block: clamp(3.5rem, 6vw, 5rem) 2rem;
+  border-top: 1px solid var(--hairline);
+}
+.footer__top {
+  display: grid;
+  gap: 2.5rem;
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: 3rem;
+  border-bottom: 1px solid var(--hairline);
+}
+@media (min-width: 800px) {
+  .footer__top {
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  }
+}
+.footer__brand img {
+  height: 26px;
+  width: auto;
+  margin-bottom: 1.25rem;
+}
+.footer__brand p {
+  font-size: 0.875rem;
+  color: var(--text-3);
+  max-width: 34ch;
+}
+.footer h4 {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-3);
+  margin-bottom: 1rem;
+}
+.footer li + li {
+  margin-top: 0.6rem;
+}
+.footer li a {
+  font-size: 0.9375rem;
+  color: var(--text-2);
+  transition: color 0.2s var(--ease);
+}
+.footer li a:hover {
+  color: var(--lime);
+}
+/* Bağlantı listeleri tek sütunda footer'ı gereksiz uzatıyordu. */
+@media (min-width: 460px) and (max-width: 799px) {
+  .footer__top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+  .footer__brand {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Yüzen dock alta indiği ölçülerde sayfanın son satırının üstüne
+   biniyordu — dock yüksekliği kadar pay bırak. */
+@media (max-width: 720px) {
+  .footer {
+    padding-bottom: calc(2rem + 62px + env(safe-area-inset-bottom));
+  }
+}
+
+.footer__bottom {
+  padding-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+.footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+.footer__disclaimer {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-3);
+  max-width: 80ch;
+  opacity: 0.8;
+}

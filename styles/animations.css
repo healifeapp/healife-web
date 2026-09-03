@@ -1,0 +1,162 @@
+/* Animasyonlar.
+   Kural: JS yoksa hiçbir şey gizli kalmaz. `.reveal` varsayılanı görünürdür;
+   yalnızca <html class="js"> eklendiğinde başlangıç durumu gizlenir. */
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.75s var(--ease), transform 0.75s var(--ease);
+  transition-delay: var(--delay, 0s);
+  will-change: opacity, transform;
+}
+
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  /* Giriş bittikten sonra katmanı tutmanın anlamı yok; kırk küçük
+     kompozisyon katmanı mobilde bedava değil. */
+  will-change: auto;
+}
+
+/* Yandan giren varyantlar */
+.js .reveal--left {
+  transform: translateX(-28px);
+}
+.js .reveal--right {
+  transform: translateX(28px);
+}
+.js .reveal--scale {
+  transform: scale(0.94);
+}
+.js .reveal--left.is-visible,
+.js .reveal--right.is-visible,
+.js .reveal--scale.is-visible {
+  transform: none;
+}
+
+/* Telefonda yandan giriş yok. Gizli başlangıç durumu (translateX 28px)
+   kartları ekranın 28px sağına taşıyor, mobil tarayıcı da düzen alanını
+   buna göre büyütüyordu: sayfa 8px geniş açılıyor, sabit üst şerit dahil
+   her şey yana kayıp yatay kaydırma çıkıyordu. */
+@media (max-width: 720px) {
+  .js .reveal--left,
+  .js .reveal--right {
+    transform: translateY(24px);
+  }
+}
+
+/* ── Hero girişi ──────────────────────────────────────── */
+
+/* Başlık satırları maskenin altından yukarı çıkar.
+   İ, Ş, Ç, Ğ gibi versal harflerin noktası ve çengeli sıkı line-height'te
+   satır kutusunun dışına taşıyor; overflow:hidden onları kesiyordu. Dolgu
+   taşma kutusunu büyütüyor, negatif kenar boşluğu satır aralığını eski
+   haline döndürüyor. */
+.line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.18em 0.12em;
+  margin-block: -0.18em -0.12em;
+}
+.line > span {
+  display: block;
+}
+.js .line > span {
+  /* %105 artık yetmiyor: kutu alttan 0.12em büyüdü. */
+  transform: translateY(122%);
+  transition: transform 1s var(--ease);
+  transition-delay: var(--delay, 0s);
+}
+.js .is-loaded .line > span {
+  transform: none;
+}
+
+/* Başlığın altındaki her şey sırayla belirir */
+.js .hero__kicker,
+.js .hero__cta,
+.js .hero__note,
+.js .hero__actions,
+.js .hero__laurels {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+  transition-delay: var(--delay, 0s);
+}
+.js .hero.is-loaded .hero__kicker,
+.js .hero.is-loaded .hero__cta,
+.js .hero.is-loaded .hero__note,
+.js .hero.is-loaded .hero__actions,
+.js .hero.is-loaded .hero__laurels {
+  opacity: 1;
+  transform: none;
+}
+
+/* Fotoğraf yavaşça yaklaşır — sabit bir karenin canlı durması için */
+.js .hero__photo {
+  animation: kenburns 26s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes kenburns {
+  from {
+    scale: 1;
+  }
+  to {
+    scale: 1.07;
+  }
+}
+
+/* Telefonda kapalı: sonsuz süren bir ölçek animasyonu pil ve kompozisyon
+   maliyeti demek, dar kadrajda kazancı ise görünmüyor. */
+@media (max-width: 720px) {
+  .js .hero__photo {
+    animation: none;
+  }
+}
+
+/* ── Diğerleri ────────────────────────────────────────── */
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Adımların sıralı girişi */
+.js .steps .reveal:nth-child(1) {
+  --delay: 0s;
+}
+.js .steps .reveal:nth-child(2) {
+  --delay: 0.08s;
+}
+.js .steps .reveal:nth-child(3) {
+  --delay: 0.16s;
+}
+.js .steps .reveal:nth-child(4) {
+  --delay: 0.24s;
+}
+
+/* Hareket azaltma: her şeyi anında göster, döngüleri durdur */
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal,
+  .js .line > span,
+  .js .hero__kicker,
+  .js .hero__cta,
+  .js .hero__note,
+  .js .hero__actions,
+  .js .hero__laurels {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .js .hero__photo,
+  .hero__pulse::after,
+  .marquee__track {
+    animation: none !important;
+  }
+  .is-visible .macro__bar i {
+    transition: none;
+  }
+}

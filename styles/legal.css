@@ -1,0 +1,257 @@
+/* Yasal bilgiler sayfası — tokens.css + base.css üzerine biner. */
+
+.legal {
+  padding-block: clamp(7rem, 13vh, 9.5rem) clamp(4rem, 8vw, 6rem);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hero'daki lime hüzmenin sakin bir yankısı */
+.legal::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -22%;
+  left: 50%;
+  translate: -50% 0;
+  width: min(900px, 120vw);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(187, 228, 72, 0.13),
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+.legal__head {
+  max-width: 44ch;
+  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+.legal__head h1 {
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+}
+.legal__head p {
+  margin-top: 1.1rem;
+  color: var(--text-2);
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+}
+.legal__updated {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+
+/* Sayfanın tepesindeki durum uyarısı */
+.legal__notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: clamp(1.15rem, 2vw, 1.5rem);
+  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  border: 1px solid rgba(255, 214, 10, 0.35);
+  border-radius: var(--r);
+  background: rgba(255, 214, 10, 0.07);
+}
+.legal__notice svg {
+  width: 22px;
+  height: 22px;
+  color: var(--warning);
+  flex: none;
+  margin-top: 2px;
+}
+.legal__notice b {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+.legal__notice p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.legal__grid {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .legal__grid {
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 3.5rem;
+    align-items: start;
+  }
+  .legal__toc {
+    position: sticky;
+    top: 110px;
+  }
+}
+
+.legal__toc .card {
+  padding: 1.35rem 1.5rem;
+}
+.legal__toc p {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-3);
+  margin-bottom: 1rem;
+}
+.legal__toc li + li {
+  margin-top: 0.55rem;
+}
+.legal__toc a {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--text-2);
+  transition: color 0.2s var(--ease), translate 0.2s var(--ease);
+}
+.legal__toc a:hover {
+  color: var(--lime);
+  translate: 3px 0;
+}
+
+/* ── Metin gövdesi ────────────────────────────────────── */
+
+.legal__body {
+  max-width: 72ch;
+}
+
+.legal__body section {
+  scroll-margin-top: 110px;
+  padding-block: clamp(1.75rem, 3vw, 2.5rem);
+  border-top: 1px solid var(--hairline);
+}
+.legal__body section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.legal__body h2 {
+  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 1.1rem;
+}
+.legal__body h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
+}
+.legal__body p {
+  color: var(--text-2);
+  line-height: 1.7;
+}
+.legal__body p + p {
+  margin-top: 0.9rem;
+}
+.legal__body ul {
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.55rem;
+}
+.legal__body ul li {
+  position: relative;
+  padding-left: 1.35rem;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+.legal__body ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+}
+.legal__body strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.legal__body a:not(.btn) {
+  color: var(--lime);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+/* Bölüm içi bilgi kutusu */
+.legal__box {
+  margin-top: 1.5rem;
+  padding: 1.15rem 1.35rem;
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--lime);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: rgba(255, 255, 255, 0.03);
+}
+.legal__box p {
+  font-size: 0.9375rem;
+}
+
+/* Veri tablosu */
+.legal__table {
+  margin-top: 1.25rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r);
+}
+.legal__table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  min-width: 460px;
+}
+.legal__table th,
+.legal__table td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--hairline);
+}
+.legal__table th {
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+  white-space: nowrap;
+}
+.legal__table td {
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.legal__table tr:last-child th,
+.legal__table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Sayfaya özel sade üst şerit — burada dock yok */
+.legal-topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 45;
+  background: rgba(11, 11, 12, 0.75);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border-bottom: 1px solid var(--hairline);
+}
+.legal-topbar .topbar__inner {
+  height: 68px;
+}
+.legal-topbar .topbar__cta svg {
+  transition: transform 0.3s var(--ease);
+}
+.legal-topbar .topbar__cta:hover svg {
+  transform: translateX(-3px);
+}
