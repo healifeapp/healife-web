@@ -335,10 +335,10 @@
   .hero__inner {
     grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
   }
+  /* Metin sağdaki boşlukta durur ama kendi içinde SOLA yaslıdır —
+     ortalanmış hâlde başlığın satır başları birbirini tutmuyordu. */
   .hero__copy {
     grid-column: 2;
-    text-align: center;
-    align-items: center;
   }
 }
 
@@ -460,11 +460,6 @@
 .hero__actions {
   margin-top: 2.25rem;
 }
-@media (min-width: 940px) {
-  .hero__actions {
-    justify-content: center;
-  }
-}
 
 .hero__laurels {
   display: flex;
@@ -572,25 +567,40 @@
   }
 }
 
-/* ── Cihaz çerçevesi ──────────────────────────────────────
-   Metalik gövde, yan tuş ve çentik denendi; ekran görüntüsüyle
-   çakışıyordu (kaynakta telefonun kendi kamerası da vardı). Artık
-   sadece ince kenar + geniş yuvarlaklık + gölge — abdusamedakgul.com'daki
-   `rounded-[3rem] p-[3px] shadow-2xl` yaklaşımının oransal karşılığı.
-   Yüzdelik border-radius eliptik olduğu için yatay/dikey ayrı veriliyor
-   (gövde oranı 1 : 2.13), böylece 152px'lik HIIT telefonunda da
-   700px'lik olanda da aynı köşe oranı çıkıyor. */
+/* ── Cihaz çerçevesi — iPhone 16 Pro oranları ─────────────
+   Ölçüler gerçek cihazdan alındı:
+     ekran   1206 × 2622 px  → 0.4599 en/boy
+     gövde   71.5 × 149.6 mm → 0.4779 en/boy
+     ekran köşe yarıçapı 62pt (ekran 402 × 874pt)
+   Çerçeve kalınlığı bu ikisinin farkından çıkıyor: gövde oranının
+   tutması için ekranın her yanında gövde genişliğinin ~%3.4'ü kadar
+   pay gerekiyor → hesaplanan gövde oranı 0.4774, gerçeği 0.4779.
+
+   ÖNEMLİ: pay `padding: %` ile verilemez — yüzdelik padding cihazın
+   kendi genişliğine değil EBEVEYNİNİN genişliğine göre çözülür, o
+   yüzden üç farklı boydaki telefonda çerçeve farklı kalınlıkta
+   çıkıyordu. `container-type: inline-size` + `cqw` ile pay artık
+   telefonun kendi genişliğine bağlı. Margin'in ebeveyne taşmaması için
+   .device `display: grid`.
+
+   Köşe yarıçapları yüzdelik ve eliptik (yatay / dikey ayrı), böylece
+   150px'lik telefonda da 260px'likte de aynı köşe oranı çıkıyor. */
 
 .device {
   position: relative;
-  border-radius: 12% / 5.6%;
-  padding: 1%;
+  display: grid;
+  container-type: inline-size;
+  border-radius: 17.75% / 8.5%;
+  /* Titanyum gövde: üstte parlak, ortada mat, altta ikinci bir yansıma */
   background: linear-gradient(
-    155deg,
-    rgba(255, 255, 255, 0.26),
-    rgba(255, 255, 255, 0.07) 32%,
-    rgba(255, 255, 255, 0.03) 62%,
-    rgba(255, 255, 255, 0.2)
+    150deg,
+    #7f868d 0%,
+    #b7bdc3 9%,
+    #5f656b 27%,
+    #43484e 52%,
+    #61676d 74%,
+    #a5abb1 93%,
+    #6d747a 100%
   );
   box-shadow: 0 30px 60px -18px rgba(0, 0, 0, 0.9),
     0 12px 26px -14px rgba(0, 0, 0, 0.7);
@@ -598,11 +608,93 @@
 
 .device__screen {
   position: relative;
-  border-radius: 11% / 5.2%;
+  /* Çerçeve payı — cihazın kendi genişliğinin %3.4'ü, her yanda eşit */
+  margin: 3.4cqw;
+  border-radius: 15.4% / 7.1%;
   overflow: hidden;
-  background: var(--bg);
-  aspect-ratio: 560 / 1195;
+  /* Ekran görüntülerinin dolgu rengiyle aynı — yuvarlatılmış köşelerde
+     siyah zemin ile içerik arasında ince bir dikiş görünmesin. */
+  background: rgb(16, 19, 15);
+  aspect-ratio: 1206 / 2622;
+  /* Cam ile titanyum arasındaki ince koyu hat */
+  box-shadow: 0 0 0 0.5cqw #16181a;
 }
+
+/* Ana ekran çubuğu (home indicator) — 140 × 5pt, alttan 8pt.
+   .device__screen'in ::after'ı; ekran görüntülerinde bu çubuk yok. */
+.device__screen::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0.9%;
+  translate: -50% 0;
+  width: 34.8%;
+  height: 0.57%;
+  min-height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  z-index: 3;
+}
+
+/* Dynamic Island — 125 × 36.7pt, ekranın üstünden 11pt aşağıda.
+   Ekran görüntülerinde iOS durum çubuğu YOK (içerik kırpılarak
+   alınmış), bu yüzden ada üstteki boşluğa oturuyor ve içeriği
+   örtmüyor. Yeni ekran görüntüsü eklenirken tepede bu pay bırakılmalı. */
+.device__island {
+  position: absolute;
+  top: 1.3%;
+  left: 50%;
+  translate: -50% 0;
+  width: 31%;
+  aspect-ratio: 125 / 36.7;
+  border-radius: 999px;
+  background: #000;
+  z-index: 2;
+}
+
+/* Yan tuşlar. Yarısı gövdenin dışında kalıyor (gerçekte de öyle).
+   Dikey konumlar gövde yüksekliğinin yüzdesi. */
+/* Sarmalayıcı .device'ın grid'inde satır AÇMAMALI — display: contents
+   kutuyu kaldırıyor, tuşlar yine .device'a göre konumlanıyor. */
+.device__frame {
+  display: contents;
+}
+
+.device__btn {
+  position: absolute;
+  width: 1.3%;
+  border-radius: 0.7cqw;
+  background: linear-gradient(90deg, #5c6167, #b4bac1 50%, #6b7178);
+  z-index: 1;
+}
+/* Sol: Action Button, ses aç, ses kıs */
+.device__btn--action {
+  left: -0.65%;
+  top: 20.5%;
+  height: 3.6%;
+}
+.device__btn--volup {
+  left: -0.65%;
+  top: 26.5%;
+  height: 5.4%;
+}
+.device__btn--voldown {
+  left: -0.65%;
+  top: 33.5%;
+  height: 5.4%;
+}
+/* Sağ: yan tuş (güç) ve 16 Pro'nun Camera Control'ü */
+.device__btn--power {
+  right: -0.65%;
+  top: 27%;
+  height: 8.6%;
+}
+.device__btn--camera {
+  right: -0.65%;
+  top: 39.5%;
+  height: 4.2%;
+}
+
 .device__screen img {
   width: 100%;
   height: 100%;
@@ -707,8 +799,9 @@
     padding-block: 0;
   }
   .how__track {
-    /* Adım başına düşen kaydırma yolu. Büyütmek yavaşlatır, küçültmek hızlandırır. */
-    height: 280vh;
+    /* Adım başına düşen kaydırma yolu. Büyütmek yavaşlatır, küçültmek
+       hızlandırır. 5 adım × ~70vh. */
+    height: 350vh;
   }
   .how__sticky {
     position: sticky;
@@ -727,16 +820,47 @@
   }
 }
 
-/* Kısa ekranlarda 100vh'ye sığması için ölçüleri kıs */
-@media (min-width: 900px) and (max-height: 820px) {
-  .how__aside .device__screen {
-    height: clamp(260px, 58vh, 480px);
+/* 5 adım + telefon tek ekrana sığsın: kart içi boşluk, aralık ve yazı
+   boyu ekran YÜKSEKLİĞİNE bağlandı. Dört adımda sabit değerler
+   yetiyordu; beşincisi eklenince sağdaki sütun 100vh'yi taşırıyor ve
+   soldaki telefon alttan kesiliyordu. Adım sayısı değişirse buradaki
+   vh katsayıları da gözden geçirilmeli. */
+@media (min-width: 900px) {
+  .how .steps {
+    gap: clamp(0.45rem, 1.1vh, 1rem);
   }
   .how .step {
-    padding: 1rem 1.15rem;
+    padding: clamp(0.8rem, 1.7vh, 1.6rem) clamp(1.1rem, 1.5vw, 1.6rem);
+    gap: clamp(0.85rem, 1.4vw, 1.25rem);
+  }
+  .how .step h3 {
+    font-size: clamp(1rem, 0.92rem + 0.35vw, 1.25rem);
+  }
+  .how .step p {
+    font-size: clamp(0.8125rem, 0.78rem + 0.25vw, 0.9375rem);
+    line-height: 1.55;
+  }
+}
+
+/* Kısa ekranlarda (dizüstü, 1280×720) daha da kıs — ölçüldü, bu değerlerle
+   5 adım + telefon 720px'e sığıyor. */
+@media (min-width: 900px) and (max-height: 820px) {
+  .how__sticky {
+    padding-block: 78px 24px;
+  }
+  .how .step__no {
+    width: 34px;
+    height: 34px;
   }
   .how .steps {
-    gap: 0.6rem;
+    gap: 0.35rem;
+  }
+  .how .step {
+    padding: 0.6rem 1rem;
+  }
+  .how .step p {
+    font-size: 0.8125rem;
+    line-height: 1.5;
   }
 }
 
@@ -771,8 +895,11 @@
 }
 
 .how__aside .device {
-  width: min(260px, 78%);
-  margin-top: 2.5rem;
+  /* En/boy oranı .device__screen'den geliyor; boyu KIRPMAK yerine
+     genişliği kısıyoruz — yükseklik verince object-fit: cover ekranı
+     kesiyordu. 5 adım eklendikten sonra sabit 260px 100vh'ye sığmıyordu. */
+  width: clamp(150px, 19vh, 260px);
+  margin-top: clamp(0.9rem, 2.6vh, 2.5rem);
 }
 
 /* ── Dar ekranda da sabitlenmiş bant ──────────────────────
@@ -789,8 +916,8 @@
     padding-block: 0;
   }
   .js .how__track {
-    /* Adım başına ~75svh kaydırma yolu. Büyütmek yavaşlatır. */
-    height: 400svh;
+    /* Adım başına ~100svh kaydırma yolu. Büyütmek yavaşlatır. 5 adım. */
+    height: 500svh;
   }
   .js .how__sticky {
     position: sticky;
@@ -823,15 +950,14 @@
   .js .how__aside .lead {
     display: none;
   }
+  /* GENİŞLİKLE ölçülüyor, yükseklikle değil: .device artık
+     `container-type: inline-size` ve çerçeve payı `cqw` cinsinden —
+     `width: fit-content` verilirse genişlik içeriğe, içerik genişliğe
+     bağlanıp döngü oluşuyor ve tarayıcı genişliği 0 çözüyor.
+     Katsayı gövde oranı 0.4774: genişlik = istenen boy × 0.4774. */
   .js .how__aside .device {
-    width: fit-content;
+    width: clamp(119px, 26.7svh, 267px);
     margin: clamp(0.6rem, 1.8vh, 1.1rem) auto 0;
-  }
-  .js .how__aside .device__screen {
-    /* Yüksekliğe göre ölçülüyor: telefon her zaman tek ekrana sığsın.
-       Adım açıklamaları kalktığı için burada kalan bütün yer telefonun. */
-    height: clamp(250px, 56svh, 560px);
-    width: auto;
   }
 
   /* Adımlar üst üste duruyor; yalnızca sıradaki görünür. */
@@ -913,8 +1039,8 @@
   .js .how__aside .h2 {
     font-size: clamp(1.5rem, 0.9rem + 2vw, 2.25rem);
   }
-  .js .how__aside .device__screen {
-    height: clamp(300px, 56svh, 540px);
+  .js .how__aside .device {
+    width: clamp(143px, 26.7svh, 258px);
   }
 }
 
@@ -933,8 +1059,8 @@
   .js .how__aside .eyebrow {
     display: none;
   }
-  .js .how__aside .device__screen {
-    height: clamp(200px, 54svh, 460px);
+  .js .how__aside .device {
+    width: clamp(95px, 25.8svh, 220px);
   }
   .js .how__rail {
     margin-bottom: 0.85rem;
@@ -951,24 +1077,18 @@
     font-size: clamp(1.6rem, 1rem + 1.7vw, 2.5rem);
   }
   .how__aside .device {
-    width: fit-content;
+    width: clamp(143px, 30.6vh, 334px);
     margin-top: clamp(1.25rem, 3.5vh, 2.5rem);
-  }
-  .how__aside .device__screen {
-    height: clamp(300px, 64vh, 700px);
-    width: auto;
-    aspect-ratio: 560 / 1195;
   }
 }
 
 /* Kaynak ekran görüntülerinin altı eksikti: yakalama sırasında uygulamanın
-   alt menü etiketleri resmin kenarında ortadan kesilmişti ve "Öğle" satırı
-   yarım kalıyordu. Görüntüler her birinin kendi temiz satır sınırından
-   kesilip ortak 560x1112'ye zeminle dolduruldu — bu yüzden bu çerçevenin
-   oranı diğerlerinden farklı. (hiit sağlamdı, 560x1195 kaldı.) */
-.how__device .device__screen {
-  aspect-ratio: 560 / 1112;
-}
+   alt menü etiketleri resmin kenarında ortadan kesilmişti. Görüntüler kendi
+   temiz satır sınırlarından kesilip zeminle dolduruldu; 09.09.2026'da beşi
+   birden iPhone 16 Pro ekran oranına (1206/2622) getirildi — hepsi
+   560x1218 ve dolgu rengi uygulamanın kendi zemini rgb(16,19,15).
+   Ham hâlleri assets/screens/app/_orig/ içinde duruyor. Artık bu çerçeveye
+   ayrı bir en/boy oranı GEREKMİYOR, .device__screen'inki geçerli. */
 
 /* Ekranlar üst üste duruyor; aktif olan görünür oluyor. */
 .how__device .device__screen img {
@@ -2368,4 +2488,28 @@
   color: var(--text-3);
   max-width: 80ch;
   opacity: 0.8;
+}
+
+/* Yöntem bölümünden kaynaklar sayfasına giden bağlantı. Düğme değil —
+   metnin devamı gibi okunsun diye altı çizili bir satır. */
+.science__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 2rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--lime);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 1px;
+  transition: gap 0.25s var(--ease);
+}
+.science__link svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+.science__link:hover {
+  gap: 0.9rem;
 }

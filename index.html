@@ -151,12 +151,12 @@
                  görünüyor. Sayfanın geri kalanındaki .eyebrow ile aynı dil. -->
             <p class="hero__kicker" style="--delay: 0.55s">
               <i class="hero__pulse" aria-hidden="true"></i>
-              <b>Yeni</b><span aria-hidden="true">·</span>Healife Move — GPS'li koşu takibi
+              <b>Yeni özellik</b><span aria-hidden="true">·</span>Healife Move — GPS'li koşu takibi
             </p>
 
             <h1 class="hero__title">
               <span class="line"><span style="--delay: 0.05s">Kişisel</span></span>
-              <span class="line"><span style="--delay: 0.13s">AI koçun</span></span>
+              <span class="line"><span style="--delay: 0.13s">koçun</span></span>
               <span class="line"><span style="--delay: 0.21s">cebinde.</span></span>
             </h1>
 
@@ -257,7 +257,7 @@
           <div class="how__aside">
             <p class="eyebrow">Nasıl çalışır</p>
             <h2 class="h2 reveal">
-              Dört adımda <br />senin planın.
+              Beş adımda <br />senin planın.
             </h2>
             <p class="lead reveal" style="--delay: 0.1s; margin-top: 1.1rem">
               Genel bir program değil; hedefine, deneyimine, ekipmanına ve günlük
@@ -266,11 +266,14 @@
 
             <!-- Ekran, sağdaki adım kaydırıldıkça değişir (scripts/main.js). -->
             <div class="device how__device reveal reveal--scale" style="--delay: 0.2s" id="howDevice">
+              <span class="device__frame" aria-hidden="true"><i class="device__btn device__btn--action"></i><i class="device__btn device__btn--volup"></i><i class="device__btn device__btn--voldown"></i><i class="device__btn device__btn--power"></i><i class="device__btn device__btn--camera"></i></span>
               <div class="device__screen">
-                <img class="is-on" data-step="1" src="assets/screens/app/plan.webp?v=20260830b" alt="Onboarding analizi ve önerilen plan" width="560" height="1112" loading="lazy" decoding="async" />
-                <img data-step="2" src="assets/screens/app/plans.webp?v=20260830b" alt="Planlar ekranı: program ilerlemesi ve günün antrenmanı" width="560" height="1112" loading="lazy" decoding="async" />
-                <img data-step="3" src="assets/screens/app/today.webp?v=20260830b" alt="Bugün ekranı: kalori, makro ve öğünler" width="560" height="1112" loading="lazy" decoding="async" />
-                <img data-step="4" src="assets/screens/app/scan.webp?v=20260830b" alt="Yemek fotoğrafı analizi ve AI önerisi" width="560" height="1112" loading="lazy" decoding="async" />
+                <span class="device__island" aria-hidden="true"></span>
+                <img class="is-on" data-step="1" src="assets/screens/app/plan.webp?v=20260830b" alt="Onboarding analizi ve önerilen plan" width="560" height="1218" loading="lazy" decoding="async" />
+                <img data-step="2" src="assets/screens/app/plans.webp?v=20260830b" alt="Planlar ekranı: program ilerlemesi ve günün antrenmanı" width="560" height="1218" loading="lazy" decoding="async" />
+                <img data-step="3" src="assets/screens/app/today.webp?v=20260830b" alt="Bugün ekranı: kalori, makro ve öğünler" width="560" height="1218" loading="lazy" decoding="async" />
+                <img data-step="4" src="assets/screens/app/scan.webp?v=20260830b" alt="Yemek fotoğrafı analizi ve AI önerisi" width="560" height="1218" loading="lazy" decoding="async" />
+                <img data-step="5" src="assets/screens/app/exercise.webp?v=20260909a" alt="Egzersiz detay ekranı: hareketin videosu, çalışan kaslar ve set kaydetme" width="560" height="1218" loading="lazy" decoding="async" />
               </div>
             </div>
           </div>
@@ -321,6 +324,18 @@
                   Yapay zekâ koçun planını, beslenmeni ve geçmiş antrenmanlarını
                   inceler; neyin değişmesi gerektiğini söyler. İnsan antrenörün yerine
                   geçmez — yol gösterir.
+                </p>
+              </div>
+            </li>
+
+            <li class="step reveal" data-step="5">
+              <div class="step__no" aria-hidden="true"></div>
+              <div>
+                <h3 class="h3">Tıkla, hareketi gör</h3>
+                <p>
+                  Hareketin üstüne dokun, videosunu izle — doğru formu gör. Kas
+                  haritasından bölge seçip o bölgeyi çalıştıran egzersizleri bul.
+                  Kütüphane ve tarifler ücretsiz.
                 </p>
               </div>
             </li>
@@ -412,7 +427,7 @@
                   src="assets/screens/app/scan.webp?v=20260830b"
                   alt="Yemek fotoğrafı analizi: 540 kcal, 55 g protein, 34 g karbonhidrat, 18 g yağ"
                   width="560"
-                  height="1112"
+                  height="1218"
                   loading="lazy"
                   decoding="async"
                 />
@@ -617,6 +632,14 @@
                 </div>
               </div>
             </div>
+
+            <!-- Bu bölüm iddiayı kuruyor; kanıtı sources.html'de. -->
+            <a class="science__link reveal" href="sources.html" style="--delay: 0.18s">
+              Hangi formülü, hangi kaynağa dayanarak kullandığımızı oku
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h13m0 0-5-5m5 5-5 5" />
+              </svg>
+            </a>
           </div>
 
           <figure class="science__art reveal reveal--right">
@@ -648,7 +671,9 @@
             <!-- Healife Move -->
             <article class="movecard reveal reveal--left">
               <div class="device">
+              <span class="device__frame" aria-hidden="true"><i class="device__btn device__btn--action"></i><i class="device__btn device__btn--volup"></i><i class="device__btn device__btn--voldown"></i><i class="device__btn device__btn--power"></i><i class="device__btn device__btn--camera"></i></span>
                 <div class="device__screen">
+                <span class="device__island" aria-hidden="true"></span>
                   <!-- Bu bir ekran görüntüsü değil, uygulamanın Move ekranını
                        anlatan stilize bir çizimdir: rota çizgisi, canlı süre ve
                        tempo. Gerçek ekran görüntüsü geldiğinde değiştirilecek. -->
@@ -744,12 +769,14 @@
                 </ul>
               </div>
               <div class="device hiitcard__device">
+              <span class="device__frame" aria-hidden="true"><i class="device__btn device__btn--action"></i><i class="device__btn device__btn--volup"></i><i class="device__btn device__btn--voldown"></i><i class="device__btn device__btn--power"></i><i class="device__btn device__btn--camera"></i></span>
                 <div class="device__screen">
+                <span class="device__island" aria-hidden="true"></span>
                   <img
                     src="assets/screens/app/hiit.webp?v=20260830b"
                     alt="Healife HIIT ekranı: zorluk ve süre seçimi, egzersiz listesi"
                     width="560"
-                    height="1195"
+                    height="1218"
                     loading="lazy"
                   decoding="async"
                   />
@@ -1035,116 +1062,6 @@
             </article>
           </div>
 
-          <!-- Kapı kuralları backend'den birebir: entitlement `program` /
-               `pro`, `FREE_AI_PER_DAY = 5`, `FREE_SCANS_PER_DAY = 1`,
-               `entitlementTeaser.FREE_DAY_COUNT = 1`. HIIT/karın kapısı
-               istemcide: workout_setup_screen.dart `!hasPro && hiitFreeUsed`.
-               Sınır değişirse burası da değişmeli. -->
-          <div class="gates">
-            <h3 class="gates__title">Ne, hangi pakette?</h3>
-
-            <article class="gate reveal">
-              <h3>Antrenman programı</h3>
-              <dl>
-              <div>
-                <dt class="gate__free">Ücretsiz</dt>
-                <dd>Sana önerilen planı görürsün ve <b>ilk günü</b> açıktır. Kalan günlerde kaç hareket olduğu yazar, hareketlerin kendisi gelmez.</dd>
-              </div>
-              <div>
-                <dt class="gate__on">Program</dt>
-                <dd>Tüm günler açılır. Planı aktif edersin, 36 şablondan seçersin, sıfırdan kendi programını kurarsın, 5 döngüye kadar planlarsın, gün ve hareketleri düzenlersin; yapay zekâ şablonu senin gün sayına ve kalorine göre yeniden yazar.</dd>
-              </div>
-              </dl>
-            </article>
-
-            <article class="gate reveal">
-              <h3>Beslenme planı</h3>
-              <dl>
-              <div>
-                <dt class="gate__free">Ücretsiz</dt>
-                <dd>Planın <b>ilk günü</b> açıktır. Kalori, makro ve su günlüğünü sınırsız kullanırsın.</dd>
-              </div>
-              <div>
-                <dt class="gate__on">Program</dt>
-                <dd>Tüm günler, öğün takibi ve birden çok beslenme döngüsü.</dd>
-              </div>
-              </dl>
-            </article>
-
-            <article class="gate reveal">
-              <h3>Yapay zekâ koç</h3>
-              <dl>
-              <div>
-                <dt class="gate__free">Ücretsiz</dt>
-                <dd><b>Hızlı</b> mod, günde <b>5 mesaj</b>. Form analizi de bu haktan düşer.</dd>
-              </div>
-              <div>
-                <dt class="gate__on">Pro</dt>
-                <dd><b>Dengeli</b> ve <b>Derin</b> modlar, sınırsız mesaj, koçun hangi bilgilerini gördüğünü düzenleme.</dd>
-              </div>
-              </dl>
-            </article>
-
-            <article class="gate reveal">
-              <h3>Yemek fotoğrafı analizi</h3>
-              <dl>
-              <div>
-                <dt class="gate__free">Ücretsiz</dt>
-                <dd>Günde <b>1 tarama</b>.</dd>
-              </div>
-              <div>
-                <dt class="gate__on">Pro</dt>
-                <dd>Sınırsız tarama.</dd>
-              </div>
-              </dl>
-            </article>
-
-            <article class="gate reveal">
-              <h3>Keşfet içerikleri</h3>
-              <dl>
-              <div>
-                <dt class="gate__free">Ücretsiz</dt>
-                <dd>Premium işaretlenmemiş tarif, rehber ve egzersiz videoları.</dd>
-              </div>
-              <div>
-                <dt class="gate__on">Pro</dt>
-                <dd>Premium işaretli tarif, rehber ve egzersiz videoları da açılır.</dd>
-              </div>
-              </dl>
-            </article>
-
-            <article class="gate reveal">
-              <h3>HIIT ve karın antrenmanı</h3>
-              <dl>
-                <div>
-                  <dt class="gate__free">Ücretsiz</dt>
-                  <dd><b>Bir antrenman</b> denemesi. HIIT ve karın antrenmanı aynı hakkı paylaşır.</dd>
-                </div>
-                <div>
-                  <dt class="gate__on">Pro</dt>
-                  <dd>Sınırsız HIIT ve karın antrenmanı.</dd>
-                </div>
-              </dl>
-            </article>
-
-            <article class="gate reveal">
-              <h3>Her pakette ücretsiz</h3>
-              <dl>
-              <div>
-                <dt class="gate__free">Ücretsiz</dt>
-                <dd>176 egzersizlik video kütüphanesi, kas haritası, Healife Move (GPS'li koşu, yürüyüş, bisiklet), su takibi, hatırlatıcılar, istatistikler, Apple Health ve 8 dil.</dd>
-              </div>
-              </dl>
-            </article>
-          </div>
-
-          <p class="gates__note">
-            <b>Program ve Pro birbirinden bağımsız iki abonelik, kademe değil.</b>
-            Pro almak antrenman ve beslenme planını açmaz; Program almak yapay
-            zekâ koçun sınırlarını kaldırmaz. İkisini birlikte de alabilirsin.
-            Abonelikler App Store ve Google Play üzerinden yönetilir, fiyat
-            mağazada görünür.
-          </p>
         </div>
       </section>
 
@@ -1335,8 +1252,9 @@
             <ul>
               <li><a href="#sss">Sık sorulanlar</a></li>
               <li><a href="mailto:destek@hea-life.com">destek@hea-life.com</a></li>
+              <li><a href="sources.html">Önerilerimizin kaynağı</a></li>
               <li><a href="legal.html#gizlilik">Gizlilik Politikası</a></li>
-              <li><a href="legal.html#kullanim-kosullari">Kullanım Koşulları</a></li>
+              <li><a href="legal.html#kullanim-kosullari">Hizmet Koşulları</a></li>
             </ul>
           </div>
         </div>
@@ -1352,10 +1270,11 @@
         <div class="footer__bottom">
           <span>© <span id="year">2026</span> Healife. Tüm hakları saklıdır.</span>
           <nav class="footer__legal" aria-label="Yasal">
+            <a href="legal.html#kullanim-kosullari">Hizmet Koşulları</a>
             <a href="legal.html#gizlilik">Gizlilik</a>
-            <a href="legal.html#kullanim-kosullari">Kullanım Koşulları</a>
-            <a href="legal.html#kvkk">KVKK</a>
             <a href="legal.html#cerez">Çerez Politikası</a>
+            <a href="legal.html#sorumluluk-reddi">Sorumluluk Reddi</a>
+            <a href="sources.html">Kaynaklar</a>
           </nav>
         </div>
       </div>

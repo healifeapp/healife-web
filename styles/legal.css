@@ -124,6 +124,13 @@
   max-width: 72ch;
 }
 
+/* #kvkk gibi bolum ICI hedefler h3'e dusuyor; sabit ust cubugun altinda
+   kalmasinlar diye onlara da ayni pay veriliyor. Uygulama legal_links.dart
+   uzerinden dogrudan #kvkk'ya baglaniyor. */
+.legal__body h3[id] {
+  scroll-margin-top: 110px;
+}
+
 .legal__body section {
   scroll-margin-top: 110px;
   padding-block: clamp(1.75rem, 3vw, 2.5rem);
@@ -254,4 +261,90 @@
 }
 .legal-topbar .topbar__cta:hover svg {
   transform: translateX(-3px);
+}
+
+/* ── Kaynaklar sayfası (sources.html) ─────────────────── */
+
+/* Formül kutusu — metinden ayrışsın, mobilde yatay kaysın. */
+.formula {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.03);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.formula code {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.9;
+  color: var(--text);
+  white-space: pre;
+}
+.formula code b {
+  color: var(--lime);
+  font-weight: 700;
+}
+.formula__note {
+  margin-top: 0.85rem;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  white-space: normal;
+}
+
+/* Bir iddianın hangi kaynağa dayandığını gösteren satır. */
+.source-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+.source-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  flex: none;
+  translate: 0 -2px;
+}
+
+/* Kaynakça — numaralı, asılı girinti. */
+.bib {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 1.1rem;
+  counter-reset: bib;
+}
+.bib li {
+  position: relative;
+  padding-left: 2.4rem;
+  color: var(--text-2);
+  line-height: 1.6;
+  font-size: 0.9375rem;
+}
+.bib li::before {
+  counter-increment: bib;
+  content: counter(bib);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.65rem;
+  height: 1.65rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--lime);
+}
+.bib li cite {
+  font-style: normal;
+  color: var(--text);
+  font-weight: 600;
 }
