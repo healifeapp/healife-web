@@ -3016,3 +3016,31 @@ html[data-platform="android"] .topbar__badge--android {
 .store--sm strong {
   font-size: 0.875rem;
 }
+
+/* ── Hero: kısa masaüstü ekranlar (24.09.2026) ──
+   Başlık yalnızca genişliğe göre büyüdüğü için 900px'ten kısa pencerelerde
+   hero ekrana sığmıyor, mağaza rozetleri katlanıyor ve alttaki kaydırma
+   ipucu rozetlerin üstüne biniyordu. Kısa ekranda ipucu gizlenir, boşluklar
+   sıkılaşır ve başlık yüksekliğe göre de ölçeklenir: 28rem = başlık dışındaki
+   içerik + dolgular, 4.2 = dört satırın satır yüksekliğiyle payı. */
+@media (min-width: 940px) and (max-height: 900px) {
+  .hero {
+    padding-block: 5.75rem 2rem;
+  }
+  .hero__kicker {
+    margin-bottom: 1.1rem;
+  }
+  .hero__title {
+    font-size: clamp(2.6rem, min(0.8rem + 6vw, (100svh - 28rem) / 4.2), 5.6rem);
+    margin-bottom: 1rem;
+  }
+  .hero__sub {
+    margin-bottom: 1rem;
+  }
+  .hero__actions {
+    margin-top: 1.25rem;
+  }
+  .hero__cue {
+    display: none;
+  }
+}
