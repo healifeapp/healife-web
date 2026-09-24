@@ -2529,13 +2529,15 @@
   color: var(--text-2);
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
 }
-.hero__note a {
+.hero__note a,
+.final__note a {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: rgba(187, 228, 72, 0.5);
 }
-.hero__note a:hover {
+.hero__note a:hover,
+.final__note a:hover {
   text-decoration-color: currentColor;
 }
 .hero__device {
