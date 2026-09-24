@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Yönetim — Healife</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#0b0b0c" />
+    <link rel="icon" href="/assets/brand/icon.png?v=20260830b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" />
+    <link rel="stylesheet" href="/styles/tokens.css?v=20260917a" />
+    <link rel="stylesheet" href="/styles/base.css?v=20260917a" />
+    <style>
+      .adm { min-height: 100svh; padding: clamp(2rem, 6vw, 4rem) var(--gutter); }
+      .adm__inner { max-width: 560px; margin: 0 auto; }
+      .adm h1 { margin-top: 1.5rem; font-size: var(--fs-h3); font-weight: 700; }
+      .adm__hint { margin-top: 0.5rem; color: var(--text-2); font-size: 0.9375rem; }
+      .adm form { display: flex; gap: 0.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
+      .adm input { flex: 1 1 240px; min-width: 0; padding: 0.8rem 1rem; border-radius: var(--r-pill); border: 1px solid var(--hairline-strong); background: transparent; color: var(--text); font: inherit; }
+      .adm input:focus { outline: none; border-color: var(--lime); }
+      .adm__btn { padding: 0.8rem 1.4rem; border-radius: var(--r-pill); border: 1px solid var(--hairline-strong); background: transparent; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+      .adm__btn:hover { border-color: var(--lime); color: var(--lime); }
+      .adm__btn.is-primary { background: var(--lime); color: var(--on-lime); border-color: var(--lime); }
+      .adm__btn.is-primary:hover { background: var(--lime-bright); color: var(--on-lime); }
+      .adm__btn:disabled { opacity: 0.5; cursor: default; }
+      .adm__msg { margin-top: 1rem; min-height: 1.5em; color: var(--text-2); }
+      .adm__msg.is-error { color: #ff6b6b; }
+      .adm__list { margin-top: 1rem; display: grid; gap: 0.75rem; }
+      .adm__card { padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid var(--hairline-strong); display: grid; gap: 0.35rem; }
+      .adm__email { font-weight: 600; word-break: break-all; }
+      .adm__meta { color: var(--text-2); font-size: 0.875rem; }
+      .adm__badge { justify-self: start; padding: 0.2rem 0.7rem; border-radius: var(--r-pill); font-size: 0.8125rem; font-weight: 600; border: 1px solid var(--hairline-strong); }
+      .adm__badge.is-on { background: var(--lime); color: var(--on-lime); border-color: var(--lime); }
+      .adm__card .adm__btn { justify-self: start; margin-top: 0.5rem; }
+      .adm__forget { margin-top: 2rem; background: none; border: 0; color: var(--text-2); font: inherit; text-decoration: underline; cursor: pointer; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <main class="adm" id="main">
+      <div class="adm__inner">
+        <img src="/assets/brand/logo.svg?v=20260830b" alt="Healife" width="130" height="24" />
+        <h1>Premium yönetimi</h1>
+
+        <section id="keyStep">
+          <p class="adm__hint">Devam etmek için yönetim anahtarını gir.</p>
+          <form id="keyForm" autocomplete="off">
+            <input id="keyInput" type="password" placeholder="Yönetim anahtarı" required />
+            <button class="adm__btn is-primary" type="submit">Devam</button>
+          </form>
+        </section>
+
+        <section id="searchStep" hidden>
+          <p class="adm__hint">Kullanıcının uygulamaya kayıtlı e-postasını yaz.</p>
+          <form id="searchForm" autocomplete="off">
+            <input id="emailInput" type="email" placeholder="ornek@gmail.com" required />
+            <button class="adm__btn is-primary" type="submit">Ara</button>
+          </form>
+          <div class="adm__list" id="results"></div>
+          <button class="adm__forget" id="forgetKey" type="button">Anahtarı unut</button>
+        </section>
+
+        <p class="adm__msg" id="msg" role="status"></p>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        var API = 'https://dcp-humanos-410d767c97ce.herokuapp.com/api';
+        var STORE = 'healife_admin_key';
+        var $ = function (id) { return document.getElementById(id); };
+
+        function getKey() { try { return sessionStorage.getItem(STORE) || ''; } catch (e) { return memKey; } }
+        function setKey(k) { memKey = k; try { sessionStorage.setItem(STORE, k); } catch (e) {} }
+        function clearKey() { memKey = ''; try { sessionStorage.removeItem(STORE); } catch (e) {} }
+        var memKey = '';
+
+        function say(text, isError) {
+          $('msg').textContent = text || '';
+          $('msg').className = 'adm__msg' + (isError ? ' is-error' : '');
+        }
+
+        function showStep() {
+          var has = !!getKey();
+          $('keyStep').hidden = has;
+          $('searchStep').hidden = !has;
+          (has ? $('emailInput') : $('keyInput')).focus();
+        }
+
+        function call(method, path, body) {
+          return fetch(API + path, {
+            method: method,
+            headers: Object.assign({ 'X-Admin-Key': getKey() }, body ? { 'Content-Type': 'application/json' } : {}),
+            body: body ? JSON.stringify(body) : undefined
+          }).then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (data) {
+              if (r.ok) return data.results;
+              if (r.status === 401) { clearKey(); showStep(); throw new Error('Anahtar geçersiz. Lütfen tekrar gir.'); }
+              if (r.status === 429) throw new Error('Çok fazla istek. Bir dakika bekleyip tekrar dene.');
+              if (r.status === 503) throw new Error('Yönetim paneli sunucuda kapalı.');
+              throw new Error(data.message || 'Bir hata oluştu (' + r.status + ').');
+            });
+          }, function () { throw new Error('Sunucuya ulaşılamadı. Bağlantını kontrol et.'); });
+        }
+
+        function isPremium(u) { return !!(u.entitlements.program || u.entitlements.pro); }
+
+        function render(users) {
+          var list = $('results');
+          list.innerHTML = '';
+          users.forEach(function (u) { list.appendChild(card(u)); });
+        }
+
+        function card(u) {
+          var el = document.createElement('div');
+          el.className = 'adm__card';
+          var on = isPremium(u);
+          var email = document.createElement('div');
+          email.className = 'adm__email';
+          email.textContent = u.email || '(e-posta yok)';
+          var meta = document.createElement('div');
+          meta.className = 'adm__meta';
+          meta.textContent = (u.name || 'İsimsiz') + ' · kayıt: ' +
+            (u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '-');
+          var badge = document.createElement('span');
+          badge.className = 'adm__badge' + (on ? ' is-on' : '');
+          badge.textContent = on ? 'Premium' : 'Premium değil';
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'adm__btn' + (on ? '' : ' is-primary');
+          btn.textContent = on ? "Premium'u kaldır" : 'Premium ver';
+          btn.addEventListener('click', function () {
+            var q = on
+              ? u.email + " hesabından premium kaldırılsın mı?"
+              : u.email + ' hesabına premium verilsin mi?';
+            if (!confirm(q)) return;
+            btn.disabled = true;
+            say('');
+            call('POST', '/admin/users/' + u._id + '/premium', { grant: !on })
+              .then(function (updated) {
+                el.replaceWith(card(updated));
+                say(isPremium(updated) ? 'Premium verildi.' : 'Premium kaldırıldı.');
+              })
+              .catch(function (e) { btn.disabled = false; say(e.message, true); });
+          });
+          el.append(email, meta, badge, btn);
+          return el;
+        }
+
+        $('keyForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var k = $('keyInput').value.trim();
+          if (!k) return;
+          setKey(k);
+          $('keyInput').value = '';
+          say('');
+          showStep();
+        });
+
+        $('searchForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var email = $('emailInput').value.trim();
+          if (!email) return;
+          var btn = e.submitter || $('searchForm').querySelector('button');
+          btn.disabled = true;
+          say('Aranıyor…');
+          $('results').innerHTML = '';
+          call('GET', '/admin/users?email=' + encodeURIComponent(email))
+            .then(function (users) {
+              render(users);
+              say(users.length ? '' : 'Bu e-postayla kayıtlı hesap bulunamadı.');
+            })
+            .catch(function (e) { say(e.message, true); })
+            .finally(function () { btn.disabled = false; });
+        });
+
+        $('forgetKey').addEventListener('click', function () {
+          clearKey(); $('results').innerHTML = ''; say(''); showStep();
+        });
+
+        showStep();
+      })();
+    </script>
+  </body>
+</html>
