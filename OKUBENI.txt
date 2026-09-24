@@ -15,6 +15,10 @@ SAYFALAR
   legal.html        Yasal metinler
   sources.html      "Onerilerimizin kaynagi"
   404.html          Ozel hata sayfasi (.htaccess ErrorDocument ile bagli)
+  yonetim.html      Ekip ici gizli yonetim sayfasi (premium ver/kaldir).
+                    noindex, siteden link YOK, sitemap.xml'de YOK.
+                    API: dcp-humanos-410d767c97ce.herokuapp.com — bu
+                    adres .htaccess CSP connect-src'te izinli olmali.
   site.webmanifest  Web manifest (ikonlar)
   .htaccess         www -> hea-life.com ve HTTP -> HTTPS 301, guvenlik
                     basliklari (HSTS, CSP, nosniff, Referrer-Policy),
