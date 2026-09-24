@@ -17,6 +17,133 @@
   var year = $("#year");
   if (year) year.textContent = new Date().getFullYear();
 
+  /* ── Mağaza yönlendirmesi (B-14 / B-15) ─────────────
+     Genel "indir" bağlantıları HTML'de indir.html'e gider (JS yoksa da
+     çalışır). Burada cihaza göre düzeltilir:
+       iPhone/iPad → App Store, Android → Google Play,
+       masaüstü    → sayfanın altındaki rozet + QR bloğu (#indir).
+     UTM parametreleri Google Play'e referrer olarak taşınır (G-62). */
+  var STORE = {
+    ios: "https://apps.apple.com/app/id6761519395",
+    android: "https://play.google.com/store/apps/details?id=com.dcp.humanos",
+  };
+  var ua = navigator.userAgent || "";
+  var isIOS =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/.test(ua);
+  var platform = isIOS ? "ios" : isAndroid ? "android" : "desktop";
+  document.documentElement.setAttribute("data-platform", platform);
+
+  var utm = (function () {
+    var out = [];
+    try {
+      var q = new URLSearchParams(window.location.search);
+      q.forEach(function (v, k) {
+        if (/^utm_/i.test(k)) out.push(k + "=" + v);
+      });
+    } catch (e) {}
+    return out.join("&");
+  })();
+
+  var storeUrl = function (store) {
+    var url = STORE[store];
+    if (store === "android" && utm) {
+      url += "&referrer=" + encodeURIComponent(utm);
+    }
+    return url;
+  };
+
+  $$("[data-store]").forEach(function (a) {
+    a.href = storeUrl(a.getAttribute("data-store"));
+  });
+
+  $$(".js-store").forEach(function (a) {
+    if (platform === "desktop") {
+      a.href = "#indir";
+    } else {
+      a.href = storeUrl(platform);
+    }
+  });
+
+  /* ── E-posta adresi (I-82) ──────────────────────────
+     HTML'de düz mailto yok; adres burada birleştirilir. */
+  $$("[data-mail]").forEach(function (a) {
+    var addr = a.getAttribute("data-mail") + "@" + "hea-life" + ".com";
+    a.href = "mailto:" + addr;
+    a.textContent = addr;
+  });
+
+  /* ── Footer'dan SSS maddesine atlama (A-13) ─────────── */
+  $$("[data-faq]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      var item = document.getElementById(a.getAttribute("data-faq"));
+      if (!item) return;
+      e.preventDefault();
+      var q = item.querySelector(".faq__q");
+      if (q && q.getAttribute("aria-expanded") !== "true") q.click();
+      item.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    });
+  });
+
+  /* ── Egzersiz kartlarında kısa video (E-54) ──────────
+     Cloudinary poster'ının 2 saniyelik sessiz döngüsü; ilk hover/dokunmada
+     yüklenir, ekrandan çıkınca durur. Hareket azaltma açıksa hiç yüklenmez. */
+  if (!reduced) {
+    var attachVideo = function (fig) {
+      if (fig.querySelector("video")) return fig.querySelector("video");
+      var v = document.createElement("video");
+      v.src = fig.getAttribute("data-video");
+      v.muted = true;
+      v.loop = true;
+      v.playsInline = true;
+      v.setAttribute("aria-hidden", "true");
+      v.preload = "none";
+      fig.appendChild(v);
+      return v;
+    };
+    var play = function (fig) {
+      var v = attachVideo(fig);
+      var p = v.play();
+      if (p && p.then) p.catch(function () {});
+      fig.classList.add("is-playing");
+    };
+    var stop = function (fig) {
+      var v = fig.querySelector("video");
+      if (v) v.pause();
+      fig.classList.remove("is-playing");
+    };
+    var figs = $$(".exwall__grid figure[data-video]");
+    figs.forEach(function (fig) {
+      fig.addEventListener("pointerenter", function (e) {
+        if (e.pointerType === "mouse") play(fig);
+      });
+      fig.addEventListener("pointerleave", function () {
+        stop(fig);
+      });
+      fig.addEventListener("click", function () {
+        if (fig.classList.contains("is-playing")) stop(fig);
+        else {
+          figs.forEach(stop);
+          play(fig);
+        }
+      });
+    });
+    if ("IntersectionObserver" in window && figs.length) {
+      var vio = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) stop(en.target);
+          });
+        },
+        { threshold: 0 }
+      );
+      figs.forEach(function (f) {
+        vio.observe(f);
+      });
+    }
+  }
+
   /* ── Hero girişi ────────────────────────────────────── */
   var hero = $("#hero");
   if (hero) {

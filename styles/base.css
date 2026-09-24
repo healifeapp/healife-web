@@ -203,6 +203,7 @@ ol {
   height: 2px;
   background: currentColor;
   border-radius: 2px;
+  display: none;
 }
 .section--paper .eyebrow {
   color: var(--lime-olive);
@@ -390,4 +391,106 @@ ol {
   .legal__toc a:hover {
     translate: 0;
   }
+}
+
+/* ── Çerez onay bandı (scripts/consent.js) ─────────────────
+   "Reddet" ve "Kabul et" bilerek aynı boyutta ve aynı sırada durur:
+   ret seçeneği kabul kadar kolay olmalı. */
+.consent {
+  position: fixed;
+  z-index: 90;
+  left: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  translate: -50% 0;
+  width: min(44rem, calc(100% - 2rem));
+  display: flex;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-lg);
+  background: rgba(24, 24, 27, 0.94);
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.95);
+  color: var(--text-2);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.consent p {
+  margin: 0;
+}
+.consent__title {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  margin-bottom: 0.2rem !important;
+}
+.consent a {
+  color: var(--lime);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.consent__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.consent__btn {
+  min-width: 7.25rem;
+  min-height: 44px;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.consent__btn:hover {
+  border-color: var(--text-2);
+}
+.consent__btn--yes {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--on-lime);
+}
+.consent__btn--yes:hover {
+  background: var(--lime-bright);
+  border-color: var(--lime-bright);
+}
+.consent__btn:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .consent {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .consent__btn {
+    flex: 1;
+  }
+}
+
+/* Footer ve politika metnindeki "Çerez tercihleri" düğmesi: bağlantı gibi
+   görünür. */
+.linklike {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.linklike:hover {
+  color: var(--text);
+}
+.legal__body .linklike {
+  color: var(--lime);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

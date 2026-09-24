@@ -1,0 +1,14 @@
+{
+  "name": "Healife",
+  "short_name": "Healife",
+  "description": "AI fitness, beslenme ve aktivite koçu",
+  "start_url": "/",
+  "display": "browser",
+  "lang": "tr",
+  "background_color": "#0b0b0c",
+  "theme_color": "#0b0b0c",
+  "icons": [
+    { "src": "/assets/brand/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/brand/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

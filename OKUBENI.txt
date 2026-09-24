@@ -1,0 +1,111 @@
+HEALIFE TANITIM SITESI — 11.09.2026 (Master Revizyon Listesi v2 uygulandi)
+==========================================================================
+
+Bu paket sitenin TAMAMIDIR. Derleme adimi YOKTUR: duz HTML/CSS/JS.
+Klasorun icindekileri sitenin kok dizinine (public_html / httpdocs)
+oldugu gibi kopyalamak yeterlidir. .htaccess dosyasini da kopyalayin
+(gizli dosya; FTP istemcisinde "gizli dosyalari goster" acik olmali).
+
+SAYFALAR
+  index.html        Ana sayfa
+  indir.html        Akilli indirme sayfasi: iPhone -> App Store,
+                    Android -> Google Play, masaustu -> iki rozet + QR.
+                    Sitedeki tum genel "indir" butonlari ve QR kod buraya
+                    baglidir. (noindex)
+  legal.html        Yasal metinler
+  sources.html      "Onerilerimizin kaynagi"
+  404.html          Ozel hata sayfasi (.htaccess ErrorDocument ile bagli)
+  site.webmanifest  Web manifest (ikonlar)
+  .htaccess         www -> hea-life.com ve HTTP -> HTTPS 301, guvenlik
+                    basliklari (HSTS, CSP, nosniff, Referrer-Policy),
+                    onbellek kurallari, 404. Apache icindir.
+  robots.txt, sitemap.xml
+
+NGINX KULLANILIYORSA (.htaccess calismaz) su karsiliklari sunucu
+bloguna ekleyin:
+  - server_name www.hea-life.com -> return 301 https://hea-life.com$request_uri;
+  - listen 80 -> return 301 https://hea-life.com$request_uri;
+  - error_page 404 /404.html;
+  - add_header satirlari: .htaccess icindeki Header always set ... degerleri
+  - location ~* \.(css|js|webp|jpg|png|svg)$ { expires 1y; add_header
+    Cache-Control "public, immutable"; }
+  - location ~* \.html$ { add_header Cache-Control "max-age=0,
+    must-revalidate"; }
+
+ONEMLI — MOBIL UYGULAMA BU CIPALARA BAGLI
+  Uygulama icindeki "Yasal" ekrani dogrudan su adreslere gidiyor:
+    hea-life.com/legal.html#gizlilik
+    hea-life.com/legal.html#kullanim-kosullari
+    hea-life.com/legal.html#kvkk
+    hea-life.com/legal.html#cerez
+  17.09.2026: Uyelik ve Kullanim Sozlesmesi legal.html'e 6. bolum olarak
+  eklendi (cipa: #uyelik-sozlesmesi). Iletisim 7. bolum oldu; cipasi ayni.
+  Sozlesme tablosunda MERSIS, Telefon, KEP, Yururluk Tarihi ve Surum
+  satirlari Word dosyasinda bos oldugu icin yayimlanmadi.
+  Bu dort cipa (id) legal.html icinde AYNEN KALMALIDIR. Bu revizyonda
+  dokunulmadi.
+
+DIS BAGIMLILIKLAR (internet gerekir)
+  - Google Fonts (Poppins)
+  - res.cloudinary.com: egzersiz, tarif ve rehber gorselleri; egzersiz
+    kartlarinda hover/dokunma ile 2 saniyelik sessiz video (Cloudinary
+    video URL'inden so_0,du_2 ile kesiliyor). Video URL'i erisilemezse
+    poster gorsel aynen kalir.
+  - cdn.jsdelivr.net: three.js (Yontem bolumundeki nokta alani, tembel
+    yukleme)
+  - www.googletagmanager.com / google-analytics.com: YALNIZCA ziyaretci
+    cerez bandinda "Kabul et" derse yuklenir.
+
+CEREZ ONAYI VE GOOGLE TAG MANAGER (17.09.2026)
+  - GTM kodu (GTM-PLC3D8TR) index.html'den cikarildi; scripts/consent.js
+    onaydan sonra yukluyor. GTM snippet'ini sayfalara DOGRUDAN eklemeyin,
+    onaysiz cerez yazilir. Kimlik degisirse consent.js icindeki GTM_ID.
+  - consent.js index.html ve sources.html'de tam, legal.html'de data-passive
+    calisir (legal.html uygulama icinden acildigi icin bant kendiliginden
+    cikmaz ve GTM yuklenmez; yalnizca "Cerez tercihleri" dugmesi calisir).
+  - Tercih localStorage "hl-consent" anahtarinda. Cerez Politikasi onemli
+    olcude degisirse consent.js icinde VERSION artirilir, herkese yeniden
+    sorulur.
+  - Yalnizca analytics_storage izni veriliyor; reklam sinyalleri kapali.
+    GTM'ye reklam/yeniden pazarlama etiketi (Google Ads, Meta Pixel vb.)
+    eklenecekse ONCE: bant metni, legal.html 3.5 tablosu ve .htaccess CSP
+    guncellenmeli.
+  - Bant stilleri styles/base.css sonunda (.consent).
+
+YAPILACAKLAR — YONETIM KARARI BEKLEYENLER (site tarafinda hazir)
+  A-01/A-02  Footer'da ticari kimlik blogu HTML yorumu icinde hazir
+             (index.html, "footer__company"). Unvan, adres, MERSIS/vergi
+             no, telefon girilip yorumdan cikarilacak.
+  C-28       Fiyatlar: .plan__price satirlarina aylik/yillik tutar
+             yazilacak ("fiyat magazada gorunur" yerine).
+  B-20       Egzersiz sayisi sitede 176 olarak kaldi; 211 kararlanirsa
+             index.html'de "176" gecen yerler (8 adet) ve "168 hareket
+             daha" degistirilecek.
+  D-43       Egzersiz adlari (Barbell Bench Press vb.) Ingilizce kaldi;
+             uygulamadaki Turkce karsiliklar geldiginde figcaption ve alt
+             metinleri degistirilecek.
+  D-45       Kurucu hikayesi / Hakkimizda sayfasi icerik bekliyor.
+  G-66       apple-app-site-association ve assetlinks.json dosyalari
+             uygulama Team ID / SHA-256 parmak izi ile olusturulacak.
+  H-69       Google Rich Results Test ile SoftwareApplication ve FAQPage
+             dogrulanmali (index.html icinde iki JSON-LD blogu var; SSS
+             metni degisirse FAQPage blogu da guncellenmeli).
+
+17.09.2026 (2): Telefonda sayfanin saga-sola kaymasi duzeltildi. Sebep:
+  karsilastirma tablosundaki .sr-only etiketlerin .compare kutusunun disina
+  tasmasi. styles/sections.css (.compare) ve styles/legal.css
+  (.legal__table) icine position: relative eklendi.
+
+24.09.2026: Tek abonelik modeline gecis (uygulama/backend 15.09.2026).
+  Program ve AI Pro yeni satisa kapandi, yerine tek Premium abonelik
+  (haftalik/aylik/yillik, kapsam ayni). index.html: fiyat bolumu iki kart
+  (Ucretsiz + Premium), "Ne, hangi pakette?" tablosu kaldirildi, SSS ve
+  iki JSON-LD blogu guncellendi. legal.html: abonelik tablosu, 11.1,
+  11.1.a (eski aboneler) ve 12.1 maddeleri tek aboneliğe gore yeniden
+  yazildi; "Son guncelleme" 24.09.2026.
+
+NOTLAR
+  - Surum etiketi tum sayfalarda ?v=20260917a. CSS/JS degisince bu
+    etiketi artirin; assets/ uzun sureli onbelleklenir.
+  - assets/ icinde eski .jpg/.png kopyalar (webp'lerin yedegi) siteden
+    referanslanmiyor; silinebilir (~2.3 MB).

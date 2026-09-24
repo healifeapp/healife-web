@@ -209,6 +209,7 @@
 
 /* Veri tablosu */
 .legal__table {
+  position: relative;
   margin-top: 1.25rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -347,4 +348,28 @@
   font-style: normal;
   color: var(--text);
   font-weight: 600;
+}
+
+/* Dipnot numaraları — üst simge, kaynakçaya çapa (F-59). */
+sup.fn {
+  font-size: 0.7em;
+  line-height: 0;
+  vertical-align: super;
+  margin-left: 0.1em;
+}
+sup.fn a {
+  color: var(--lime);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0 0.15em;
+}
+sup.fn a:hover {
+  text-decoration: underline;
+}
+.bib li:target {
+  color: var(--text);
+}
+.bib li:target::before {
+  background: var(--lime);
+  color: var(--on-lime);
 }

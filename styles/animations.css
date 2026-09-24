@@ -76,7 +76,9 @@
 .js .hero__cta,
 .js .hero__note,
 .js .hero__actions,
-.js .hero__laurels {
+.js .hero__laurels,
+.js .hero__sub,
+.js .hero__device {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
@@ -86,7 +88,9 @@
 .js .hero.is-loaded .hero__cta,
 .js .hero.is-loaded .hero__note,
 .js .hero.is-loaded .hero__actions,
-.js .hero.is-loaded .hero__laurels {
+.js .hero.is-loaded .hero__laurels,
+.js .hero.is-loaded .hero__sub,
+.js .hero.is-loaded .hero__device {
   opacity: 1;
   transform: none;
 }
@@ -146,7 +150,9 @@
   .js .hero__cta,
   .js .hero__note,
   .js .hero__actions,
-  .js .hero__laurels {
+  .js .hero__laurels,
+.js .hero__sub,
+.js .hero__device {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;

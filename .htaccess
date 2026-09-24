@@ -1,0 +1,40 @@
+# Healife — sunucu ayarları (Apache). Nginx kullanılıyorsa OKUBENI.txt'deki
+# karşılıklara bakın.
+
+# ── www → kök alan adı ve HTTP → HTTPS, tek 301 (B-17, I-80) ──
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.hea-life\.com$ [NC,OR]
+RewriteCond %{HTTPS} !=on
+RewriteRule ^(.*)$ https://hea-life.com/$1 [R=301,L]
+
+# ── Özel 404 (I-81) ──
+ErrorDocument 404 /404.html
+
+# ── Güvenlik başlıkları (I-80) ──
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  # Sitenin kullandığı dış kaynaklar: Google Fonts, Cloudinary, jsDelivr (three.js)
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://res.cloudinary.com https://www.googletagmanager.com https://*.google-analytics.com; media-src https://res.cloudinary.com; connect-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+
+  # HTML önbelleğe alınmasın, assets/ uzun süre önbellekte kalsın
+  <FilesMatch "\.(html|webmanifest|xml|txt)$">
+    Header set Cache-Control "max-age=0, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(css|js|webp|jpg|png|svg|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# ── Doğru MIME türleri ──
+AddType application/manifest+json .webmanifest
+AddType image/webp .webp
+AddType image/svg+xml .svg
+
+# ── Sıkıştırma ──
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml application/manifest+json
+</IfModule>

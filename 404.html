@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sayfa bulunamadı — Healife</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0b0b0c" />
+    <link rel="icon" href="/assets/brand/icon.png?v=20260830b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" />
+    <!-- Mutlak yollar: 404 alt dizinlerden de servis edilebilir -->
+    <link rel="stylesheet" href="/styles/tokens.css?v=20260917a" />
+    <link rel="stylesheet" href="/styles/base.css?v=20260917a" />
+    <style>
+      .nf { min-height: 100svh; display: grid; place-items: center; text-align: center; padding: clamp(2rem, 6vw, 4rem) var(--gutter); }
+      .nf__inner { max-width: 520px; }
+      .nf__code { font-size: clamp(5rem, 18vw, 10rem); font-weight: 800; letter-spacing: -0.06em; line-height: 0.9; color: var(--lime); }
+      .nf h1 { margin-top: 1rem; font-size: var(--fs-h3); font-weight: 700; }
+      .nf p { margin-top: 0.75rem; color: var(--text-2); }
+      .nf__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 2rem; }
+      .nf__links a { padding: 0.8rem 1.4rem; border-radius: var(--r-pill); border: 1px solid var(--hairline-strong); color: var(--text); font-weight: 600; font-size: 0.9375rem; }
+      .nf__links a:hover { border-color: var(--lime); color: var(--lime); }
+      .nf__links a.is-primary { background: var(--lime); color: var(--on-lime); border-color: var(--lime); }
+      .nf__links a.is-primary:hover { background: var(--lime-bright); }
+    </style>
+  </head>
+  <body>
+    <main class="nf" id="main">
+      <div class="nf__inner">
+        <img src="/assets/brand/logo.svg?v=20260830b" alt="Healife" width="130" height="24" />
+        <div class="nf__code" aria-hidden="true">404</div>
+        <h1>Bu sayfa yok — ama planın hazır.</h1>
+        <p>Aradığın adres taşınmış ya da hiç var olmamış olabilir.</p>
+        <div class="nf__links">
+          <a class="is-primary" href="/indir.html">Uygulamayı indir</a>
+          <a href="/">Ana sayfa</a>
+          <a href="/sources.html">Bilimsel yaklaşımımız</a>
+          <a href="/legal.html">Yasal metinler</a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
