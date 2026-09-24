@@ -71,11 +71,11 @@
         var API = 'https://dcp-humanos-410d767c97ce.herokuapp.com/api';
         var STORE = 'healife_admin_key';
         var $ = function (id) { return document.getElementById(id); };
+        var memKey = '';
 
-        function getKey() { try { return sessionStorage.getItem(STORE) || ''; } catch (e) { return memKey; } }
+        function getKey() { if (memKey) return memKey; try { return sessionStorage.getItem(STORE) || ''; } catch (e) { return ''; } }
         function setKey(k) { memKey = k; try { sessionStorage.setItem(STORE, k); } catch (e) {} }
         function clearKey() { memKey = ''; try { sessionStorage.removeItem(STORE); } catch (e) {} }
-        var memKey = '';
 
         function say(text, isError) {
           $('msg').textContent = text || '';
