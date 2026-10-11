@@ -321,7 +321,7 @@
   var steps = $$(".step[data-step]");
 
   if (howDevice && steps.length) {
-    var shots = $$("img[data-step]", howDevice);
+    var shots = $$("[data-step]", howDevice);
     var currentStep = null;
 
     var showStep = function (n) {

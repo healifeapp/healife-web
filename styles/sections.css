@@ -802,8 +802,8 @@
   }
   .how__track {
     /* Adım başına düşen kaydırma yolu. Büyütmek yavaşlatır, küçültmek
-       hızlandırır. 5 adım × ~70vh. */
-    height: 350vh;
+       hızlandırır. 4 adım × ~70vh. */
+    height: 280vh;
   }
   .how__sticky {
     position: sticky;
@@ -918,8 +918,8 @@
     padding-block: 0;
   }
   .js .how__track {
-    /* Adım başına ~100svh kaydırma yolu. Büyütmek yavaşlatır. 5 adım. */
-    height: 500svh;
+    /* Adım başına ~100svh kaydırma yolu. Büyütmek yavaşlatır. 4 adım. */
+    height: 400svh;
   }
   .js .how__sticky {
     position: sticky;
@@ -1103,6 +1103,84 @@
 .how__device .device__screen img.is-on {
   opacity: 1;
   scale: 1;
+}
+
+/* Revizyon 03: örnek sonuç ekranı, çizim. Ölçüler .device genişliğine
+   (cqw) bağlı; telefon büyüyüp küçüldükçe ekran içeriği de ölçeklenir. */
+.how__device .planscreen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease);
+  display: flex;
+  flex-direction: column;
+  padding: 22cqw 7cqw 8cqw;
+  background: rgb(16, 19, 15);
+  color: #f4f4f5;
+  font-size: 4.6cqw;
+  text-align: left;
+}
+.how__device .planscreen.is-on {
+  opacity: 1;
+}
+.planscreen__title {
+  font-size: 9cqw;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 5cqw;
+}
+.planscreen ul {
+  display: grid;
+  gap: 3.4cqw;
+}
+.planscreen li {
+  position: relative;
+  padding-left: 8cqw;
+  line-height: 1.3;
+}
+.planscreen li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  width: 4.6cqw;
+  height: 4.6cqw;
+  border-radius: 50%;
+  background: var(--lime);
+}
+.planscreen__sub {
+  margin: 6cqw 0 4cqw;
+  color: #8a8a93;
+  font-size: 4.2cqw;
+}
+.planscreen__card {
+  display: grid;
+  gap: 1.6cqw;
+  padding: 5cqw;
+  border: 1px solid rgba(187, 228, 72, 0.4);
+  border-radius: 4cqw;
+  background: rgba(187, 228, 72, 0.05);
+}
+.planscreen__card span {
+  color: var(--lime);
+  font-size: 4cqw;
+}
+.planscreen__card b {
+  font-size: 6.2cqw;
+  font-weight: 700;
+}
+.planscreen__card small {
+  color: #8a8a93;
+  font-size: 3.8cqw;
+}
+.planscreen__btn {
+  margin-top: auto;
+  padding: 4.4cqw;
+  border-radius: 4cqw;
+  background: var(--lime);
+  color: var(--on-lime);
+  text-align: center;
+  font-weight: 600;
 }
 
 .steps {
@@ -1337,6 +1415,47 @@
   opacity: 0.55;
   mask-image: linear-gradient(180deg, #000 55%, transparent);
   -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+}
+
+/* Koç kartı: örnek konuşma (revizyon 07) */
+.coachchat {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 34rem;
+  margin: 0.9rem 0 0;
+}
+.coachchat figcaption {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.tile .coachchat__msg {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+.tile .coachchat__msg--me {
+  justify-self: end;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--lime);
+  border-color: transparent;
+  color: var(--on-lime);
+  font-weight: 600;
+}
+.macros--compact {
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+  opacity: 0.8;
+}
+.macros--compact .macro {
+  font-size: 0.75rem;
 }
 
 /* Makro çubukları — Bugün ekranındaki renklerle */
@@ -2596,61 +2715,128 @@
   font-weight: 700;
 }
 
-/* ── Sistem zinciri (D-32) ── */
-.chain {
+/* ── Keşfet: Tarif Pişir (revizyon 08) ── */
+.cook {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
-  gap: 0.75rem;
-  margin-top: clamp(2rem, 4vw, 3rem);
-  counter-reset: chain;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  padding: clamp(1.35rem, 2.6vw, 2.25rem);
+  border-radius: var(--r-lg);
+  background: #121214;
+  color: #f4f4f5;
 }
-.chain li {
+@media (min-width: 900px) {
+  .cook {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+  }
+}
+.cook .h3 {
+  margin: 0.4rem 0 0.75rem;
+  color: #fff;
+}
+.cook__copy > p:not(.micro) {
+  color: #b4b4bb;
+  line-height: 1.6;
+}
+.cook__note {
+  margin-top: 0.9rem;
+  font-size: 0.8125rem;
+  color: #8a8a93 !important;
+}
+.cook__steps {
+  display: grid;
+  gap: 0.6rem;
+  counter-reset: cook;
+}
+.cook__steps li {
   position: relative;
-  padding: 1rem 1rem 1rem 2.6rem;
-  border: 1px solid var(--hairline);
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.9rem 1rem 0.9rem 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--r);
-  background: var(--surface);
-  counter-increment: chain;
+  background: #1c1c20;
+  counter-increment: cook;
+  font-size: 0.875rem;
+  color: #b4b4bb;
 }
-.chain li::before {
-  content: counter(chain);
+.cook__steps li::before {
+  content: counter(cook);
   position: absolute;
-  left: 0.9rem;
-  top: 1rem;
-  width: 1.3rem;
-  height: 1.3rem;
+  left: 1rem;
+  top: 0.9rem;
+  width: 1.4rem;
+  height: 1.4rem;
   border-radius: 50%;
   display: grid;
   place-items: center;
   background: var(--lime);
   color: var(--on-lime);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
 }
-.chain b {
+.cook__steps b {
+  color: #fff;
+  font-size: 0.9375rem;
+}
+.cook__field {
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: #2a2a2f;
+  color: #e4e4e7;
+  font-size: 0.8125rem;
+}
+.cook__field--warn {
+  background: rgba(187, 228, 72, 0.12);
+  color: var(--lime);
+}
+.cook__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.cook__chips i {
+  font-style: normal;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.75rem;
+}
+.cook__chips i.is-on {
+  background: var(--lime);
+  border-color: transparent;
+  color: var(--on-lime);
+  font-weight: 700;
+}
+
+/* ── Kimler için (revizyon 10) ── */
+.audience {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 0.75rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.audience li {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--lime);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+.audience b {
   display: block;
   font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.3;
 }
-.chain span {
+.audience span {
   display: block;
   margin-top: 0.2rem;
   font-size: 0.75rem;
   color: var(--text-3);
   line-height: 1.4;
-}
-@media (min-width: 940px) {
-  .chain li:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    right: -0.75rem;
-    top: 50%;
-    width: 0.75rem;
-    height: 1px;
-    background: var(--hairline-strong);
-  }
 }
 
 /* ── Yöntem: metin rozetleri (D-40) ve formül/AI ayrımı (D-36) ── */
@@ -2764,6 +2950,31 @@
 }
 
 /* ── Fiyat: kart özeti, karşılaştırma tablosu, abonelik notu (C-29, A-12) ── */
+.plan__list {
+  display: grid;
+  gap: 0.5rem;
+}
+.plan__list li {
+  position: relative;
+  padding-left: 1.5rem;
+  color: var(--text-2);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.plan__list li::before {
+  content: "";
+  position: absolute;
+  left: 0.15rem;
+  top: 0.38em;
+  width: 0.7rem;
+  height: 0.4rem;
+  border-left: 2px solid var(--lime);
+  border-bottom: 2px solid var(--lime);
+  transform: rotate(-45deg);
+}
+.plan .btn {
+  margin-top: auto;
+}
 .plan__desc {
   color: var(--text-2);
   font-size: 0.9375rem;

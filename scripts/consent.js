@@ -17,6 +17,7 @@
   "use strict";
 
   var GTM_ID = "GTM-PLC3D8TR";
+  var GA_ID = "G-1S09MJPFZS";
   var KEY = "hl-consent";
   var VERSION = 1;
   var passive = document.currentScript && document.currentScript.hasAttribute("data-passive");
@@ -55,7 +56,32 @@
     s.async = true;
     s.src = "https://www.googletagmanager.com/gtm.js?id=" + GTM_ID;
     document.head.appendChild(s);
+
+    /* GA4 etiketi; eskiden <head>'de onaysız yükleniyordu. */
+    gtag("js", new Date());
+    gtag("config", GA_ID);
+    var g = document.createElement("script");
+    g.async = true;
+    g.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+    document.head.appendChild(g);
+    window.gtag = gtag;
   }
+
+  /* İndirme tıklaması: platform ve bölüm bazında, yalnızca onay varsa.
+     Bu bir tıklamadır, kurulum değil; kurulum ve abonelik mağaza
+     tarafındaki ilişkilendirmeyle ayrıca doğrulanmalı. */
+  document.addEventListener("click", function (e) {
+    if (!gtmLoaded) return;
+    var a = e.target.closest("[data-store], .js-store");
+    if (!a) return;
+    var section = a.closest("section, header, nav, footer");
+    var platform = a.getAttribute("data-store") ||
+      document.documentElement.getAttribute("data-platform") || "desktop";
+    window.gtag("event", "store_click", {
+      store_platform: platform,
+      store_place: a.getAttribute("data-place") || (section && (section.id || section.className.split(" ")[0])) || "unknown"
+    });
+  });
 
   /* Onay geri alınınca Google Analytics çerezlerini sil. */
   function clearAnalyticsCookies() {
