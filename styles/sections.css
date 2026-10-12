@@ -1996,6 +1996,17 @@
   font-size: 0.875rem;
   color: var(--text-2);
 }
+/* 13.10.2026: antrenör belgesi bağlantısı (sources.html#uzman) */
+.note p a,
+.faq__a p a {
+  color: var(--lime);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.note p a:hover,
+.faq__a p a:hover {
+  color: var(--lime-bright);
+}
 
 /* Yöntem bölümünün 3B nokta alanı — içeriğin arkasında, kenarları maskeli */
 .science__field {

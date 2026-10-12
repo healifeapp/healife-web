@@ -114,6 +114,26 @@ YAPILACAKLAR — YONETIM KARARI BEKLEYENLER (site tarafinda hazir)
   11.1.a (eski aboneler) ve 12.1 maddeleri tek aboneliğe gore yeniden
   yazildi; "Son guncelleme" 24.09.2026.
 
+13.10.2026: ANTRENOR BILGISI (Mert Gurler) EKLENDI
+  - Mert Gurler'in adi ve antrenor belgesi bilgileri KENDI IZNIYLE
+    yayimlaniyor (izin alindi). Belge gorseli siteye KONMADI; bilgiler
+    metin olarak yazildi.
+  - sources.html: yeni 5.3 "Programlari hazirlayan antrenor" (cipa #uzman),
+    belge tablosu, izin notu, icindekilere link, WebPage + reviewedBy
+    (Person, hasCredential) JSON-LD. "Son guncelleme" 13.10.2026.
+  - index.html: Ana sayfada isim GECMEZ (karar). "Antrenor ve diyetisyen
+    incelemesi" notuna ve SSS'deki "Programi kim hazirliyor?" cevabina
+    yalnizca sources.html#uzman ic linki eklendi. FAQPage JSON-LD eski
+    metninde birakildi.
+  - styles/sections.css: .note ve .faq__a icindeki linklere stil;
+    sections.css surumu ?v=20261013a.
+  - Belgedeki T.C. kimlik no, dogum yeri/yili ve mezuniyet bilgisi
+    BILEREK yayimlanmadi. Belge dogrulama kodu (21UD714W, ekip
+    teyit etti) tabloda ve JSON-LD'de yer aliyor.
+  - Mert Gurler antrenordur, diyetisyen degildir: beslenme sablonlarini
+    onun inceledigi yazilmamali. Diyetisyen ismi gelirse ayni bolume
+    eklenebilir.
+
 NOTLAR
   - Surum etiketi tum sayfalarda ?v=20260917a. CSS/JS degisince bu
     etiketi artirin; assets/ uzun sureli onbelleklenir.
