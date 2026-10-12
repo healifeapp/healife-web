@@ -63,6 +63,21 @@ export function healthyRange(heightCm) {
   return { min: Math.ceil(18.5 * m * m), max: Math.floor(24.9 * m * m) };
 }
 
+/** Dünya Sağlık Örgütü VKİ sınıfları + kullanıcıya gösterilecek kısa not. */
+export function bmiInfo(weight, heightCm) {
+  const value = weight / Math.pow(heightCm / 100, 2);
+  const { min, max } = healthyRange(heightCm);
+  const cls =
+    value < 18.5
+      ? ["Zayıf", "#0a84ff", "Sağlıklı kilo almak için yeterli kalori ve kuvvet antrenmanına odaklanacağız."]
+      : value < 25
+        ? ["Normal", "#bbe448", "Harika bir başlangıç noktası. Planın vücut kompozisyonunu iyileştirmeye odaklanacak."]
+        : value < 30
+          ? ["Fazla kilolu", "#ffd60a", "Küçük ama sürdürülebilir bir kalori açığı ve düzenli antrenmanla sağlıklı aralığa inebilirsin."]
+          : ["Obez", "#ff7a1a", "Kademeli ve güvenli bir planla başlayacağız. Bir sağlık sorunun varsa başlamadan önce doktoruna danış."];
+  return { value, min, max, label: cls[0], color: cls[1], note: cls[2] };
+}
+
 /**
  * Hedef kiloya tahmini varış. Güvenli hızlar: verme haftada en çok
  * vücut ağırlığının %0,75'i (0,5 kg üst sınır), alma haftada 0,25 kg.
@@ -101,6 +116,7 @@ export function toOnboardingData(a) {
     dietPreference: a.diet_preference,
     allergies: a.allergies,
     targetWeight: a.target_weight ?? undefined,
+    name: a.name || undefined,
     source: "web_funnel",
   };
   Object.keys(p).forEach((k) => p[k] === undefined && delete p[k]);
