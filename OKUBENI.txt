@@ -15,6 +15,12 @@ SAYFALAR
   legal.html        Yasal metinler
   sources.html      "Onerilerimizin kaynagi"
   404.html          Ozel hata sayfasi (.htaccess ErrorDocument ile bagli)
+  start/            Web funnel (reklam acilis sayfasi): test -> plan onizleme
+                    -> e-posta -> paywall -> hesap -> odeme -> indir.
+                    noindex. Odeme ve giris su an DEMO kipinde; ayarlar
+                    start/config.js (paymentProvider, authProvider, fiyatlar).
+                    PayTR icin .htaccess CSP'de frame-src www.paytr.com acik.
+                    Durumu sifirlamak icin: /start/?sifirla
   yonetim.html      Ekip ici gizli yonetim sayfasi (premium ver/kaldir).
                     noindex, siteden link YOK, sitemap.xml'de YOK.
                     API: dcp-humanos-410d767c97ce.herokuapp.com — bu
