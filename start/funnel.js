@@ -652,17 +652,25 @@ const VIEWS = {
   result: () => resultView(),
   paywall: () => paywallView(),
 
-  account: () => `
+  account: () => {
+    // Uygulamada Apple ile giriş yalnız iPhone'da var (login_screen.dart).
+    // Android'de Apple ile hesap açan kişi uygulamaya giremez → Android'de
+    // yalnız Google; masaüstünde ikisi de, altında uyarıyla.
+    const { android, ios } = device();
+    const apple = `<button class="btn btn--apple btn--block" type="button" data-auth="apple">${BRAND.apple}Apple ile devam et</button>`;
+    const google = `<button class="btn btn--google btn--block" type="button" data-auth="google">${BRAND.google}Google ile devam et</button>`;
+    return `
     <section class="account">
       <div class="badge-ok">${ai("personOutline")}</div>
       ${head({}, "Hesabını oluştur", "Aboneliğin bu hesaba bağlanacak. Uygulamayı indirdiğinde aynı yöntemle giriş yapman yeterli.")}
       <div class="auth">
-        <button class="btn btn--apple btn--block" type="button" data-auth="apple">${BRAND.apple}Apple ile devam et</button>
-        <button class="btn btn--google btn--block" type="button" data-auth="google">${BRAND.google}Google ile devam et</button>
+        ${android ? google : ios ? apple + google : google + apple}
       </div>
+      ${!android && !ios ? `<p class="fine center">Telefonun Android ise <b>Google</b> ile devam et; Apple ile giriş uygulamada yalnızca iPhone'da var.</p>` : ""}
       <p class="err" id="authErr" hidden></p>
       <div class="tip">${ai("shieldCheck")}<p>Şifre yok, ekstra form yok. E-postan: <b>${esc(S.email)}</b></p></div>
-    </section>`,
+    </section>`;
+  },
 
   checkout: () => checkoutView(),
   success: () => successView(),
@@ -903,10 +911,16 @@ function checkoutView() {
 
 /* ------------------------------------------------------------ başarı */
 
-function successView() {
+function device() {
   const ua = navigator.userAgent;
-  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const android = /Android/.test(ua);
+  return {
+    ios: /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1),
+    android: /Android/.test(ua),
+  };
+}
+
+function successView() {
+  const { ios, android } = device();
   const method = S.user?.method === "google" ? "Google" : "Apple";
   const store = (kind) =>
     kind === "ios"
