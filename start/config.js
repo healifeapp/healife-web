@@ -58,6 +58,9 @@ export const CONFIG = {
     name: "Healife Sağlık Ürünleri Pazarlama Sanayi İç ve Dış Ticaret Limited Şirketi",
     address: "Atakent Mah. Haldun Taner Sk. No: 1 Ümraniye/İstanbul",
     tax: "Alemdağ V.D. · 4610896992",
-    email: "destek@hea-life.com",
+    mersis: "0461089699200001",
+    registry: "236743-5",
+    phone: "+90 850 305 76 78",
+    email: "info@hea-life.com",
   },
 };

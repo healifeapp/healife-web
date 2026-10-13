@@ -2555,6 +2555,24 @@
   width: auto;
   margin-bottom: 1.25rem;
 }
+/* Şirket kimliği: açıklama metniyle aynı boyut ve renk; <address>'in
+   varsayılan italiği kapalı. */
+.footer__company {
+  margin-top: 0.9rem;
+  font-style: normal;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+.footer__company a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
+}
+.footer__company a:hover {
+  color: var(--text-2);
+}
 .footer__brand p {
   font-size: 0.875rem;
   color: var(--text-3);

@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261013g";
-import { ICONS } from "./icons.js?v=20261013g";
+import { CONFIG } from "./config.js?v=20261013h";
+import { ICONS } from "./icons.js?v=20261013h";
 import {
   dailyTargets,
   trainingLevel,
@@ -23,7 +23,7 @@ import {
   signIn,
   createCheckout,
   wait,
-} from "./services.js?v=20261013g";
+} from "./services.js?v=20261013h";
 
 /* ============================================================ ikonlar */
 
@@ -954,7 +954,7 @@ const FEATURES = [
 ];
 
 const FAQ = [
-  ["Aboneliğimi nasıl iptal ederim?", "Web'den başlattığın aboneliği destek@hea-life.com adresine yazarak istediğin zaman iptal edebilirsin. İptal ettiğinde ödediğin dönemin sonuna kadar premium açık kalır, sonra yenilenmez."],
+  ["Aboneliğimi nasıl iptal ederim?", "Web'den başlattığın aboneliği info@hea-life.com adresine yazarak istediğin zaman iptal edebilirsin. İptal ettiğinde ödediğin dönemin sonuna kadar premium açık kalır, sonra yenilenmez."],
   ["Uygulamayı nasıl kullanacağım?", "Ödemeden sonra Healife'ı App Store veya Google Play'den indir ve burada kullandığın Apple ya da Google hesabıyla giriş yap. Planın ve premium hazır olur."],
   ["Planım nasıl hazırlanıyor?", "Kalori hedefin yaş, boy, kilo, cinsiyet ve aktivite seviyene göre Mifflin-St Jeor formülüyle hesaplanır. Antrenman seviyen deneyim ve performans cevaplarınla belirlenir; program hedefine ve gün sayına göre seçilir."],
   ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin Healife'a ulaşmaz, saklanmaz."],
@@ -1045,7 +1045,7 @@ const legalFoot = () => `
       <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış</a>
       <a href="mailto:${CONFIG.seller.email}">İletişim</a>
     </nav>
-    <p>${CONFIG.seller.name}<br />${CONFIG.seller.address} · ${CONFIG.seller.tax}</p>
+    <p>${CONFIG.seller.name}<br />${CONFIG.seller.address} · ${CONFIG.seller.tax}<br />MERSİS ${CONFIG.seller.mersis} · Ticaret Sicil No ${CONFIG.seller.registry}<br /><a href="tel:${CONFIG.seller.phone.replace(/\s/g, "")}">${CONFIG.seller.phone}</a> · <a href="mailto:${CONFIG.seller.email}">${CONFIG.seller.email}</a></p>
   </footer>`;
 
 // Sonraki tahsilat tarihi (otomatik yenileme), plan dönemine göre.
@@ -1172,7 +1172,7 @@ function successView() {
     </div>
     <div class="stores">${stores.join("")}</div>
     ${!ios && !android ? `<figure class="qr"><img src="/assets/brand/qr-indir.svg?v=20260917a" alt="QR kod: telefonunla tarat" width="120" height="120" /><figcaption>Telefonunla tarat</figcaption></figure>` : ""}
-    <p class="fine center">Bir sorun mu var? <a href="mailto:destek@hea-life.com">destek@hea-life.com</a></p>
+    <p class="fine center">Bir sorun mu var? <a href="mailto:info@hea-life.com">info@hea-life.com</a></p>
   </section>`;
 }
 
@@ -1582,9 +1582,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg?v=20261013g").then((r) => r.text()),
-        fetch("/start/atlas/back.svg?v=20261013g").then((r) => r.text()),
-        fetch("/start/atlas/focus.json?v=20261013g").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261013h").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261013h").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261013h").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));
