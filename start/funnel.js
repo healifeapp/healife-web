@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js";
-import { ICONS } from "./icons.js";
+import { CONFIG } from "./config.js?v=20261013c";
+import { ICONS } from "./icons.js?v=20261013c";
 import {
   dailyTargets,
   trainingLevel,
@@ -23,7 +23,7 @@ import {
   signIn,
   createCheckout,
   wait,
-} from "./services.js";
+} from "./services.js?v=20261013c";
 
 /* ============================================================ ikonlar */
 
