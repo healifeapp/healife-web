@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261013d";
-import { ICONS } from "./icons.js?v=20261013d";
+import { CONFIG } from "./config.js?v=20261013e";
+import { ICONS } from "./icons.js?v=20261013e";
 import {
   dailyTargets,
   trainingLevel,
@@ -23,7 +23,7 @@ import {
   signIn,
   createCheckout,
   wait,
-} from "./services.js?v=20261013d";
+} from "./services.js?v=20261013e";
 
 /* ============================================================ ikonlar */
 
@@ -419,7 +419,7 @@ function fit() {
     const h = el.getBoundingClientRect().height;
     if (over <= 0 || h <= min) break;
     let v = Math.max(min, Math.floor(h - over));
-    if (min === 0 && v < 48) v = 0; // süs görseli: kırıntı bırakma, hiç gösterme
+    if (min === 0 && v < 110) v = 0; // süs görseli: kırıntı bırakma, hiç gösterme
     el.style.setProperty("--fit", `${v}px`);
   }
   el.dispatchEvent(new Event("fit"));
@@ -565,8 +565,8 @@ const VIEWS = {
   focus: (step) => {
     const sel = S.answers.focus_areas || [];
     return `
-    ${head(step)}
-    <div class="atlas" id="atlas" data-fit="150">
+    <header class="qhead"><h1 class="q">${esc(step.q)}</h1><p class="hint hint--tap">${ai("tap")}Kaslara dokun ya da aşağıdan seç.</p></header>
+    <div class="atlas${sel.length ? " has-sel" : ""}" id="atlas" data-fit="150">
       <div class="atlas__fig" data-view="front"><span class="atlas__tag">Ön</span></div>
       <div class="atlas__fig" data-view="back"><span class="atlas__tag">Arka</span></div>
     </div>
@@ -936,18 +936,7 @@ const freeUrl = () => {
 function paywallView() {
   const plans = CONFIG.plans;
   if (!S.planId) S.planId = (plans.find((p) => p.preselected) || plans[0]).id;
-  const a = S.answers;
-  const t = dailyTargets(a);
-  const pr = projection(a);
-  const lv = trainingLevel(a);
   const maxPerWeek = Math.max(...plans.map((p) => p.price / p.weeks));
-
-  const stats = [
-    pr ? ["flag", `${fmt(pr.to, 1)} kg`, dateLong(pr.end)] : ["target", GOAL_LABEL[mainGoal(a)], "hedef"],
-    ["fire", `${fmt(t.calories)} kcal`, "günlük"],
-    ["calendarCheck", `${lv.days} gün`, "haftalık"],
-  ];
-
   return `
   <section class="paywall">
     <div class="pw-hero" aria-hidden="true" data-fit="0" data-fit-to=".plans">
@@ -958,9 +947,11 @@ function paywallView() {
       <h1 class="q">${esc(withName("planın hazır.", "Planın hazır."))}</h1>
       <p class="hint">Tam erişimi aç, bugün başla.</p>
     </header>
-    <div class="pw-stats">
-      ${stats.map(([ic, v, l]) => `<div>${ai(ic)}<b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}
-    </div>
+    <ul class="pw-incl" aria-label="Premium'a dahil">
+      <li>${ai("calendarCheck")}Kişisel plan</li>
+      <li>${ai("chat")}7/24 AI koç</li>
+      <li>${ai("playCircle")}176 videolu egzersiz</li>
+    </ul>
 
     <div class="plans" role="radiogroup" aria-label="Abonelik seçenekleri">
       ${plans
@@ -972,8 +963,8 @@ function paywallView() {
         <button class="plan${on ? " is-on" : ""}" type="button" role="radio" aria-checked="${on}" data-plan="${p.id}">
           ${p.badge ? `<span class="plan__badge">${p.badge}</span>` : ""}
           <span class="plan__radio">${on ? ai("check") : ""}</span>
-          <span class="plan__main"><b>${p.title}</b><small>${money(p.price)} ${p.periodLabel}</small></span>
-          <span class="plan__per">${save >= 10 ? `<em>%${save} tasarruf</em>` : ""}<b>${money(Math.round(perWeek * 100) / 100)}</b><small>haftalık</small></span>
+          <span class="plan__main"><b>${p.title}</b><small>${p.id === "weekly" ? "Her hafta yenilenir" : `Haftada ${money(Math.round(perWeek * 100) / 100)}'ye denk`}</small></span>
+          <span class="plan__per">${save >= 10 ? `<em>%${save} tasarruf</em>` : ""}<b>${money(p.price)}</b><small>/ ${UNIT[p.id] || p.periodLabel}</small></span>
         </button>`;
         })
         .join("")}
@@ -1570,6 +1561,13 @@ async function loadAtlas() {
         p.dataset.area = area;
       });
     });
+    // Fareyle bir kasın üstüne gelince bölgenin tamamı (ön+arka) aydınlansın:
+    // tıklayınca neyin seçileceği önceden görünür.
+    box.addEventListener("pointerover", (e) => {
+      const area = e.target.closest?.("path.m")?.dataset.area;
+      box.querySelectorAll("path.m").forEach((p) => p.classList.toggle("hov", !!area && p.dataset.area === area));
+    });
+    box.addEventListener("pointerleave", () => box.querySelectorAll("path.hov").forEach((p) => p.classList.remove("hov")));
     box.classList.add("is-ready");
   } catch {
     box.hidden = true; // harita yüklenemezse çipler yeterli
@@ -1577,6 +1575,7 @@ async function loadAtlas() {
 }
 
 function paintAtlas(on) {
+  app.querySelector("#atlas")?.classList.toggle("has-sel", on.size > 0);
   app.querySelectorAll("#atlas path.m").forEach((p) => p.classList.toggle("on", on.has(p.dataset.area)));
 }
 

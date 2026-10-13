@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: "AppIcons";
-  src: url("/start/fonts/AppIcons.ttf?v=20261013d") format("truetype");
+  src: url("/start/fonts/AppIcons.ttf?v=20261013e") format("truetype");
   font-display: block;
 }
 
@@ -655,46 +655,95 @@ noscript p {
   display: flex;
   justify-content: center;
   min-height: 0;
+  padding: 0.6rem 0.4rem 1.6rem;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(70% 55% at 50% 42%, rgba(187, 228, 72, 0.11), transparent 72%),
+    linear-gradient(180deg, #1f1f24, #18181b);
 }
 .atlas__fig svg {
   height: 100%;
   width: auto;
   max-width: 100%;
+  overflow: visible;
 }
 .atlas__tag {
   position: absolute;
-  top: 0;
-  left: 0;
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  left: 50%;
+  bottom: 0.55rem;
+  transform: translateX(-50%);
   font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-2);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
 }
 /* Yalnız dolgusu tanımlı parçalar boyanır; dolgusuz yollar kontur çizgisi
-   (kök <svg fill="none">) — onları doldurmak figürün etrafında "kanat" çiziyor. */
+   (kök <svg fill="none">) — onları doldurmak figürün etrafında "kanat" çiziyor.
+   Seçilemeyen parçalar koyu silüet, seçilebilir kaslar açık: neye dokunulacağı belli. */
+@media (max-width: 719px) {
+  .chips {
+    gap: 0.4rem;
+  }
+  .chip {
+    min-height: 36px;
+    padding: 0 0.8rem;
+    font-size: 0.85rem;
+  }
+  .atlas {
+    margin-bottom: 0.8rem;
+  }
+}
+.hint--tap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.hint--tap .ai {
+  color: var(--lime);
+  animation: tapHint 1.6s var(--ease) infinite;
+}
+@keyframes tapHint {
+  50% {
+    transform: translateY(-3px);
+  }
+}
 .atlas path[fill] {
-  fill: #3a3a40;
+  fill: #2c2c33;
 }
 .atlas path:not([fill]) {
-  stroke: #121214;
+  stroke: #141417;
 }
 /* underlayer: figürün tamamını kaplayan dokunma alanı, görünmemeli */
 .atlas path#underlayer {
   fill: transparent;
 }
 .atlas path.m {
-  fill: #6b6b73;
+  fill: #9a9aa6;
   cursor: pointer;
-  transition: fill 0.25s;
+  transition:
+    fill 0.2s,
+    filter 0.2s;
 }
-.atlas path.m:hover {
-  fill: #8a8a92;
+.atlas:not(.has-sel) path.m {
+  animation: muscleHint 1.6s ease-in-out 0.5s 2;
+}
+@keyframes muscleHint {
+  50% {
+    fill: #c7c9b8;
+  }
+}
+.atlas path.m.hov {
+  fill: #d6ec96;
 }
 .atlas path.m.on {
   fill: var(--lime);
+  filter: drop-shadow(0 0 5px rgba(187, 228, 72, 0.55));
+}
+.atlas path.m.on.hov {
+  fill: var(--lime-bright);
 }
 .chips {
   display: flex;
@@ -704,8 +753,8 @@ noscript p {
   padding-bottom: 0.25rem;
 }
 .chip {
-  min-height: 42px;
-  padding: 0 1rem;
+  min-height: 38px;
+  padding: 0 0.9rem;
   border-radius: 999px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1643,35 +1692,6 @@ noscript p {
 .paywall .qhead {
   margin: 0 0 1rem;
 }
-.pw-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-}
-.pw-stats div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  padding: 0.75rem 0.25rem;
-  border-radius: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  text-align: center;
-}
-.pw-stats .ai {
-  color: var(--lime);
-  margin-bottom: 0.2rem;
-}
-.pw-stats b {
-  font-size: 0.95rem;
-  line-height: 1.2;
-}
-.pw-stats span {
-  font-size: 0.7rem;
-  color: var(--text-3);
-}
 .plans {
   display: grid;
   gap: 0.7rem;
@@ -1746,7 +1766,8 @@ noscript p {
   text-align: right;
 }
 .plan__per b {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
 .plan__per em {
@@ -2642,6 +2663,27 @@ noscript p {
   padding-top: 1.1rem;
   background: linear-gradient(rgba(18, 18, 20, 0), var(--bg) 0.9rem);
 }
+/* Paywall üstü: kutusuz tek satır; fiyat kartlarıyla yarışmasın. */
+.pw-incl {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 1.1rem;
+  list-style: none;
+  margin: 0 0 1.4rem;
+  padding: 0;
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+.pw-incl li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.pw-incl .ai {
+  font-size: 1rem;
+  color: var(--lime);
+}
 .pw-total {
   margin: 0 0 0.55rem;
   text-align: center;
@@ -2740,12 +2782,6 @@ noscript p {
     height: 44px;
     margin-bottom: 0.6rem;
     font-size: 1.25rem;
-  }
-  .pw-stats {
-    margin-bottom: 1rem;
-  }
-  .pw-stats > div {
-    padding-block: 0.55rem;
   }
   .plans {
     gap: 0.55rem;
