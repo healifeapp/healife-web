@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: "AppIcons";
-  src: url("/start/fonts/AppIcons.ttf?v=20261013e") format("truetype");
+  src: url("/start/fonts/AppIcons.ttf?v=20261013f") format("truetype");
   font-display: block;
 }
 
@@ -1241,7 +1241,7 @@ noscript p {
 .field:focus-within .field__ic {
   color: var(--lime);
 }
-.consent {
+.optin {
   display: flex;
   gap: 0.7rem;
   align-items: flex-start;
@@ -1250,14 +1250,14 @@ noscript p {
   color: var(--text-2);
   cursor: pointer;
 }
-.consent input {
+.optin input {
   width: 20px;
   height: 20px;
   margin: 0.1rem 0 0;
   flex: none;
   accent-color: var(--lime);
 }
-.consent small {
+.optin small {
   color: var(--text-3);
 }
 .suggest {
@@ -1946,7 +1946,7 @@ noscript p {
   margin-top: 0;
   background: var(--surface);
 }
-.consent--legal {
+.optin--legal {
   margin: 0.75rem 0;
   padding: 0.75rem 0.9rem;
   border-radius: 14px;
@@ -2567,6 +2567,10 @@ noscript p {
   background: #fff;
   color: #000;
 }
+.co__acct-ic--mail {
+  background: rgba(187, 228, 72, 0.14);
+  color: var(--lime);
+}
 .co__acct-ok {
   color: var(--lime);
 }
@@ -2738,6 +2742,90 @@ noscript p {
     color: var(--lime);
   }
 }
+
+/* Çerez onay bandı (scripts/consent.js; styles/base.css kopyası — funnel base.css'i yüklemiyor).
+   Funnel'ın kendi onay kutusu .optin; .consent yalnız bant.
+   "Reddet" ve "Kabul et" bilerek aynı boyutta ve aynı sırada durur:
+   ret seçeneği kabul kadar kolay olmalı. */
+.consent {
+  position: fixed;
+  z-index: 90;
+  left: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  translate: -50% 0;
+  width: min(44rem, calc(100% - 2rem));
+  display: flex;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-lg);
+  background: rgba(24, 24, 27, 0.94);
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.95);
+  color: var(--text-2);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.consent p {
+  margin: 0;
+}
+.consent__title {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  margin-bottom: 0.2rem !important;
+}
+.consent a {
+  color: var(--lime);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.consent__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.consent__btn {
+  min-width: 7.25rem;
+  min-height: 44px;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.consent__btn:hover {
+  border-color: var(--text-2);
+}
+.consent__btn--yes {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--on-lime);
+}
+.consent__btn--yes:hover {
+  background: var(--lime-bright);
+  border-color: var(--lime-bright);
+}
+.consent__btn:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .consent {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .consent__btn {
+    flex: 1;
+  }
+}
+
 
 /* ============================================================ tek ekran */
 

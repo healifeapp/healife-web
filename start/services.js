@@ -3,7 +3,7 @@
 // gösterilen kalori uygulamaya girince değişmesin diye.
 //   dailyTargets.js · levelScore.js · planResolver.js (MAX_TRAINING_LEVEL)
 
-import { CONFIG } from "./config.js?v=20261013e";
+import { CONFIG } from "./config.js?v=20261013f";
 
 /* ---------------------------------------------------------------- hesap */
 
@@ -115,7 +115,8 @@ export function toOnboardingData(a) {
     pullups: a.pullups ?? undefined,
     dietPreference: a.diet_preference,
     allergies: a.allergies,
-    targetWeight: a.target_weight ?? undefined,
+    // Hedef kilo yalnız kilo verme/alma hedefinde anlamlı (funnel'da needsTarget).
+    targetWeight: ["lose_weight", "build_muscle"].includes(goalCanon(a)) ? a.target_weight ?? undefined : undefined,
     name: a.name || undefined,
     source: "web_funnel",
   };

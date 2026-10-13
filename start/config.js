@@ -12,9 +12,16 @@ export const CONFIG = {
   // "paytr"   → backend'den iFrame token'ı alınır, PayTR formu sayfaya gömülür.
   paymentProvider: /(^|\.)hea-life\.com$/.test(location.hostname) ? "pending" : "demo",
 
-  // "demo" → giriş düğmeleri sahte bir kullanıcı üretir.
-  // "live" → Apple/Google kimlik doğrulaması + backend /login-apple|google.
-  authProvider: "demo",
+  // "demo"    → giriş düğmeleri sahte bir kullanıcı üretir (yalnız önizleme).
+  // "pending" → hesap adımı atlanır; canlı sitede gerçek ziyaretçiye sahte
+  //             "Google hesabın bağlandı" gösterilmesin (backend uçları yok).
+  // "live"    → Apple/Google kimlik doğrulaması + backend /api/user/login-apple|google.
+  authProvider: /(^|\.)hea-life\.com$/.test(location.hostname) ? "pending" : "demo",
+
+  // Backend'e aday (e-posta + cevaplar + pazarlama izni) gönderme ucu henüz yok.
+  // false iken pazarlama izni kutusu gösterilmez: kaydedilmeyen bir izin
+  // toplamak İYS/KVKK açısından yanıltıcı olur.
+  collectLeads: false,
 
   // Uygulamadaki fiyatlarla aynı (RC offering "healife", 15.09.2026).
   // Web'e özel indirim verilecekse yalnızca bu tabloyu değiştirin.

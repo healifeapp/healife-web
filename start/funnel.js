@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261013e";
-import { ICONS } from "./icons.js?v=20261013e";
+import { CONFIG } from "./config.js?v=20261013f";
+import { ICONS } from "./icons.js?v=20261013f";
 import {
   dailyTargets,
   trainingLevel,
@@ -23,7 +23,7 @@ import {
   signIn,
   createCheckout,
   wait,
-} from "./services.js?v=20261013e";
+} from "./services.js?v=20261013f";
 
 /* ============================================================ ikonlar */
 
@@ -110,7 +110,7 @@ const STEPS = [
   },
   { id: "focus_areas", sec: "profil", kind: "focus", aside: "start", q: "Hangi bölgelere odaklanmak istersin?", hint: "Vücut üzerinden ya da aşağıdan seç." },
   { id: "info_start", sec: "profil", kind: "motivation", aside: "start" },
-  { id: "age", sec: "profil", kind: "wheel", aside: "body", icon: "cake", q: "Kaç yaşındasın?", hint: "Yaşın kalori ihtiyacını ve önerileri şekillendirir.", unit: "yaş", min: 16, max: 80, step: 1, def: () => 28 },
+  { id: "age", sec: "profil", kind: "wheel", aside: "body", icon: "cake", q: "Kaç yaşındasın?", hint: "Yaşın kalori ihtiyacını ve önerileri şekillendirir.", unit: "yaş", min: 18, max: 90, step: 1, def: () => 28 },
   {
     id: "height",
     sec: "profil",
@@ -119,8 +119,8 @@ const STEPS = [
     icon: "height",
     q: "Boyun kaç?",
     unit: "cm",
-    min: 140,
-    max: 215,
+    min: 120,
+    max: 220,
     step: 1,
     def: (a) => (a.gender === "erkek" ? 177 : 164),
   },
@@ -132,8 +132,8 @@ const STEPS = [
     icon: "scale",
     q: "Kilon kaç?",
     unit: "kg",
-    min: 40,
-    max: 180,
+    min: 30,
+    max: 200,
     step: 0.5,
     def: (a) => (a.gender === "erkek" ? 80 : 65),
   },
@@ -147,8 +147,8 @@ const STEPS = [
     q: "Hedef kilon kaç?",
     hint: "Hedefe ne zaman ulaşacağını hesaplayalım.",
     unit: "kg",
-    min: 40,
-    max: 180,
+    min: 30,
+    max: 200,
     step: 0.5,
     when: needsTarget,
     def: (a) => (goalCanon(a) === "lose_weight" ? Math.max(45, a.weight - 5) : a.weight + 4),
@@ -246,7 +246,7 @@ const STEPS = [
   { id: "email", kind: "email", chrome: "minimal", aside: "result" },
   { id: "result", kind: "result", chrome: "minimal", wide: true },
   { id: "paywall", kind: "paywall", chrome: "minimal" },
-  { id: "account", kind: "account", chrome: "minimal", aside: "result" },
+  { id: "account", kind: "account", chrome: "minimal", aside: "result", when: () => CONFIG.authProvider !== "pending" },
   { id: "checkout", kind: "checkout", chrome: "minimal" },
   { id: "success", kind: "success", chrome: false },
 ];
@@ -281,9 +281,26 @@ function go(id, { replace = false } = {}) {
   dir = "fwd";
   S.step = id;
   save();
-  if (replace) history.replaceState({ step: id }, "", `#${id}`);
-  else history.pushState({ step: id }, "", `#${id}`);
+  const d = history.state?.d || 0;
+  if (replace) history.replaceState({ step: id, d }, "", `#${id}`);
+  else history.pushState({ step: id, d: d + 1 }, "", `#${id}`);
   render();
+}
+
+// Sayfa yenilenince / geri dönen ziyaretçide geçmişte funnel adımı yok:
+// history.back() kişiyi funnel'dan (reklama, ana sayfaya) atar. O zaman bir
+// önceki görünür adıma git.
+function back() {
+  if (history.state?.d > 0) return history.back();
+  const list = visible();
+  const i = list.findIndex((s) => s.id === S.step);
+  if (i > 0) {
+    dir = "back";
+    S.step = list[i - 1].id === "loading" ? list[i - 2].id : list[i - 1].id;
+    save();
+    history.replaceState({ step: S.step, d: 0 }, "", `#${S.step}`);
+    render();
+  }
 }
 
 function restore(id) {
@@ -310,6 +327,14 @@ const money = (n) => `${fmt(n, n % 1 ? 2 : 0)} ${CONFIG.currency}`;
 const dateLong = (d) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 
 const NEEDS_ANSWERS = new Set(["bmi", "pace", "result", "paywall", "account", "checkout"]);
+const GUARDS = {
+  result: () => (!S.email ? "email" : null),
+  paywall: () => (!S.email ? "email" : null),
+  account: () => (!S.email ? "email" : !S.planId ? "paywall" : S.user ? "checkout" : null),
+  checkout: () =>
+    !S.email ? "email" : !S.planId ? "paywall" : !S.user && CONFIG.authProvider !== "pending" ? "account" : null,
+  success: () => (!S.paid ? (S.email ? "paywall" : "intro") : null),
+};
 
 function progress(step) {
   const qs = visible().filter((s) => s.sec);
@@ -437,6 +462,10 @@ function render({ quiet = false } = {}) {
   const step = stepById(S.step) || STEPS[0];
   if (step.when && !step.when(S.answers)) return dir === "back" ? history.back() : next();
   if (NEEDS_ANSWERS.has(step.id) && !dailyTargets(S.answers)) return go("intro", { replace: true });
+  // Adres çubuğundan ileri adıma atlanmasın (#success yazıp "Premium'un aktif"
+  // görmek gibi). Önkoşulu eksikse o önkoşulu toplayan adıma dön.
+  const guard = GUARDS[step.id]?.();
+  if (guard) return go(guard, { replace: true });
 
   const qs = visible().filter((s) => QUESTION_KINDS.has(s.kind));
   const qi = qs.findIndex((s) => s.id === step.id);
@@ -461,7 +490,7 @@ function render({ quiet = false } = {}) {
   paintAside(step);
   fit();
 
-  app.querySelector("[data-back]")?.addEventListener("click", () => history.back());
+  app.querySelector("[data-back]")?.addEventListener("click", back);
   BIND[step.kind]?.(step);
   if (quiet) return;
   window.scrollTo(0, 0);
@@ -728,7 +757,7 @@ const VIEWS = {
   email: () => `
     <section class="email">
       <div class="badge-ok">${ai("checkCircle")}</div>
-      ${head({}, withName("planın hazır!", "Planın hazır!"), "Planını görmek için e-posta adresini gir. Hesabın ve planın bu adrese bağlanır.")}
+      ${head({}, withName("planın hazır!", "Planın hazır!"), "Planını görmek için e-posta adresini gir. Satın alırsan fatura ve abonelik bilgilerin bu adrese gelir.")}
       <form id="emailForm" class="grow" novalidate>
         <label class="field">
           ${ai("send", "field__ic")}
@@ -737,10 +766,14 @@ const VIEWS = {
         </label>
         <button class="suggest" type="button" id="suggest" hidden></button>
         <p class="err" id="emailErr" hidden>Geçerli bir e-posta adresi gir.</p>
-        <label class="consent">
+        ${
+          CONFIG.collectLeads
+            ? `<label class="optin">
           <input type="checkbox" id="marketing" ${S.marketing ? "checked" : ""} />
-          <span>Kampanya ve ipuçlarını e-postayla almak istiyorum. <small>(isteğe bağlı)</small></span>
-        </label>
+          <span>Kampanya ve ipuçlarını ticari elektronik ileti olarak e-postayla almak istiyorum; iznimi istediğim an geri alabilirim. <small>(isteğe bağlı)</small></span>
+        </label>`
+            : ""
+        }
         <p class="fine">${ai("lock")} Spam yok. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul etmiş ve <a href="${CONFIG.legal.privacy}" target="_blank" rel="noopener">Gizlilik Politikası</a> ile <a href="${CONFIG.legal.kvkk}" target="_blank" rel="noopener">KVKK Aydınlatma Metni</a>'ni okumuş olursun.</p>
         <div class="dock"><button class="btn btn--primary btn--block" type="submit">Planımı göster${ai("arrowRight")}</button></div>
       </form>
@@ -837,7 +870,8 @@ function resultView() {
   const a = S.answers;
   const t = dailyTargets(a);
   const lv = trainingLevel(a);
-  const pr = projection(a);
+  // Hedef sonradan "forma/sağlık"a dönerse eski hedef kilo kalmasın.
+  const pr = needsTarget(a) ? projection(a) : null;
   const days = SPLIT_DAYS[lv.days];
   const kc = { p: t.protein * 4, c: t.carbs * 4, f: t.fat * 9 };
   const tot = kc.p + kc.c + kc.f;
@@ -964,7 +998,7 @@ function paywallView() {
           ${p.badge ? `<span class="plan__badge">${p.badge}</span>` : ""}
           <span class="plan__radio">${on ? ai("check") : ""}</span>
           <span class="plan__main"><b>${p.title}</b><small>${p.id === "weekly" ? "Her hafta yenilenir" : `Haftada ${money(Math.round(perWeek * 100) / 100)}'ye denk`}</small></span>
-          <span class="plan__per">${save >= 10 ? `<em>%${save} tasarruf</em>` : ""}<b>${money(p.price)}</b><small>/ ${UNIT[p.id] || p.periodLabel}</small></span>
+          <span class="plan__per">${save >= 10 ? `<em>haftalığa göre %${save} tasarruf</em>` : ""}<b>${money(p.price)}</b><small>/ ${UNIT[p.id] || p.periodLabel}</small></span>
         </button>`;
         })
         .join("")}
@@ -1027,7 +1061,7 @@ const UNIT = { yearly: "yıl", monthly: "ay", weekly: "hafta" };
 
 function checkoutView() {
   const p = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];
-  const via = S.user?.method === "apple" ? ["apple", "Apple hesabı"] : ["google", "Google hesabı"];
+  const via = !S.user ? null : S.user.method === "apple" ? ["apple", "Apple hesabı"] : ["google", "Google hesabı"];
   const email = S.user?.email || S.email;
   return `
   <section class="checkout">
@@ -1056,11 +1090,16 @@ function checkoutView() {
       <div class="co__form">
         <h1 class="co__title">Ödeme</h1>
         <div class="co__acct">
-          <span class="co__acct-ic">${BRAND[via[0]]}</span>
+          ${
+            via
+              ? `<span class="co__acct-ic">${BRAND[via[0]]}</span>
           <div><small>${via[1]}</small><b>${esc(email || "—")}</b></div>
-          ${ai("checkCircle", "co__acct-ok")}
+          ${ai("checkCircle", "co__acct-ok")}`
+              : `<span class="co__acct-ic co__acct-ic--mail">${ai("send")}</span>
+          <div><small>Fatura ve abonelik e-postası</small><b>${esc(email || "—")}</b></div>`
+          }
         </div>
-        <label class="consent consent--legal">
+        <label class="optin optin--legal">
           <input type="checkbox" id="legalOk" />
           <span><a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme Formu</a>'nu ve <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış Sözleşmesi</a>'ni okudum, kabul ediyorum. Aboneliğin ödemeyle birlikte hemen başlamasını ve bu nedenle cayma hakkımın sona ereceğini onaylıyorum.</span>
         </label>
@@ -1224,7 +1263,10 @@ const BIND = {
     const items = [...list.querySelectorAll(".wheel__item")];
     const note = app.querySelector("#numNote");
     const btn = app.querySelector("[data-next]");
-    let H = items[0].offsetHeight;
+    // offsetHeight tam sayıya yuvarlar; sığdırma satırı küsuratlı yapınca
+    // yüzlerce satırda birikip seçili değer görünenden kayıyordu.
+    const rowH = () => items[0].getBoundingClientRect().height;
+    let H = rowH();
     const start = S.answers[step.id] ?? step.def(S.answers);
     let idx = Math.max(0, Math.min(items.length - 1, Math.round((start - step.min) / step.step)));
     list.scrollTop = idx * H;
@@ -1270,7 +1312,7 @@ const BIND = {
     // Ekrana sığdırma satır yüksekliğini değiştirebilir: seçili değerde kal.
     list.closest("[data-fit]").addEventListener("fit", () => {
       const keep = idx;
-      H = items[0].offsetHeight;
+      H = rowH();
       list.scrollTop = keep * H;
     });
     items.forEach((it, i) => it.addEventListener("click", () => list.scrollTo({ top: i * H, behavior: "smooth" })));
@@ -1372,8 +1414,8 @@ const BIND = {
         input.focus();
         return;
       }
-      S.email = v;
-      S.marketing = app.querySelector("#marketing").checked;
+      S.email = v.toLowerCase();
+      S.marketing = !!app.querySelector("#marketing")?.checked;
       track("lead", { goal: mainGoal(S.answers) });
       save();
       next();
@@ -1536,9 +1578,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg").then((r) => r.text()),
-        fetch("/start/atlas/back.svg").then((r) => r.text()),
-        fetch("/start/atlas/focus.json").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261013f").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261013f").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261013f").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));
@@ -1603,8 +1645,15 @@ function lev(a, b) {
 
 /* ============================================================ başlat */
 
+// PayTR iFrame'i dönüş adresini çerçevenin İÇİNDE açar: funnel içinde funnel
+// olmasın, üst pencereye geç.
+if (window.top !== window.self) window.top.location.href = location.href;
+
 const params = new URLSearchParams(location.search);
-if (params.get("odeme") === "tamam" && S.user) {
+// PayTR dönüş adresi. Gerçek ödeme bağlanmadan bu parametre hiçbir şey açmaz
+// (yoksa herkes ?odeme=tamam yazıp "Premium'un aktif" görürdü). Bağlanınca
+// burada /api/web/checkout/status ile sunucu onayı beklenmeli.
+if (CONFIG.paymentProvider === "paytr" && params.get("odeme") === "tamam" && S.user) {
   S.paid = true;
   S.step = "success";
 }
@@ -1613,11 +1662,11 @@ if (params.has("sifirla")) {
   S = fresh();
 }
 const utm = {};
-params.forEach((v, k) => /^utm_|^fbclid$/.test(k) && (utm[k] = v));
+params.forEach((v, k) => /^(utm_|fbclid$|gclid$|gbraid$|wbraid$|ttclid$)/.test(k) && (utm[k] = v));
 if (Object.keys(utm).length) S.utm = utm;
 
 if (S.step === "loading") S.step = "email";
 // Eski sürümden kalmış ve artık olmayan bir adım kaydedildiyse başa dön.
 if (!stepById(S.step)) S.step = "intro";
-history.replaceState({ step: S.step }, "", `${location.pathname}#${S.step}`);
+history.replaceState({ step: S.step, d: 0 }, "", `${location.pathname}#${S.step}`);
 render();

@@ -129,7 +129,7 @@
 
   function open(fromUser) {
     if (banner) return;
-    var legalHref = /legal\.html$/.test(location.pathname) ? "#cerez" : "legal.html#cerez";
+    var legalHref = /legal\.html$/.test(location.pathname) ? "#cerez" : "/legal.html#cerez";
     banner = document.createElement("section");
     banner.className = "consent";
     banner.setAttribute("role", "dialog");

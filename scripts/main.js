@@ -40,7 +40,8 @@
     try {
       var q = new URLSearchParams(window.location.search);
       q.forEach(function (v, k) {
-        if (/^utm_/i.test(k)) out.push(k + "=" + v);
+        // utm_* + reklam tıklama kimlikleri (Meta/Google/TikTok): funnel'a taşınır.
+        if (/^(utm_|fbclid$|gclid$|gbraid$|wbraid$|ttclid$)/i.test(k)) out.push(encodeURIComponent(k) + "=" + encodeURIComponent(v));
       });
     } catch (e) {}
     return out.join("&");
