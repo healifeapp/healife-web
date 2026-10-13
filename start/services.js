@@ -174,6 +174,9 @@ export function track(event, props = {}) {
  *  - /login-google: web OAuth istemci kimliğini audience listesine ekle
  *  - /login-apple: Services ID (web) ile gelen identityToken'ı kabul et
  *  - dönen kullanıcıya onboardingData'yı PATCH et (toOnboardingData)
+ *  - dönüşte hesabın e-postasını `email` olarak ver: başarı ekranı
+ *    "bu hesapla giriş yap" kartında onu gösteriyor (Apple gizli e-posta
+ *    verebilir; formdaki adresle aynı olmayabilir).
  */
 export async function signIn(method, answers) {
   if (CONFIG.authProvider === "demo") {

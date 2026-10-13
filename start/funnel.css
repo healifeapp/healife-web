@@ -1844,6 +1844,22 @@ noscript p {
 .legal {
   margin-top: 1.5rem;
 }
+.dock--pw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+.free-link {
+  padding: 0.6rem 1rem 0.1rem;
+  font-size: 0.85rem;
+  color: var(--text-3);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.free-link:hover {
+  color: var(--text-2);
+}
 
 /* ============================================================ ödeme */
 
@@ -2048,6 +2064,63 @@ noscript p {
 }
 .steps small {
   color: var(--text-3);
+}
+.acct {
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(187, 228, 72, 0.07);
+  border: 1px solid rgba(187, 228, 72, 0.35);
+  text-align: left;
+}
+.acct__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--lime);
+}
+.acct__head b {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.acct__id {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.acct__logo {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 10px;
+  background: #fff;
+  color: #000;
+}
+.acct__id > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.acct__id small {
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+.acct__id b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acct p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-2);
 }
 .stores {
   display: flex;

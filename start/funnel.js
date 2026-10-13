@@ -263,7 +263,11 @@ let dir = "fwd";
 const save = () => storage.save(S);
 const stepById = (id) => STEPS.find((s) => s.id === id);
 const visible = () => STEPS.filter((s) => !s.when || s.when(S.answers));
-const firstName = () => (S.answers.name || "").trim().split(/\s+/)[0] || "";
+// "samed" → "Samed" (Türkçe kurallarıyla: "ilker" → "İlker").
+const firstName = () => {
+  const n = (S.answers.name || "").trim().split(/\s+/)[0] || "";
+  return n ? n.charAt(0).toLocaleUpperCase("tr") + n.slice(1) : "";
+};
 const withName = (text, alt) => (firstName() ? `${firstName()}, ${text}` : alt);
 const avatar = () => (S.answers.gender === "kadin" ? "avatar-female" : "avatar-male");
 
@@ -828,6 +832,13 @@ const FAQ = [
   ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin Healife'a ulaşmaz, saklanmaz."],
 ];
 
+// Sitedeki "Ücretsiz başla" / "İndir" de funnel'ı açıyor; ödemek istemeyen
+// kişi paywall'da takılmasın — indirme sayfasına (UTM'lerle) gider.
+const freeUrl = () => {
+  const q = new URLSearchParams(S.utm || {}).toString();
+  return `/indir.html${q ? `?${q}` : ""}`;
+};
+
 function paywallView() {
   const plans = CONFIG.plans;
   if (!S.planId) S.planId = (plans.find((p) => p.preselected) || plans[0]).id;
@@ -890,7 +901,10 @@ function paywallView() {
 
     <p class="fine center legal">Abonelik, iptal edene kadar seçtiğin dönem sonunda aynı ücretle otomatik yenilenir. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul edersin.</p>
   </section>
-  ${cta("Devam et")}`;
+  <div class="dock dock--pw">
+    <button class="btn btn--primary btn--block" type="button" data-next>Devam et${ai("arrowRight")}</button>
+    <a class="free-link" href="${freeUrl()}" data-free>Şimdilik ücretsiz sürümle devam et</a>
+  </div>`;
 }
 
 /* ------------------------------------------------------------ ödeme */
@@ -937,11 +951,22 @@ function successView() {
       <span class="burst">${ai("check")}</span>
     </div>
     <h1 class="display display--sm">${esc(withName("hoş geldin!", "Hoş geldin!"))}<br />Premium'un aktif.</h1>
-    <p class="lead">Planın hesabına kaydedildi. Son iki adım:</p>
+    <p class="lead">Planın hesabına kaydedildi. Uygulamada planına ulaşmak için:</p>
     <ol class="steps">
       <li><span>1</span><div><b>Healife'ı indir</b><small>Ücretsiz, birkaç saniye sürer.</small></div>${ai("download")}</li>
-      <li><span>2</span><div><b>${method} ile giriş yap</b><small>Web'de kullandığın yöntemle; planın ve premium hazır olacak.</small></div>${ai("login")}</li>
+      <li><span>2</span><div><b>“Giriş yap”a dokun</b><small>Açılış ekranının altındaki “Zaten hesabın var mı? Giriş yap”.</small></div>${ai("login")}</li>
+      <li><span>3</span><div><b>${method} ile giriş yap</b><small>Planın ve premium hazır olacak; soruları tekrar cevaplaman gerekmez.</small></div>${ai("checkCircle")}</li>
     </ol>
+    <div class="acct" role="note">
+      <div class="acct__head">${ai("info")}<b>Bu hesapla giriş yapmalısın</b></div>
+      <div class="acct__id">
+        <span class="acct__logo">${method === "Google" ? BRAND.google : BRAND.apple}</span>
+        <div><small>${method} hesabı</small><b>${esc(S.user?.email || S.email)}</b></div>
+      </div>
+      <p>Farklı bir hesapla ya da giriş yapmadan devam edersen aboneliğin görünmez.${
+        method === "Apple" ? " Apple, e-postanı gizlediysen farklı bir adres gösterebilir; aynı Apple kimliğini seçmen yeterli." : ""
+      }</p>
+    </div>
     <div class="stores">${stores.join("")}</div>
     ${!ios && !android ? `<figure class="qr"><img src="/assets/brand/qr-indir.svg?v=20260917a" alt="QR kod: telefonunla tarat" width="120" height="120" /><figcaption>Telefonunla tarat</figcaption></figure>` : ""}
     <p class="fine center">Bir sorun mu var? <a href="mailto:destek@hea-life.com">destek@hea-life.com</a></p>
@@ -1199,6 +1224,7 @@ const BIND = {
         render({ quiet: true });
       }),
     );
+    app.querySelector("[data-free]").addEventListener("click", () => track("free_continue"));
     app.querySelector("[data-next]").addEventListener("click", () => {
       track("plan_selected", { plan: S.planId });
       S.user ? go("checkout") : next();
