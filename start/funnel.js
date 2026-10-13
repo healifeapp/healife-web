@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261013h";
-import { ICONS } from "./icons.js?v=20261013h";
+import { CONFIG } from "./config.js?v=20261013i";
+import { ICONS } from "./icons.js?v=20261013i";
 import {
   dailyTargets,
   trainingLevel,
@@ -23,7 +23,7 @@ import {
   signIn,
   createCheckout,
   wait,
-} from "./services.js?v=20261013h";
+} from "./services.js?v=20261013i";
 
 /* ============================================================ ikonlar */
 
@@ -1043,7 +1043,8 @@ const legalFoot = () => `
       <a href="${CONFIG.legal.kvkk}" target="_blank" rel="noopener">KVKK</a>
       <a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme</a>
       <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış</a>
-      <a href="mailto:${CONFIG.seller.email}">İletişim</a>
+      <a href="/hakkimizda.html" target="_blank" rel="noopener">Hakkımızda</a>
+      <a href="/iletisim.html" target="_blank" rel="noopener">İletişim</a>
     </nav>
     <p>${CONFIG.seller.name}<br />${CONFIG.seller.address} · ${CONFIG.seller.tax}<br />MERSİS ${CONFIG.seller.mersis} · Ticaret Sicil No ${CONFIG.seller.registry}<br /><a href="tel:${CONFIG.seller.phone.replace(/\s/g, "")}">${CONFIG.seller.phone}</a> · <a href="mailto:${CONFIG.seller.email}">${CONFIG.seller.email}</a></p>
   </footer>`;
@@ -1582,9 +1583,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg?v=20261013h").then((r) => r.text()),
-        fetch("/start/atlas/back.svg?v=20261013h").then((r) => r.text()),
-        fetch("/start/atlas/focus.json?v=20261013h").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261013i").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261013i").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261013i").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));

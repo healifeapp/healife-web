@@ -373,3 +373,48 @@ sup.fn a:hover {
   background: var(--lime);
   color: var(--on-lime);
 }
+
+/* Tek sütunlu kurumsal sayfalar (hakkimizda.html, iletisim.html): içindekiler yok. */
+.legal__body--single {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+.contact-cards {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+@media (min-width: 720px) {
+  .contact-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  text-decoration: none;
+}
+a.contact-card:hover {
+  border-color: var(--lime);
+}
+.contact-card span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.contact-card b {
+  font-size: 0.98rem;
+  overflow-wrap: anywhere;
+}
+.legal:has(.legal__body--single) .legal__head {
+  max-width: 46rem;
+  margin-inline: auto;
+}
