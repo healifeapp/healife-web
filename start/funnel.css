@@ -642,8 +642,7 @@ noscript p {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
-  height: min(46vh, 380px);
-  min-height: 260px;
+  height: var(--fit, min(46vh, 380px));
   margin-bottom: 1.1rem;
   opacity: 0;
   transition: opacity 0.4s;
@@ -732,7 +731,7 @@ noscript p {
 }
 .moti__art {
   position: relative;
-  width: min(100%, 300px);
+  width: min(100%, 300px, var(--fit, 300px));
   aspect-ratio: 1;
   margin: 0 auto 1.25rem;
   border-radius: 28px;
@@ -812,7 +811,7 @@ noscript p {
   font-size: 1.5rem;
 }
 .wheel {
-  --h: 56px;
+  --h: min(56px, calc(var(--fit, 280px) / 5));
   position: relative;
   width: min(100%, 300px);
   height: calc(var(--h) * 5);
@@ -1247,8 +1246,7 @@ noscript p {
 }
 .intro__art {
   position: relative;
-  height: 36vh;
-  min-height: 230px;
+  height: var(--fit, 36vh);
   margin: 0.5rem 0 0;
   display: flex;
   justify-content: center;
@@ -1935,14 +1933,17 @@ noscript p {
   gap: 0.6rem;
 }
 .cf-row {
-  display: grid;
-  gap: 0.2rem;
-  padding: 0.65rem 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
   border-radius: 10px;
   background: #fff;
   border: 1px solid var(--paper-line);
 }
 .cf-row span {
+  white-space: nowrap;
   font-size: 0.72rem;
   color: var(--paper-muted);
 }
@@ -1955,9 +1956,23 @@ noscript p {
   opacity: 0.45;
   box-shadow: none;
 }
+.dock--pay .err {
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+.dock--pay .soon {
+  margin-top: 0;
+  background: var(--surface);
+}
+.checkout .qhead {
+  margin: 0.25rem 0 1rem;
+}
+.checkout .secure {
+  margin: 1rem 0;
+}
 .consent--legal {
-  margin: 1rem 0 0;
-  padding: 0.85rem 0.9rem;
+  margin: 0.75rem 0;
+  padding: 0.75rem 0.9rem;
   border-radius: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2225,14 +2240,12 @@ noscript p {
 
 @media (min-width: 720px) {
   .stage {
-    padding-top: clamp(1.5rem, 5vh, 3.5rem);
-    padding-bottom: 3rem;
+    padding-top: clamp(1rem, 5vh, 3.5rem);
   }
+  /* Düğme masaüstünde de yapışkan: içerik uzasa bile kaydırmadan basılır. */
   .dock {
-    position: static;
-    margin: 1.75rem 0 0;
-    padding: 0;
-    background: none;
+    margin-top: auto;
+    padding: 1.5rem 1.25rem clamp(1rem, 4vh, 2.5rem);
   }
   .funnel--wide .dock {
     display: flex;
@@ -2297,7 +2310,7 @@ noscript p {
   }
   .intro__art {
     order: 2;
-    height: min(74vh, 660px);
+    height: var(--fit, min(74vh, 660px));
     margin: 0;
   }
   .intro__copy {
@@ -2345,18 +2358,25 @@ noscript p {
     overflow: hidden;
     background: #0b0b0c;
   }
+  .funnel:not(.has-aside) .aside {
+    display: none;
+  }
+  /* Görsel değişince yenisi eskisinin üstünde belirir; eski katman yenisi
+     tamamen görünene dek altta kalır (siyaha düşüp kararma yok). */
   .aside__img {
     position: absolute;
     inset: 0;
     background-size: cover;
     background-position: center 30%;
-    animation: asideIn 0.8s var(--ease) both;
+    opacity: 0;
+    transform: scale(1.06);
+    transition:
+      opacity 0.9s var(--ease),
+      transform 1.8s var(--ease);
   }
-  @keyframes asideIn {
-    from {
-      opacity: 0;
-      transform: scale(1.04);
-    }
+  .aside__img.is-in {
+    opacity: 1;
+    transform: none;
   }
   .aside::after {
     content: "";
@@ -2367,11 +2387,25 @@ noscript p {
       linear-gradient(to right, transparent 70%, rgba(18, 18, 20, 0.9));
   }
   .aside__copy {
+    transition:
+      opacity 0.22s var(--ease),
+      transform 0.22s var(--ease);
     position: absolute;
     left: clamp(2rem, 4vw, 3.5rem);
     right: clamp(2rem, 4vw, 3.5rem);
     bottom: clamp(2rem, 6vh, 3.5rem);
     z-index: 1;
+  }
+  .aside__copy.is-out h2,
+  .aside__copy.is-out p {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .aside__copy h2,
+  .aside__copy p {
+    transition:
+      opacity 0.22s var(--ease),
+      transform 0.22s var(--ease);
   }
   .aside__copy img {
     height: 24px;
@@ -2424,6 +2458,52 @@ noscript p {
   }
   .has-aside .stage__inner {
     flex: 0 1 auto;
+  }
+}
+
+/* ============================================================ tek ekran */
+
+.gender .gcard__img {
+  max-height: calc(var(--fit, 100vh) - 2.4rem);
+}
+.pace__chart .chart {
+  display: block;
+  margin: 0 auto;
+  max-height: calc(var(--fit, 100vh) - 2.5rem);
+}
+
+/* Kısa ekranlar (dizüstü, küçük telefon): boşlukları sıkılaştır ki esnek
+   görsel gereğinden fazla küçülmesin. */
+@media (max-height: 760px) {
+  .qhead {
+    margin: 0.25rem 0 1rem;
+  }
+  .q {
+    font-size: clamp(1.35rem, 1.15rem + 1vw, 1.6rem);
+  }
+  .hint {
+    margin-top: 0.3rem;
+    font-size: 0.88rem;
+  }
+  .ticks {
+    margin-top: 0.8rem;
+    gap: 0.45rem;
+  }
+  .recap {
+    margin-top: 0.9rem;
+    gap: 0.4rem;
+  }
+  .recap li {
+    padding: 0.5rem 0.8rem;
+  }
+  .moti__art {
+    margin-bottom: 0.9rem;
+  }
+  .wheelbox__badge {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 0.6rem;
+    font-size: 1.25rem;
   }
 }
 

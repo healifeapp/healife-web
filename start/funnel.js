@@ -324,17 +324,62 @@ function progress(step) {
   }).join("");
 }
 
-function asideView(step) {
-  const key = step.aside;
-  if (!key) return "";
-  let [img, title, text] = ASIDE[key];
-  if (key === "start" && S.answers.goal?.length) img = GOAL_IMG[goalCanon(S.answers)];
-  return `<aside class="aside" aria-hidden="true">
-    <div class="aside__img" style="background-image:url(${IMG(img)})"></div>
+// Yan panel kalıcı: her adımda yeniden çizilirse görsel siyahtan açılıp
+// "kararıyordu". Görsel değişince yenisi eskisinin ÜSTÜNDE belirir (eski,
+// yenisi tamamen görünene dek altında kalır), metin ayrıca yumuşakça değişir.
+function asideData(step) {
+  let [img, title, text] = ASIDE[step.aside];
+  if (step.aside === "start" && S.answers.goal?.length) img = GOAL_IMG[goalCanon(S.answers)];
+  return { img, title, text };
+}
+
+function paintAside(step) {
+  const el = app.querySelector(".aside");
+  if (!el || !step.aside) return;
+  const { img, title, text } = asideData(step);
+
+  if (el.dataset.img !== img) {
+    el.dataset.img = img;
+    const layer = document.createElement("div");
+    layer.className = "aside__img";
+    layer.style.backgroundImage = `url(${IMG(img)})`;
+    el.insertBefore(layer, el.querySelector(".aside__copy"));
+    layer.addEventListener("transitionend", (e) => {
+      if (e.propertyName !== "opacity" || !layer.isConnected) return;
+      // Yalnız bu katmanın altındakileri temizle; üstte daha yenisi olabilir.
+      let prev = layer.previousElementSibling;
+      while (prev) {
+        const p = prev.previousElementSibling;
+        if (prev.classList.contains("aside__img")) prev.remove();
+        prev = p;
+      }
+    });
+    const pre = new Image();
+    pre.src = IMG(img);
+    (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() =>
+      requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add("is-in"))),
+    );
+  }
+
+  const copy = el.querySelector(".aside__copy");
+  if (copy.dataset.title === title) return;
+  const first = !copy.dataset.title;
+  copy.dataset.title = title;
+  const fill = () => {
+    copy.querySelector("h2").textContent = title;
+    copy.querySelector("p").textContent = text;
+    copy.classList.remove("is-out");
+  };
+  if (first) return fill();
+  copy.classList.add("is-out");
+  setTimeout(fill, 220);
+}
+
+const asideShell = () => `<aside class="aside" aria-hidden="true">
     <div class="aside__copy">
       <img src="/assets/brand/logo.svg?v=20260830b" alt="" width="120" height="22" />
-      <h2>${title}</h2>
-      <p>${text}</p>
+      <h2></h2>
+      <p></p>
       <ul>
         <li>${ai("playCircle")}176 videolu egzersiz</li>
         <li>${ai("menuFood")}100+ tarif</li>
@@ -342,7 +387,41 @@ function asideView(step) {
       </ul>
     </div>
   </aside>`;
+
+// Geniş ekranda yan panel görsellerini baştan indir: geçişte boş kare olmasın.
+if (matchMedia("(min-width: 1024px)").matches) {
+  [...Object.values(ASIDE).map(([img]) => img), ...Object.values(GOAL_IMG)].forEach((img) => {
+    new Image().src = IMG(img);
+  });
 }
+
+// Tek ekran: soru adımlarında sayfa kaydırma istemiyoruz. Her görünümde bir
+// esnek öğe var (data-fit="en küçük px"); sayfa taşarsa o öğe taşan kadar
+// küçülür. CSS ölçüyü --fit değişkeninden okur. Uzun sayfalarda (sonuç,
+// paywall, ödeme) data-fit yok; orada düğme yapışkan dock'ta görünür kalır.
+function fit() {
+  const el = app.querySelector("[data-fit]");
+  if (!el) return;
+  const min = Number(el.dataset.fit) || 120;
+  el.style.removeProperty("--fit");
+  // Küçültme her zaman taşmayı bire bir azaltmıyor (ortalama, sarılan
+  // satırlar); birkaç turda yakınsar.
+  for (let i = 0; i < 4; i++) {
+    const over = document.scrollingElement.scrollHeight - innerHeight;
+    const h = el.getBoundingClientRect().height;
+    if (over <= 0 || h <= min) break;
+    el.style.setProperty("--fit", `${Math.max(min, Math.floor(h - over))}px`);
+  }
+  el.dispatchEvent(new Event("fit"));
+}
+let fitTimer;
+addEventListener("resize", () => {
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(fit, 120);
+});
+// Yazı tipi geç gelirse satırlar uzar: yüklenince yeniden ölç.
+document.fonts?.addEventListener?.("loadingdone", fit);
+document.fonts?.ready.then(fit);
 
 function render({ quiet = false } = {}) {
   const step = stepById(S.step) || STEPS[0];
@@ -366,7 +445,11 @@ function render({ quiet = false } = {}) {
 
   const hasAside = !!step.aside;
   app.className = `funnel funnel--${step.kind}${step.wide ? " funnel--wide" : ""}${hasAside ? " has-aside" : ""}`;
-  app.innerHTML = `${asideView(step)}<div class="main">${chrome}<main class="stage" id="stage"><div class="stage__inner">${VIEWS[step.kind](step)}</div></main></div>`;
+  if (!app.querySelector(":scope > .main")) app.innerHTML = `${asideShell()}<div class="main"></div>`;
+  app.querySelector(":scope > .main").innerHTML =
+    `${chrome}<main class="stage" id="stage"><div class="stage__inner">${VIEWS[step.kind](step)}</div></main>`;
+  paintAside(step);
+  fit();
 
   app.querySelector("[data-back]")?.addEventListener("click", () => history.back());
   BIND[step.kind]?.(step);
@@ -397,7 +480,7 @@ const VIEWS = {
     <section class="intro">
       <img class="intro__logo" src="/assets/brand/logo.svg?v=20260830b" alt="Healife" width="132" height="25" />
       <div class="intro__grid">
-        <div class="intro__art" aria-hidden="true">
+        <div class="intro__art" aria-hidden="true" data-fit="150">
           <div class="intro__glow"></div>
           <img class="intro__fig" src="${IMG("hero-runner")}" alt="" width="551" height="680" fetchpriority="high" />
           <div class="float float--a">${ai("fire")}<div><b>1.850 kcal</b><span>günlük hedef</span></div></div>
@@ -420,7 +503,7 @@ const VIEWS = {
 
   gender: (step) => `
     ${head(step)}
-    <div class="gender" role="radiogroup">
+    <div class="gender" role="radiogroup" data-fit="190">
       ${[
         ["erkek", "Erkek", "avatar-male"],
         ["kadin", "Kadın", "avatar-female"],
@@ -473,7 +556,7 @@ const VIEWS = {
     const sel = S.answers.focus_areas || [];
     return `
     ${head(step)}
-    <div class="atlas" id="atlas">
+    <div class="atlas" id="atlas" data-fit="150">
       <div class="atlas__fig" data-view="front"><span class="atlas__tag">Ön</span></div>
       <div class="atlas__fig" data-view="back"><span class="atlas__tag">Arka</span></div>
     </div>
@@ -500,7 +583,7 @@ const VIEWS = {
     const img = mid ? "hero-abs" : GOAL_IMG[goalCanon(a)];
     return `
     <section class="moti">
-      <div class="moti__art${mid ? " is-alpha" : ""}"><img src="${IMG(img)}" alt="" /></div>
+      <div class="moti__art${mid ? " is-alpha" : ""}" data-fit="110"><img src="${IMG(img)}" alt="" /></div>
       <span class="moti__phase">${mid ? "Devam ediyoruz · %55" : "Başlıyoruz! · %25"}</span>
       <h1 class="q">${mid ? "Sana özel sistemi oluşturuyorum" : "Profilini tanımaya başlıyorum"}</h1>
       <p class="hint">${
@@ -520,7 +603,7 @@ const VIEWS = {
     ${head(step)}
     <div class="wheelbox">
       <div class="wheelbox__badge">${ai(step.icon)}</div>
-      <div class="wheel">
+      <div class="wheel" data-fit="170">
         <div class="wheel__band" aria-hidden="true"><span class="wheel__unit">${step.unit}</span></div>
         <div class="wheel__list" id="wheel" tabindex="0" role="listbox" aria-label="${esc(step.q)}">
           <div class="wheel__pad"></div>
@@ -566,7 +649,7 @@ const VIEWS = {
         <h1 class="q">${fmt(Math.abs(p.to - p.from), 1)} kg ${lose ? "vermek" : "almak"} için tahmini tarih</h1>
         <div class="pace__date">${ai("calendarCheck")}${dateLong(p.end)}</div>
       </header>
-      <div class="card">${projectionChart(p)}</div>
+      <div class="card pace__chart" data-fit="130">${projectionChart(p)}</div>
       <ul class="ticks">
         <li>${ai("checkCircle")}<span>Haftada yaklaşık <b>${fmt(perWeek, 2)} kg</b> — ${lose ? "kas kaybetmeden yağ yakmaya uygun" : "yağlanmayı sınırlayan"} bir hız</span></li>
         <li>${ai("checkCircle")}<span>Planın ilerlemene göre güncellenir</span></li>
@@ -930,7 +1013,19 @@ function checkoutView() {
       <span>${CONFIG.seller.address}</span>
       <span>${CONFIG.seller.tax} · <a href="mailto:${CONFIG.seller.email}">${CONFIG.seller.email}</a></span>
     </div>
-  </section>`;
+  </section>
+  <div class="dock dock--pay" id="payDock" hidden>
+    <p class="err" id="payErr" hidden>Devam etmek için sözleşme onayını işaretle.</p>
+    <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${money(p.price)} öde</button>
+    <div class="soon" id="soon" hidden>
+      ${ai("info")}
+      <div>
+        <b>Web üzerinden ödeme çok yakında</b>
+        <p>Kartla ödeme altyapımız şu an devreye alınıyor; bu işlemden ücret alınmadı. Şimdilik uygulamayı indirip aboneliği uygulama içinden başlatabilirsin.</p>
+        <a class="btn btn--ghost btn--block" href="${freeUrl()}">Uygulamayı indir</a>
+      </div>
+    </div>
+  </div>`;
 }
 
 /* ------------------------------------------------------------ başarı */
@@ -1070,7 +1165,7 @@ const BIND = {
     const items = [...list.querySelectorAll(".wheel__item")];
     const note = app.querySelector("#numNote");
     const btn = app.querySelector("[data-next]");
-    const H = items[0].offsetHeight;
+    let H = items[0].offsetHeight;
     const start = S.answers[step.id] ?? step.def(S.answers);
     let idx = Math.max(0, Math.min(items.length - 1, Math.round((start - step.min) / step.step)));
     list.scrollTop = idx * H;
@@ -1113,6 +1208,12 @@ const BIND = {
       },
       { passive: true },
     );
+    // Ekrana sığdırma satır yüksekliğini değiştirebilir: seçili değerde kal.
+    list.closest("[data-fit]").addEventListener("fit", () => {
+      const keep = idx;
+      H = items[0].offsetHeight;
+      list.scrollTop = keep * H;
+    });
     items.forEach((it, i) => it.addEventListener("click", () => list.scrollTo({ top: i * H, behavior: "smooth" })));
     list.addEventListener("keydown", (e) => {
       const k = { ArrowUp: -1, ArrowDown: 1, PageUp: -5, PageDown: 5 }[e.key];
@@ -1280,20 +1381,14 @@ const BIND = {
             <div class="cf-2"><div class="cf-row"><span>Son kullanma</span><i>AA/YY</i></div><div class="cf-row"><span>CVC</span><i>•••</i></div></div>
           </div>
           ${live ? `<p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>` : ""}
-          <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${money(plan.price)} öde</button>
-          <p class="err" id="payErr" hidden>Devam etmek için sözleşme onayını işaretle.</p>
-          <div class="soon" id="soon" hidden>
-            ${ai("info")}
-            <div>
-              <b>Web üzerinden ödeme çok yakında</b>
-              <p>Kartla ödeme altyapımız şu an devreye alınıyor; bu işlemden ücret alınmadı. Şimdilik uygulamayı indirip aboneliği uygulama içinden başlatabilirsin.</p>
-              <a class="btn btn--ghost btn--block" href="${freeUrl()}">Uygulamayı indir</a>
-            </div>
-          </div>
         </div>`;
-      const pay = box.querySelector("#demoPay");
+      // Öde düğmesi diğer adımlardaki gibi yapışkan dock'ta: kaydırmadan basılır.
+      // PayTR iFrame'inin kendi düğmesi var, o kipte dock gizli kalır.
+      const dock = app.querySelector("#payDock");
+      dock.hidden = false;
+      const pay = dock.querySelector("#demoPay");
       const ok = app.querySelector("#legalOk");
-      const err = box.querySelector("#payErr");
+      const err = dock.querySelector("#payErr");
       ok.addEventListener("change", () => {
         pay.classList.toggle("is-dim", !ok.checked);
         if (ok.checked) err.hidden = true;
@@ -1306,7 +1401,7 @@ const BIND = {
         }
         if (!live) {
           track("payment_pending_click", { plan: plan.id });
-          box.querySelector("#soon").hidden = false;
+          dock.querySelector("#soon").hidden = false;
           pay.hidden = true;
           return;
         }
