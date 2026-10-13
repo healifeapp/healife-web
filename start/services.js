@@ -3,7 +3,7 @@
 // gösterilen kalori uygulamaya girince değişmesin diye.
 //   dailyTargets.js · levelScore.js · planResolver.js (MAX_TRAINING_LEVEL)
 
-import { CONFIG } from "./config.js?v=20261013f";
+import { CONFIG } from "./config.js?v=20261013g";
 
 /* ---------------------------------------------------------------- hesap */
 
@@ -153,13 +153,23 @@ export const storage = {
 /* ------------------------------------------------------------- ölçüm */
 
 /** Meta Pixel / GTM yüklüyse onlara, yoksa yalnızca konsola. */
+// Funnel olayı → GTM (dataLayer), GA4 (gtag) ve Meta Pixel (fbq). gtag/fbq
+// yalnız ilgili çerez izni verildiyse vardır (scripts/consent.js); yoksa
+// olay sessizce düşer.
+const GA_EVENT = { lead: "generate_lead", checkout_start: "begin_checkout", purchase: "purchase", account_created: "sign_up" };
+const FB_EVENT = { lead: "Lead", checkout_start: "InitiateCheckout", account_created: "CompleteRegistration", purchase: "Purchase" };
+const FB_CUSTOM = { start: "FunnelStart", result_cta: "FunnelPlanViewed" };
+
 export function track(event, props = {}) {
   try {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: `funnel_${event}`, ...props });
+    if (typeof window.gtag === "function") window.gtag("event", GA_EVENT[event] || `funnel_${event}`, props);
     if (typeof window.fbq === "function") {
-      const fbMap = { lead: "Lead", checkout_start: "InitiateCheckout", purchase: "Purchase" };
-      if (fbMap[event]) window.fbq("track", fbMap[event], props);
+      const money = props.value != null ? { value: props.value, currency: props.currency || "TRY" } : {};
+      const content = props.plan ? { content_ids: [props.plan], content_name: `Healife Premium ${props.plan}`, content_type: "product" } : {};
+      if (FB_EVENT[event]) window.fbq("track", FB_EVENT[event], { ...money, ...content }, props.event_id ? { eventID: props.event_id } : undefined);
+      else if (FB_CUSTOM[event]) window.fbq("trackCustom", FB_CUSTOM[event]);
     }
   } catch {}
   if (location.hostname === "localhost") console.debug("[funnel]", event, props);
@@ -201,7 +211,6 @@ export async function signIn(method, answers) {
  * Tekrarlayan ödeme için PayTR'nin kart saklama / abonelik ürünü gerekir.
  */
 export async function createCheckout({ plan, email, userId }) {
-  track("checkout_start", { plan: plan.id, value: plan.price, currency: "TRY" });
   if (CONFIG.paymentProvider === "demo") return { mode: "demo" };
   if (CONFIG.paymentProvider === "pending") return { mode: "pending" };
 

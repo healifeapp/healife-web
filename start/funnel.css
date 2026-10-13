@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: "AppIcons";
-  src: url("/start/fonts/AppIcons.ttf?v=20261013f") format("truetype");
+  src: url("/start/fonts/AppIcons.ttf?v=20261013g") format("truetype");
   font-display: block;
 }
 
@@ -2782,6 +2782,47 @@ noscript p {
   text-decoration: underline;
   text-underline-offset: 3px;
   white-space: nowrap;
+}
+.consent__opts {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.consent__opts[hidden] {
+  display: none;
+}
+.consent__opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.consent__opt input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 0.15rem;
+  accent-color: var(--lime);
+}
+.consent__opt b {
+  display: block;
+  color: var(--text);
+}
+.consent__more {
+  margin-top: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.consent__more:hover {
+  color: var(--text);
 }
 .consent__actions {
   display: flex;

@@ -12,16 +12,25 @@
           içinden açılıyor). Yalnızca "Çerez tercihleri" düğmesi çalışır.
      Herhangi bir öğeye data-consent-open eklenirse tıklanınca bant açılır.
 
-   Politika metni değişip yeniden onay gerekirse VERSION artırılır. */
+   İki ayrı izin: analitik (Google Analytics) ve reklam (Meta Pixel + Google
+   reklam sinyalleri). Reddet ve Kabul et aynı ağırlıkta; "Tercihleri seç" ile
+   yalnız birine izin verilebilir.
+
+   Politika metni değişip yeniden onay gerekirse VERSION artırılır.
+   (2: 13.10.2026 reklam izni eklendi — herkese yeniden sorulur.) */
 (function () {
   "use strict";
 
   var GTM_ID = "GTM-PLC3D8TR";
   var GA_ID = "G-1S09MJPFZS";
+  /* Meta Events Manager > Veri kaynakları > Piksel kimliği. Boşken piksel
+     hiç yüklenmez (reklam izni verilse bile). */
+  var META_PIXEL_ID = "";
   var KEY = "hl-consent";
-  var VERSION = 1;
+  var VERSION = 2;
   var passive = document.currentScript && document.currentScript.hasAttribute("data-passive");
   var gtmLoaded = false;
+  var metaLoaded = false;
   var banner = null;
   var lastFocus = null;
 
@@ -33,24 +42,47 @@
       return null;
     }
   }
-  function write(analytics) {
+  function write(analytics, ads) {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ v: VERSION, analytics: analytics, t: new Date().toISOString() }));
+      localStorage.setItem(KEY, JSON.stringify({ v: VERSION, analytics: analytics, ads: ads, t: new Date().toISOString() }));
     } catch (e) {}
   }
 
-  function loadGtm() {
-    if (gtmLoaded || passive) return;
+  function adSignals(ads) {
+    var v = ads ? "granted" : "denied";
+    return { ad_storage: v, ad_user_data: v, ad_personalization: v };
+  }
+
+  /* Meta Pixel (resmî yükleyici). fbq kuyruğu hemen kurulur; olaylar betik
+     gelince gönderilir. funnel track() Lead/InitiateCheckout/Purchase'ı
+     buradan yollar. */
+  function loadMeta() {
+    if (metaLoaded || passive || !META_PIXEL_ID) return;
+    metaLoaded = true;
+    /* eslint-disable */
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,"script","https://connect.facebook.net/en_US/fbevents.js");
+    /* eslint-enable */
+    window.fbq("init", META_PIXEL_ID);
+    window.fbq("track", "PageView");
+  }
+
+  function loadGtm(ads) {
+    if (passive) return;
+    if (gtmLoaded) {
+      if (window.gtag) window.gtag("consent", "update", adSignals(ads));
+      return;
+    }
     gtmLoaded = true;
     window.dataLayer = window.dataLayer || [];
     function gtag() { window.dataLayer.push(arguments); }
-    /* Yalnızca analitik izni verilir; reklam sinyalleri kapalı kalır. */
-    gtag("consent", "default", {
-      analytics_storage: "granted",
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      ad_personalization: "denied"
-    });
+    /* Analitik izni verildi; reklam sinyalleri ayrı izne bağlı. */
+    var c = adSignals(ads);
+    c.analytics_storage = "granted";
+    gtag("consent", "default", c);
     window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
     var s = document.createElement("script");
     s.async = true;
@@ -97,7 +129,7 @@
     var domains = ["", host, "." + host, "." + host.split(".").slice(-2).join(".")];
     document.cookie.split(";").forEach(function (c) {
       var name = c.split("=")[0].trim();
-      if (!/^(_ga|_gid|_gat|_gcl)/.test(name)) return;
+      if (!/^(_ga|_gid|_gat|_gcl|_fbp|_fbc)/.test(name)) return;
       domains.forEach(function (d) {
         document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" + (d ? "; domain=" + d : "");
       });
@@ -113,22 +145,24 @@
     lastFocus = null;
   }
 
-  function decide(analytics) {
+  function decide(analytics, ads) {
     var before = read();
-    write(analytics);
+    write(analytics, ads);
     close();
-    if (analytics) {
-      loadGtm();
-    } else if (before && before.analytics) {
-      /* Çalışmakta olan etiketleri durdurmanın güvenilir yolu sayfayı
-         GTM'siz yeniden yüklemektir. */
+    /* Daha önce verilmiş bir izin geri alındıysa: çalışan etiketleri
+       durdurmanın güvenilir yolu çerezleri silip sayfayı yeniden yüklemek. */
+    if (before && ((before.analytics && !analytics) || (before.ads && !ads))) {
       clearAnalyticsCookies();
       location.reload();
+      return;
     }
+    if (analytics) loadGtm(ads);
+    if (ads) loadMeta();
   }
 
   function open(fromUser) {
     if (banner) return;
+    var cur = read();
     var legalHref = /legal\.html$/.test(location.pathname) ? "#cerez" : "/legal.html#cerez";
     banner = document.createElement("section");
     banner.className = "consent";
@@ -138,9 +172,17 @@
     banner.innerHTML =
       '<div class="consent__text">' +
       '<p class="consent__title">Çerez tercihin</p>' +
-      "<p>Siteyi geliştirmek için ziyaret istatistiklerini Google Analytics ile ölçmek istiyoruz. " +
-      "Bu çerezler yalnızca sen kabul edersen kullanılır; reddedersen site aynı şekilde çalışır. " +
+      "<p>Siteyi geliştirmek için ziyaret istatistiklerini (Google Analytics), reklamlarımızın " +
+      "etkisini görmek için de reklam ölçümünü (Meta Pixel) kullanmak istiyoruz. Bunlar yalnızca " +
+      "sen izin verirsen çalışır; reddedersen site aynı şekilde çalışır. " +
       '<a href="' + legalHref + '">Çerez Politikası</a></p>' +
+      '<div class="consent__opts" hidden>' +
+      '<label class="consent__opt"><input type="checkbox" data-opt="analytics"' + (cur && cur.analytics ? " checked" : "") + " />" +
+      "<span><b>Analitik</b> Ziyaret istatistikleri (Google Analytics)</span></label>" +
+      '<label class="consent__opt"><input type="checkbox" data-opt="ads"' + (cur && cur.ads ? " checked" : "") + " />" +
+      "<span><b>Reklam</b> Reklam ölçümü ve kişiselleştirme (Meta Pixel, Google)</span></label>" +
+      "</div>" +
+      '<button type="button" class="consent__more" data-consent="more">Tercihleri seç</button>' +
       "</div>" +
       '<div class="consent__actions">' +
       '<button type="button" class="consent__btn" data-consent="no">Reddet</button>' +
@@ -148,7 +190,25 @@
       "</div>";
     banner.addEventListener("click", function (e) {
       var b = e.target.closest("[data-consent]");
-      if (b) decide(b.getAttribute("data-consent") === "yes");
+      if (!b) return;
+      var k = b.getAttribute("data-consent");
+      if (k === "more") {
+        /* Seçenekler açılınca "Kabul et" seçimi kaydeder. */
+        banner.querySelector(".consent__opts").hidden = false;
+        b.hidden = true;
+        var yes = banner.querySelector('[data-consent="yes"]');
+        yes.setAttribute("data-consent", "save");
+        yes.textContent = "Seçimi kaydet";
+        return;
+      }
+      if (k === "save") {
+        decide(
+          banner.querySelector('[data-opt="analytics"]').checked,
+          banner.querySelector('[data-opt="ads"]').checked
+        );
+        return;
+      }
+      decide(k === "yes", k === "yes");
     });
     banner.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && read()) close();
@@ -170,8 +230,9 @@
 
   function init() {
     var c = read();
-    if (c && c.analytics) loadGtm();
-    else if (!c && !passive) open(false);
+    if (c && c.analytics) loadGtm(!!c.ads);
+    if (c && c.ads) loadMeta();
+    if (!c && !passive) open(false);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();

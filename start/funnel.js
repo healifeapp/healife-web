@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261013f";
-import { ICONS } from "./icons.js?v=20261013f";
+import { CONFIG } from "./config.js?v=20261013g";
+import { ICONS } from "./icons.js?v=20261013g";
 import {
   dailyTargets,
   trainingLevel,
@@ -23,7 +23,7 @@ import {
   signIn,
   createCheckout,
   wait,
-} from "./services.js?v=20261013f";
+} from "./services.js?v=20261013g";
 
 /* ============================================================ ikonlar */
 
@@ -1438,7 +1438,9 @@ const BIND = {
     );
     app.querySelector("[data-free]").addEventListener("click", () => track("free_continue"));
     app.querySelector("[data-next]").addEventListener("click", () => {
-      track("plan_selected", { plan: S.planId });
+      const p = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];
+      // Ödemeye başlama tek kez, burada (ödeme ekranı her çizildiğinde değil).
+      track("checkout_start", { plan: p.id, value: p.price, currency: "TRY" });
       S.user ? go("checkout") : next();
     });
   },
@@ -1523,7 +1525,9 @@ const BIND = {
 
 function completePurchase(plan) {
   S.paid = true;
-  track("purchase", { value: plan.price, currency: "TRY", plan: plan.id });
+  // Reklam/analitik satın alması yalnız gerçek ödemede; önizleme demosu
+  // Meta/GA verisini kirletmesin. PayTR'de event_id = merchant_oid (CAPI ile eşleşir).
+  if (CONFIG.paymentProvider === "paytr") track("purchase", { value: plan.price, currency: "TRY", plan: plan.id });
   save();
   go("success", { replace: true });
 }
@@ -1578,9 +1582,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg?v=20261013f").then((r) => r.text()),
-        fetch("/start/atlas/back.svg?v=20261013f").then((r) => r.text()),
-        fetch("/start/atlas/focus.json?v=20261013f").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261013g").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261013g").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261013g").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));

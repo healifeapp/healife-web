@@ -46,7 +46,7 @@
     </noscript>
 
     <link rel="stylesheet" href="styles/tokens.css?v=20260917a" />
-    <link rel="stylesheet" href="styles/base.css?v=20260917a" />
+    <link rel="stylesheet" href="styles/base.css?v=20261013a" />
     <link rel="stylesheet" href="styles/sections.css?v=20261013a" />
     <link rel="stylesheet" href="styles/legal.css?v=20260917a" />
   </head>
@@ -987,6 +987,12 @@
                       <td>ABD</td>
                     </tr>
                     <tr>
+                      <th>Meta Platforms Ireland Ltd. / Meta Platforms, Inc.</th>
+                      <td>“Facebook ile Giriş”, uygulama reklam ölçümü (Meta SDK) ve, reklam izni verilirse, sitede Meta Pixel</td>
+                      <td>Facebook kullanıcı kimliği, e-posta; reklam ölçümü için cihaz/tarayıcı tanımlayıcıları, IP adresi, uygulama ve site olayları (iOS reklam kimliği yalnızca takip iznine onay verilirse)</td>
+                      <td>İrlanda / ABD</td>
+                    </tr>
+                    <tr>
                       <th>PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş.</th>
                       <td>hea-life.com üzerinden kartla ödeme</td>
                       <td>E-posta, sipariş numarası, tutar, ödeme sonucu (kart bilgisi PayTR'de kalır)</td>
@@ -1358,9 +1364,9 @@
                     </tr>
                     <tr>
                       <th>Reklam kimliği (IDFA)</th>
-                      <td>Apple / Google</td>
-                      <td><strong>Kullanılmıyor</strong></td>
-                      <td>Reklam kimliği toplanmamaktadır</td>
+                      <td>Apple / Meta</td>
+                      <td>Reklam kampanyalarının ölçümü (yalnızca iOS'ta izin verirseniz)</td>
+                      <td>Reklam kimliği; iOS'ta “Uygulamanın takip etmesine izin ver” istemine onay verilmedikçe paylaşılmaz</td>
                     </tr>
                     <tr>
                       <th>Yazı tipi önbelleği</th>
@@ -1371,9 +1377,17 @@
                   </tbody>
                 </table>
               </div>
+              <!-- 13.10.2026: Meta (uygulama SDK + web Pixel) eklendi — avukat onayından geçmeli. -->
               <p>
-                Uygulamada reklam SDK'sı (AdMob, Meta Ads vb.) veya attribution
-                SDK'sı (AppsFlyer, Adjust vb.) bulunmamaktadır.
+                Uygulamada Meta Platforms Ireland Ltd.'nin (Facebook) SDK'sı
+                bulunur; “Facebook ile Giriş” ve reklam kampanyalarımızın
+                ölçümü (uygulamanın yüklenmesi ve temel uygulama olayları) için
+                kullanılır. iOS'ta reklam kimliği, yalnızca sistemin takip izni
+                istemine onay vermeniz hâlinde Meta ile paylaşılır; izni
+                dilediğiniz zaman Ayarlar → Gizlilik → Takip bölümünden geri
+                alabilirsiniz. Uygulama içinde reklam gösteren bir SDK (AdMob
+                vb.) veya ayrı bir attribution SDK'sı (AppsFlyer, Adjust vb.)
+                bulunmamaktadır.
               </p>
 
               <h3>3.5. Bu internet sitesi</h3>
@@ -1384,7 +1398,15 @@
                 seçeneklerinden birini işaretleyebilirsiniz. Reddetmeniz
                 hâlinde site aynı şekilde çalışır; Google Tag Manager ve Google
                 Analytics yüklenmez ve tarayıcınıza analitik çerezi yazılmaz.
-                Sitede reklam veya yeniden pazarlama çerezi kullanılmaz.
+              </p>
+              <!-- 13.10.2026: Meta (uygulama SDK + web Pixel) eklendi — avukat onayından geçmeli. -->
+              <p>
+                Reklam çerezleri ayrı bir izne bağlıdır: çerez bandında “Kabul
+                et” veya “Tercihleri seç → Reklam” seçeneğini işaretlerseniz,
+                reklamlarımızın etkisini ölçmek ve ilgili kişilere reklam
+                gösterebilmek için Meta Pixel yüklenir. Bu izni vermezseniz
+                Meta Pixel yüklenmez ve reklam çerezi yazılmaz; analitik izni
+                bundan bağımsızdır.
               </p>
               <div class="legal__table">
                 <table>
@@ -1426,6 +1448,35 @@
                       <td>2 yıla kadar</td>
                       <td>Açık rıza</td>
                     </tr>
+                    <tr>
+                      <th>_fbp</th>
+                      <td>Reklam · Meta Pixel</td>
+                      <td>
+                        Tarayıcının ayırt edilmesi; reklamlardan gelen ziyaretlerin
+                        ve site içi dönüşümlerin (test başlatma, e-posta bırakma,
+                        satın alma) ölçülmesi
+                      </td>
+                      <td>3 ay</td>
+                      <td>Açık rıza</td>
+                    </tr>
+                    <tr>
+                      <th>_fbc</th>
+                      <td>Reklam · Meta Pixel</td>
+                      <td>Siteye hangi Meta reklamının tıklanarak gelindiğinin kaydı</td>
+                      <td>3 ay</td>
+                      <td>Açık rıza</td>
+                    </tr>
+                    <tr>
+                      <th>healife.funnel.v1</th>
+                      <td>Zorunlu · Healife (tarayıcı yerel depolaması)</td>
+                      <td>
+                        Plan testindeki cevapların, siz sayfayı kapatıp dönünce
+                        kaldığınız yerden devam edebilmeniz için cihazınızda
+                        tutulması. Tarafımıza iletilmez.
+                      </td>
+                      <td>Siz silene kadar</td>
+                      <td>Talep ettiğiniz hizmetin sunulması</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -1439,11 +1490,23 @@
                 anılan amaçla işlenmesini ve yurt dışına aktarılmasını kapsar.
               </p>
               <p>
+                Reklam iznini vermeniz hâlinde Meta Pixel; çerez kimliği, IP
+                adresi, tarayıcı ve cihaz bilgisi, ziyaret edilen sayfalar ve
+                site içi olaylar (test başlatma, e-posta bırakma, ödeme adımına
+                geçme, satın alma ve tutarı) gibi verileri Meta Platforms Ireland
+                Ltd.'ye iletir. Bu veriler Meta Platforms, Inc. tarafından
+                yurt dışındaki (ABD dâhil) sunucularda işlenebilir ve Meta'nın
+                kendi politikalarına göre reklam hizmetleri için kullanılabilir.
+                Onayınız, bu verilerin anılan amaçla işlenmesini ve yurt dışına
+                aktarılmasını kapsar.
+              </p>
+              <p>
                 Tercihinizi dilediğiniz zaman değiştirebilir veya onayınızı
                 geri alabilirsiniz:
                 <button type="button" class="linklike" data-consent-open>Çerez tercihlerini aç</button>.
-                Onayın geri alınması hâlinde Google Tag Manager yüklenmez ve
-                siteye ait Google Analytics çerezleri tarayıcınızdan silinir.
+                Onayın geri alınması hâlinde Google Tag Manager ve Meta Pixel
+                yüklenmez; siteye ait Google Analytics ve Meta çerezleri
+                tarayıcınızdan silinir.
                 Aynı bağlantı site alt bilgisindeki “Çerez tercihleri”
                 düğmesinde de bulunur.
               </p>
@@ -2286,6 +2349,6 @@
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();
     </script>
-    <script src="scripts/consent.js?v=20261013b" data-passive defer></script>
+    <script src="scripts/consent.js?v=20261013c" data-passive defer></script>
   </body>
 </html>
