@@ -72,9 +72,17 @@
      tarafındaki ilişkilendirmeyle ayrıca doğrulanmalı. */
   document.addEventListener("click", function (e) {
     if (!gtmLoaded) return;
-    var a = e.target.closest("[data-store], .js-store");
+    var a = e.target.closest("[data-store], .js-store, .js-funnel");
     if (!a) return;
     var section = a.closest("section, header, nav, footer");
+    // Funnel'a giden düğme (main.js js-store sınıfını kaldırıyor): mağaza
+    // tıklaması değil, testin başlangıcı — ayrı olay.
+    if (!a.classList.contains("js-store") && a.classList.contains("js-funnel")) {
+      window.gtag("event", "funnel_click", {
+        funnel_place: a.getAttribute("data-place") || "unknown"
+      });
+      return;
+    }
     var platform = a.getAttribute("data-store") ||
       document.documentElement.getAttribute("data-platform") || "desktop";
     window.gtag("event", "store_click", {

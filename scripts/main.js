@@ -58,6 +58,19 @@
     a.href = storeUrl(a.getAttribute("data-store"));
   });
 
+  /* ── Web funnel (/start) ────────────────────────────
+     "Planını gör" ve "Premium" düğmeleri funnel'ı açar. Ödeme (PayTR)
+     canlıya çıkana dek yalnızca önizlemede (Vercel) açık: hea-life.com'a
+     bu dosya yüklense bile gerçek ziyaretçi demo ödemeye düşmez, düğmeler
+     eskisi gibi mağazaya gider. Ödeme canlı olunca FUNNEL_LIVE = true. */
+  var FUNNEL_LIVE = false;
+  if (FUNNEL_LIVE || window.location.hostname !== "hea-life.com") {
+    $$(".js-funnel").forEach(function (a) {
+      a.classList.remove("js-store");
+      a.href = "/start" + (utm ? "?" + utm : "");
+    });
+  }
+
   $$(".js-store").forEach(function (a) {
     if (platform === "desktop") {
       a.href = "#indir";
