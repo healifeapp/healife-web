@@ -25,7 +25,7 @@
   var GA_ID = "G-1S09MJPFZS";
   /* Meta Events Manager > Veri kaynakları > Piksel kimliği. Boşken piksel
      hiç yüklenmez (reklam izni verilse bile). */
-  var META_PIXEL_ID = "";
+  var META_PIXEL_ID = "1783502096331319";
   var KEY = "hl-consent";
   var VERSION = 2;
   var passive = document.currentScript && document.currentScript.hasAttribute("data-passive");
