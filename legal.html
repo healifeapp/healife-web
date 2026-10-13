@@ -1449,6 +1449,17 @@
                       <td>Açık rıza</td>
                     </tr>
                     <tr>
+                      <th>_clck, _clsk</th>
+                      <td>Analitik · Microsoft Clarity</td>
+                      <td>
+                        Ziyaretçinin ve oturumun ayırt edilmesi; sayfa
+                        kullanımının (tıklama, kaydırma, fare hareketi) kaydı ve
+                        ısı haritaları
+                      </td>
+                      <td>1 yıla kadar (_clck), 1 gün (_clsk)</td>
+                      <td>Açık rıza</td>
+                    </tr>
+                    <tr>
                       <th>_fbp</th>
                       <td>Reklam · Meta Pixel</td>
                       <td>
@@ -1489,6 +1500,16 @@
                 yurt dışındaki sunucularda işlenebilir. Onayınız, bu verilerin
                 anılan amaçla işlenmesini ve yurt dışına aktarılmasını kapsar.
               </p>
+              <!-- 13.10.2026: Microsoft Clarity eklendi — avukat onayından geçmeli. -->
+              <p>
+                Analitik iznini vermeniz hâlinde ayrıca Microsoft Clarity,
+                sayfaları nasıl kullandığınızı (tıklama, kaydırma, fare ve
+                dokunma hareketleri) kaydederek oturum tekrarları ve ısı
+                haritaları oluşturur. Formlara yazdığınız metinler (ör. e-posta)
+                Clarity tarafından maskelenir ve kaydedilmez. Bu veriler
+                Microsoft Corporation tarafından yurt dışındaki (ABD dâhil)
+                sunucularda işlenebilir; onayınız bu aktarımı da kapsar.
+              </p>
               <p>
                 Reklam iznini vermeniz hâlinde Meta Pixel; çerez kimliği, IP
                 adresi, tarayıcı ve cihaz bilgisi, ziyaret edilen sayfalar ve
@@ -1504,9 +1525,9 @@
                 Tercihinizi dilediğiniz zaman değiştirebilir veya onayınızı
                 geri alabilirsiniz:
                 <button type="button" class="linklike" data-consent-open>Çerez tercihlerini aç</button>.
-                Onayın geri alınması hâlinde Google Tag Manager ve Meta Pixel
-                yüklenmez; siteye ait Google Analytics ve Meta çerezleri
-                tarayıcınızdan silinir.
+                Onayın geri alınması hâlinde Google Tag Manager, Microsoft
+                Clarity ve Meta Pixel yüklenmez; siteye ait Google Analytics,
+                Clarity ve Meta çerezleri tarayıcınızdan silinir.
                 Aynı bağlantı site alt bilgisindeki “Çerez tercihleri”
                 düğmesinde de bulunur.
               </p>
@@ -2349,6 +2370,6 @@
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();
     </script>
-    <script src="scripts/consent.js?v=20261013d" data-passive defer></script>
+    <script src="scripts/consent.js?v=20261013e" data-passive defer></script>
   </body>
 </html>

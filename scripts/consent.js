@@ -26,11 +26,27 @@
   /* Meta Events Manager > Veri kaynakları > Piksel kimliği. Boşken piksel
      hiç yüklenmez (reklam izni verilse bile). */
   var META_PIXEL_ID = "1783502096331319";
+  /* Microsoft Clarity (web projesi) — oturum kaydı + ısı haritası. Analitik
+     iznine bağlı. Uygulamanın Clarity projesi ayrıdır (yx3zxtruqw). */
+  var CLARITY_ID = "yx3zlo43xc";
   var KEY = "hl-consent";
   var VERSION = 2;
   var passive = document.currentScript && document.currentScript.hasAttribute("data-passive");
   var gtmLoaded = false;
   var metaLoaded = false;
+  var clarityLoaded = false;
+
+  function loadClarity() {
+    if (clarityLoaded || passive || !CLARITY_ID) return;
+    clarityLoaded = true;
+    /* eslint-disable */
+    (function(c,l,a,r,i,t,y){
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", CLARITY_ID);
+    /* eslint-enable */
+  }
   var banner = null;
   var lastFocus = null;
 
@@ -129,7 +145,7 @@
     var domains = ["", host, "." + host, "." + host.split(".").slice(-2).join(".")];
     document.cookie.split(";").forEach(function (c) {
       var name = c.split("=")[0].trim();
-      if (!/^(_ga|_gid|_gat|_gcl|_fbp|_fbc)/.test(name)) return;
+      if (!/^(_ga|_gid|_gat|_gcl|_fbp|_fbc|_clck|_clsk|CLID|MUID|ANONCHK|SM)$|^_ga_/.test(name)) return;
       domains.forEach(function (d) {
         document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" + (d ? "; domain=" + d : "");
       });
@@ -156,7 +172,10 @@
       location.reload();
       return;
     }
-    if (analytics) loadGtm(ads);
+    if (analytics) {
+      loadGtm(ads);
+      loadClarity();
+    }
     if (ads) loadMeta();
   }
 
@@ -172,13 +191,13 @@
     banner.innerHTML =
       '<div class="consent__text">' +
       '<p class="consent__title">Çerez tercihin</p>' +
-      "<p>Siteyi geliştirmek için ziyaret istatistiklerini (Google Analytics), reklamlarımızın " +
+      "<p>Siteyi geliştirmek için ziyaret istatistiklerini ve sayfa kullanımını (Google Analytics, Microsoft Clarity), reklamlarımızın " +
       "etkisini görmek için de reklam ölçümünü (Meta Pixel) kullanmak istiyoruz. Bunlar yalnızca " +
       "sen izin verirsen çalışır; reddedersen site aynı şekilde çalışır. " +
       '<a href="' + legalHref + '">Çerez Politikası</a></p>' +
       '<div class="consent__opts" hidden>' +
       '<label class="consent__opt"><input type="checkbox" data-opt="analytics"' + (cur && cur.analytics ? " checked" : "") + " />" +
-      "<span><b>Analitik</b> Ziyaret istatistikleri (Google Analytics)</span></label>" +
+      "<span><b>Analitik</b> Ziyaret istatistikleri ve sayfa kullanımı (Google Analytics, Microsoft Clarity)</span></label>" +
       '<label class="consent__opt"><input type="checkbox" data-opt="ads"' + (cur && cur.ads ? " checked" : "") + " />" +
       "<span><b>Reklam</b> Reklam ölçümü ve kişiselleştirme (Meta Pixel, Google)</span></label>" +
       "</div>" +
@@ -230,7 +249,10 @@
 
   function init() {
     var c = read();
-    if (c && c.analytics) loadGtm(!!c.ads);
+    if (c && c.analytics) {
+      loadGtm(!!c.ads);
+      loadClarity();
+    }
     if (c && c.ads) loadMeta();
     if (!c && !passive) open(false);
   }
