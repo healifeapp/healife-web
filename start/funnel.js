@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261013c";
-import { ICONS } from "./icons.js?v=20261013c";
+import { CONFIG } from "./config.js?v=20261013d";
+import { ICONS } from "./icons.js?v=20261013d";
 import {
   dailyTargets,
   trainingLevel,
@@ -23,7 +23,7 @@ import {
   signIn,
   createCheckout,
   wait,
-} from "./services.js?v=20261013c";
+} from "./services.js?v=20261013d";
 
 /* ============================================================ ikonlar */
 
@@ -247,7 +247,7 @@ const STEPS = [
   { id: "result", kind: "result", chrome: "minimal", wide: true },
   { id: "paywall", kind: "paywall", chrome: "minimal" },
   { id: "account", kind: "account", chrome: "minimal", aside: "result" },
-  { id: "checkout", kind: "checkout", chrome: "minimal", aside: "result" },
+  { id: "checkout", kind: "checkout", chrome: "minimal" },
   { id: "success", kind: "success", chrome: false },
 ];
 
@@ -402,15 +402,25 @@ if (matchMedia("(min-width: 1024px)").matches) {
 function fit() {
   const el = app.querySelector("[data-fit]");
   if (!el) return;
-  const min = Number(el.dataset.fit) || 120;
+  const min = Number(el.dataset.fit ?? 120);
+  // data-fit-to: sayfa uzun olabilir (paywall); yalnız o öğe dock'un üstünde
+  // görünsün yeter.
+  const target = el.dataset.fitTo && app.querySelector(el.dataset.fitTo);
+  const dock = app.querySelector(".dock");
+  const overflow = () =>
+    target
+      ? Math.ceil(target.getBoundingClientRect().bottom + scrollY - (innerHeight - (dock?.offsetHeight || 0)))
+      : document.scrollingElement.scrollHeight - innerHeight;
   el.style.removeProperty("--fit");
   // Küçültme her zaman taşmayı bire bir azaltmıyor (ortalama, sarılan
   // satırlar); birkaç turda yakınsar.
   for (let i = 0; i < 4; i++) {
-    const over = document.scrollingElement.scrollHeight - innerHeight;
+    const over = overflow();
     const h = el.getBoundingClientRect().height;
     if (over <= 0 || h <= min) break;
-    el.style.setProperty("--fit", `${Math.max(min, Math.floor(h - over))}px`);
+    let v = Math.max(min, Math.floor(h - over));
+    if (min === 0 && v < 48) v = 0; // süs görseli: kırıntı bırakma, hiç gösterme
+    el.style.setProperty("--fit", `${v}px`);
   }
   el.dispatchEvent(new Event("fit"));
 }
@@ -756,6 +766,7 @@ const VIEWS = {
       ${!android && !ios ? `<p class="fine center">Telefonun Android ise <b>Google</b> ile devam et; Apple ile giriş uygulamada yalnızca iPhone'da var.</p>` : ""}
       <p class="err" id="authErr" hidden></p>
       <div class="tip">${ai("shieldCheck")}<p>Şifre yok, ekstra form yok. E-postan: <b>${esc(S.email)}</b></p></div>
+      ${legalFoot()}
     </section>`;
   },
 
@@ -939,7 +950,7 @@ function paywallView() {
 
   return `
   <section class="paywall">
-    <div class="pw-hero" aria-hidden="true">
+    <div class="pw-hero" aria-hidden="true" data-fit="0" data-fit-to=".plans">
       <div class="pw-hero__glow"></div>
       <img src="${IMG(avatar())}" alt="" class="pw-hero__img" />
     </div>
@@ -983,8 +994,13 @@ function paywallView() {
     </div>
 
     <p class="fine center legal">Abonelik, iptal edene kadar seçtiğin dönem sonunda aynı ücretle otomatik yenilenir. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul edersin.</p>
+    ${legalFoot()}
   </section>
   <div class="dock dock--pw">
+    <p class="pw-total">${(() => {
+      const p = plans.find((x) => x.id === S.planId) || plans[0];
+      return `Bugün <b>${money(p.price)}</b> · ${p.periodLabel} yenilenir · istediğin zaman iptal`;
+    })()}</p>
     <button class="btn btn--primary btn--block" type="button" data-next>Devam et${ai("arrowRight")}</button>
     <a class="free-link" href="${freeUrl()}" data-free>Şimdilik ücretsiz sürümle devam et</a>
   </div>`;
@@ -992,40 +1008,92 @@ function paywallView() {
 
 /* ------------------------------------------------------------ ödeme */
 
+// Satın alma adımlarının altındaki yasal bilgi: satıcı kimliği + sözleşmeler.
+// Ödeme kuruluşları ve tüketici mevzuatı bunları satış sayfasında arar.
+const legalFoot = () => `
+  <footer class="lfoot">
+    <nav>
+      <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>
+      <a href="${CONFIG.legal.privacy}" target="_blank" rel="noopener">Gizlilik</a>
+      <a href="${CONFIG.legal.kvkk}" target="_blank" rel="noopener">KVKK</a>
+      <a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme</a>
+      <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış</a>
+      <a href="mailto:${CONFIG.seller.email}">İletişim</a>
+    </nav>
+    <p>${CONFIG.seller.name}<br />${CONFIG.seller.address} · ${CONFIG.seller.tax}</p>
+  </footer>`;
+
+// Sonraki tahsilat tarihi (otomatik yenileme), plan dönemine göre.
+function renewDate(plan) {
+  const d = new Date();
+  if (plan.id === "yearly") d.setFullYear(d.getFullYear() + 1);
+  else if (plan.id === "monthly") d.setMonth(d.getMonth() + 1);
+  else d.setDate(d.getDate() + 7);
+  return d.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+}
+
+const UNIT = { yearly: "yıl", monthly: "ay", weekly: "hafta" };
+
 function checkoutView() {
   const p = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];
+  const via = S.user?.method === "apple" ? ["apple", "Apple hesabı"] : ["google", "Google hesabı"];
+  const email = S.user?.email || S.email;
   return `
   <section class="checkout">
-    ${head({}, "Ödeme", null)}
-    <div class="order">
-      <div class="order__row"><span class="order__ic">${ai("starFill")}</span><div><b>Healife Premium</b><small>${p.title} · ${p.periodLabel} yenilenir</small></div><b>${money(p.price)}</b></div>
-      <div class="order__total"><span>Bugün ödenecek</span><b>${money(p.price)}</b></div>
-    </div>
-    <label class="consent consent--legal">
-      <input type="checkbox" id="legalOk" />
-      <span><a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme Formu</a>'nu ve <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış Sözleşmesi</a>'ni okudum, kabul ediyorum. Aboneliğin ödemeyle birlikte hemen başlamasını ve bu nedenle cayma hakkımın sona ereceğini onaylıyorum.</span>
-    </label>
-    <div class="pay" id="pay"><div class="pay__loading"><span class="spin"></span>Güvenli ödeme formu yükleniyor…</div></div>
-    <p class="secure">${ai("lock")}256-bit SSL · 3D Secure · PayTR altyapısı. Kart bilgilerin Healife'a ulaşmaz.</p>
-    <div class="seller">
-      <b>Satıcı</b>
-      <span>${CONFIG.seller.name}</span>
-      <span>${CONFIG.seller.address}</span>
-      <span>${CONFIG.seller.tax} · <a href="mailto:${CONFIG.seller.email}">${CONFIG.seller.email}</a></span>
-    </div>
-  </section>
-  <div class="dock dock--pay" id="payDock" hidden>
-    <p class="err" id="payErr" hidden>Devam etmek için sözleşme onayını işaretle.</p>
-    <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${money(p.price)} öde</button>
-    <div class="soon" id="soon" hidden>
-      ${ai("info")}
-      <div>
-        <b>Web üzerinden ödeme çok yakında</b>
-        <p>Kartla ödeme altyapımız şu an devreye alınıyor; bu işlemden ücret alınmadı. Şimdilik uygulamayı indirip aboneliği uygulama içinden başlatabilirsin.</p>
-        <a class="btn btn--ghost btn--block" href="${freeUrl()}">Uygulamayı indir</a>
+    <div class="co">
+      <aside class="co__sum" aria-label="Sipariş özeti">
+        <span class="eyebrow">Sipariş özeti</span>
+        <div class="co__prod">
+          <span class="co__ic">${ai("starFill")}</span>
+          <div><b>Healife Premium</b><small>${p.title} abonelik</small></div>
+        </div>
+        <div class="co__price"><b>${money(p.price)}</b><span>/ ${UNIT[p.id] || p.periodLabel}</span></div>
+        <dl class="co__lines">
+          <div><dt>Healife Premium · ${p.title}</dt><dd>${money(p.price)}</dd></div>
+          <div><dt>KDV</dt><dd>Fiyata dâhil</dd></div>
+          <div class="is-total"><dt>Bugün ödenecek</dt><dd>${money(p.price)}</dd></div>
+        </dl>
+        <p class="co__renew">${ai("refresh")}<span>Abonelik <b>${renewDate(p)}</b> tarihinde ${money(p.price)} ile yenilenir. İstediğin zaman iptal edebilirsin.</span></p>
+        <ul class="co__incl">
+          <li>${ai("check")}Sana özel antrenman ve beslenme planı</li>
+          <li>${ai("check")}Sınırsız AI koç ve fotoğrafla kalori hesaplama</li>
+          <li>${ai("check")}176 videolu egzersiz, 100+ tarif</li>
+        </ul>
+        <button class="co__change" type="button" data-change>Planı değiştir</button>
+      </aside>
+
+      <div class="co__form">
+        <h1 class="co__title">Ödeme</h1>
+        <div class="co__acct">
+          <span class="co__acct-ic">${BRAND[via[0]]}</span>
+          <div><small>${via[1]}</small><b>${esc(email || "—")}</b></div>
+          ${ai("checkCircle", "co__acct-ok")}
+        </div>
+        <label class="consent consent--legal">
+          <input type="checkbox" id="legalOk" />
+          <span><a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme Formu</a>'nu ve <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış Sözleşmesi</a>'ni okudum, kabul ediyorum. Aboneliğin ödemeyle birlikte hemen başlamasını ve bu nedenle cayma hakkımın sona ereceğini onaylıyorum.</span>
+        </label>
+        <div class="pay" id="pay"><div class="pay__loading"><span class="spin"></span>Güvenli ödeme formu yükleniyor…</div></div>
+        <div class="co__secure">
+          <span>${ai("lockFill")}PayTR güvencesiyle · 256-bit SSL · 3D Secure</span>
+          <span class="cards" aria-label="Kabul edilen kartlar"><i class="card-mark card-mark--visa">VISA</i><i class="card-mark card-mark--mc"><b></b><b></b></i><i class="card-mark card-mark--troy">troy</i></span>
+        </div>
+        <div class="dock dock--pay" id="payDock" hidden>
+          <p class="err" id="payErr" hidden>Devam etmek için sözleşme onayını işaretle.</p>
+          <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${money(p.price)} öde</button>
+          <div class="soon" id="soon" hidden>
+            ${ai("info")}
+            <div>
+              <b>Web üzerinden ödeme çok yakında</b>
+              <p>Kartla ödeme altyapımız şu an devreye alınıyor; bu işlemden ücret alınmadı. Şimdilik uygulamayı indirip aboneliği uygulama içinden başlatabilirsin.</p>
+              <a class="btn btn--ghost btn--block" href="${freeUrl()}">Uygulamayı indir</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>`;
+    ${legalFoot()}
+  </section>`;
 }
 
 /* ------------------------------------------------------------ başarı */
@@ -1364,6 +1432,7 @@ const BIND = {
   },
 
   checkout: async () => {
+    app.querySelector("[data-change]").addEventListener("click", () => go("paywall"));
     const box = app.querySelector("#pay");
     const plan = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];
     try {

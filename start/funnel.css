@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: "AppIcons";
-  src: url("/start/fonts/AppIcons.ttf?v=20261013c") format("truetype");
+  src: url("/start/fonts/AppIcons.ttf?v=20261013d") format("truetype");
   font-display: block;
 }
 
@@ -1616,7 +1616,8 @@ noscript p {
 }
 .pw-hero {
   position: relative;
-  height: 210px;
+  overflow: hidden;
+  height: var(--fit, 210px);
   display: flex;
   justify-content: center;
   margin-top: 0.25rem;
@@ -1861,46 +1862,6 @@ noscript p {
 
 /* ============================================================ ödeme */
 
-.order {
-  padding: 1rem;
-  border-radius: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-.order__row {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-.order__row > div {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.order__row small {
-  color: var(--text-3);
-  font-size: 0.8rem;
-}
-.order__ic {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: var(--lime);
-  color: var(--on-lime);
-}
-.order__total {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.9rem;
-  padding-top: 0.9rem;
-  border-top: 1px solid var(--border);
-  font-weight: 700;
-}
-.order__total b {
-  color: var(--lime);
-}
 .pay {
   margin-top: 1rem;
 }
@@ -1964,12 +1925,6 @@ noscript p {
   margin-top: 0;
   background: var(--surface);
 }
-.checkout .qhead {
-  margin: 0.25rem 0 1rem;
-}
-.checkout .secure {
-  margin: 1rem 0;
-}
 .consent--legal {
   margin: 0.75rem 0;
   padding: 0.75rem 0.9rem;
@@ -1999,19 +1954,6 @@ noscript p {
 .soon p {
   margin: 0 0 0.85rem;
   font-size: 0.86rem;
-  color: var(--text-2);
-}
-.seller {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  margin: 0 0 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.74rem;
-  color: var(--text-3);
-}
-.seller b {
   color: var(--text-2);
 }
 .demo-note {
@@ -2461,6 +2403,300 @@ noscript p {
   }
 }
 
+/* ============================================================ ödeme (sipariş özeti + form) */
+
+.funnel--checkout {
+  --col: 1000px;
+}
+.co {
+  display: grid;
+  gap: 1rem;
+}
+.co__sum {
+  padding: 1.1rem 1.15rem;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.co__sum .eyebrow {
+  display: block;
+  margin-bottom: 0.8rem;
+}
+.co__prod {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.co__prod div {
+  display: flex;
+  flex-direction: column;
+}
+.co__prod small {
+  color: var(--text-3);
+  font-size: 0.8rem;
+}
+.co__ic {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--lime);
+  color: var(--on-lime);
+}
+.co__price {
+  display: none;
+}
+.co__lines {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.9rem 0 0;
+  font-size: 0.88rem;
+}
+.co__lines div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.co__lines dt {
+  color: var(--text-2);
+}
+.co__lines dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.co__lines .is-total {
+  margin-top: 0.3rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.co__lines .is-total dt {
+  color: var(--text);
+}
+.co__renew {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.8rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.co__renew .ai {
+  margin-top: 0.1rem;
+  font-size: 1rem;
+  color: var(--lime);
+}
+.co__renew b {
+  font-weight: 600;
+  color: var(--text-2);
+}
+.co__incl {
+  display: none;
+}
+.co__change {
+  margin-top: 0.6rem;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--text-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.co__change:hover {
+  color: var(--text);
+}
+.co__title {
+  margin: 0.5rem 0 0.9rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.co__acct {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.co__acct div {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.co__acct small {
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+.co__acct b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.92rem;
+}
+.co__acct-ic {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #fff;
+  color: #000;
+}
+.co__acct-ok {
+  color: var(--lime);
+}
+.co__secure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: 0.9rem 0 0.25rem;
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+.co__secure > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.co__secure .ai {
+  font-size: 0.95rem;
+  color: var(--text-2);
+}
+.cards {
+  display: flex;
+  gap: 0.35rem;
+}
+.card-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  min-width: 38px;
+  padding: 0 0.4rem;
+  border-radius: 5px;
+  background: #fff;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+}
+.card-mark--visa {
+  color: #1a1f71;
+  font-style: italic;
+  font-size: 0.72rem;
+}
+.card-mark--mc b {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #eb001b;
+}
+.card-mark--mc b + b {
+  margin-left: -5px;
+  background: #f79e1b;
+  mix-blend-mode: multiply;
+}
+.card-mark--troy {
+  color: #00a19b;
+  font-size: 0.74rem;
+}
+.co__form .dock {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+/* satın alma adımlarının yasal alt bilgisi */
+.lfoot {
+  margin: 1.5rem 0 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+.lfoot nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.lfoot a {
+  color: var(--text-2);
+}
+.lfoot a:hover {
+  color: var(--text);
+}
+.lfoot p {
+  margin: 0;
+  line-height: 1.5;
+}
+/* Tutar satırı dock'un saydam degradesine denk gelmesin: degrade kısa, zemin dolu. */
+.dock--pw {
+  padding-top: 1.1rem;
+  background: linear-gradient(rgba(18, 18, 20, 0), var(--bg) 0.9rem);
+}
+.pw-total {
+  margin: 0 0 0.55rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+.pw-total b {
+  color: var(--text);
+}
+
+@media (min-width: 1024px) {
+  .co {
+    grid-template-columns: 1fr 1.15fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .co__sum {
+    position: sticky;
+    top: 5.5rem;
+    padding: 1.75rem;
+  }
+  .co__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    margin: 1.25rem 0 0.25rem;
+  }
+  .co__price b {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .co__price span {
+    color: var(--text-3);
+  }
+  .co__incl {
+    display: grid;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 1.1rem 0 0;
+    padding: 1rem 0 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-2);
+  }
+  .co__incl li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .co__incl .ai {
+    color: var(--lime);
+  }
+}
+
 /* ============================================================ tek ekran */
 
 .gender .gcard__img {
@@ -2504,6 +2740,59 @@ noscript p {
     height: 44px;
     margin-bottom: 0.6rem;
     font-size: 1.25rem;
+  }
+  .pw-stats {
+    margin-bottom: 1rem;
+  }
+  .pw-stats > div {
+    padding-block: 0.55rem;
+  }
+  .plans {
+    gap: 0.55rem;
+  }
+  .plan {
+    min-height: 64px;
+    padding-block: 0.65rem;
+  }
+}
+
+/* Mobil ödeme: özet tek satıra yakın (ürün + tutar + yenileme), form hemen altında. */
+@media (max-width: 1023px) {
+  .co__sum {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 1rem;
+    padding: 0.9rem 1rem;
+  }
+  .co__sum .eyebrow,
+  .co__lines > div:not(.is-total),
+  .co__lines .is-total dt {
+    display: none;
+  }
+  .co__lines,
+  .co__lines .is-total {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .co__lines .is-total dd {
+    font-size: 1.1rem;
+  }
+  .co__renew,
+  .co__change {
+    grid-column: 1 / -1;
+  }
+  .co__renew {
+    margin-top: 0.7rem;
+  }
+  .co__change {
+    justify-self: start;
+    margin-top: 0.4rem;
+  }
+  .co__title {
+    margin: 0.4rem 0 0.7rem;
+    font-size: 1.2rem;
   }
 }
 
