@@ -21,6 +21,10 @@ SAYFALAR
                     start/config.js (paymentProvider, authProvider, fiyatlar).
                     PayTR icin .htaccess CSP'de frame-src www.paytr.com acik.
                     Durumu sifirlamak icin: /start/?sifirla
+                    Gorseller (start/img) mobil uygulamanin assets/images'indan
+                    WebP'ye cevrildi; ikonlar uygulamanin AppIcons.ttf fontu.
+                    start/atlas/*.svg: flutter_body_atlas kas cizimi, Ryan Graves,
+                    CC BY 4.0 — atif sayfada harita altinda yaziyor, SILMEYIN.
   yonetim.html      Ekip ici gizli yonetim sayfasi (premium ver/kaldir).
                     noindex, siteden link YOK, sitemap.xml'de YOK.
                     API: dcp-humanos-410d767c97ce.herokuapp.com — bu
