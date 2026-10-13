@@ -202,6 +202,7 @@ export async function signIn(method, answers) {
 export async function createCheckout({ plan, email, userId }) {
   track("checkout_start", { plan: plan.id, value: plan.price, currency: "TRY" });
   if (CONFIG.paymentProvider === "demo") return { mode: "demo" };
+  if (CONFIG.paymentProvider === "pending") return { mode: "pending" };
 
   const res = await fetch(`${CONFIG.apiBase}/web/checkout/paytr`, {
     method: "POST",

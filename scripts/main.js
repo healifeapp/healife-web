@@ -59,11 +59,12 @@
   });
 
   /* ── Web funnel (/start) ────────────────────────────
-     "Planını gör" ve "Premium" düğmeleri funnel'ı açar. Ödeme (PayTR)
-     canlıya çıkana dek yalnızca önizlemede (Vercel) açık: hea-life.com'a
-     bu dosya yüklense bile gerçek ziyaretçi demo ödemeye düşmez, düğmeler
-     eskisi gibi mağazaya gider. Ödeme canlı olunca FUNNEL_LIVE = true. */
-  var FUNNEL_LIVE = false;
+     "Planını gör", "İndir", "Ücretsiz başla" ve "Premium" düğmeleri
+     funnel'ı açar. 13.10.2026 canlıya alındı (PayTR inceleme için satış
+     sayfasını görmek istedi). Ödeme bağlanana dek canlıda start/config.js
+     "pending" kipinde: ödeme alınmaz, sahte başarı ekranı yok.
+     Kapatmak için FUNNEL_LIVE = false → düğmeler eskisi gibi mağazaya. */
+  var FUNNEL_LIVE = true;
   if (FUNNEL_LIVE || window.location.hostname !== "hea-life.com") {
     $$(".js-funnel").forEach(function (a) {
       a.classList.remove("js-store");

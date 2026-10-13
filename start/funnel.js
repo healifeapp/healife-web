@@ -826,7 +826,7 @@ const FEATURES = [
 ];
 
 const FAQ = [
-  ["Aboneliğimi nasıl iptal ederim?", "Hesabından tek tıkla iptal edebilirsin. İptal ettiğinde ödediğin dönemin sonuna kadar premium açık kalır, sonra yenilenmez."],
+  ["Aboneliğimi nasıl iptal ederim?", "Web'den başlattığın aboneliği destek@hea-life.com adresine yazarak istediğin zaman iptal edebilirsin. İptal ettiğinde ödediğin dönemin sonuna kadar premium açık kalır, sonra yenilenmez."],
   ["Uygulamayı nasıl kullanacağım?", "Ödemeden sonra Healife'ı App Store veya Google Play'den indir ve burada kullandığın Apple ya da Google hesabıyla giriş yap. Planın ve premium hazır olur."],
   ["Planım nasıl hazırlanıyor?", "Kalori hedefin yaş, boy, kilo, cinsiyet ve aktivite seviyene göre Mifflin-St Jeor formülüyle hesaplanır. Antrenman seviyen deneyim ve performans cevaplarınla belirlenir; program hedefine ve gün sayına göre seçilir."],
   ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin Healife'a ulaşmaz, saklanmaz."],
@@ -918,8 +918,18 @@ function checkoutView() {
       <div class="order__row"><span class="order__ic">${ai("starFill")}</span><div><b>Healife Premium</b><small>${p.title} · ${p.periodLabel} yenilenir</small></div><b>${money(p.price)}</b></div>
       <div class="order__total"><span>Bugün ödenecek</span><b>${money(p.price)}</b></div>
     </div>
+    <label class="consent consent--legal">
+      <input type="checkbox" id="legalOk" />
+      <span><a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme Formu</a>'nu ve <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış Sözleşmesi</a>'ni okudum, kabul ediyorum. Aboneliğin ödemeyle birlikte hemen başlamasını ve bu nedenle cayma hakkımın sona ereceğini onaylıyorum.</span>
+    </label>
     <div class="pay" id="pay"><div class="pay__loading"><span class="spin"></span>Güvenli ödeme formu yükleniyor…</div></div>
     <p class="secure">${ai("lock")}256-bit SSL · 3D Secure · PayTR altyapısı. Kart bilgilerin Healife'a ulaşmaz.</p>
+    <div class="seller">
+      <b>Satıcı</b>
+      <span>${CONFIG.seller.name}</span>
+      <span>${CONFIG.seller.address}</span>
+      <span>${CONFIG.seller.tax} · <a href="mailto:${CONFIG.seller.email}">${CONFIG.seller.email}</a></span>
+    </div>
   </section>`;
 }
 
@@ -1261,6 +1271,7 @@ const BIND = {
         box.innerHTML = `<iframe class="pay__frame" src="${co.url}" title="Güvenli ödeme" allow="payment"></iframe>`;
         return;
       }
+      const live = co.mode === "demo";
       box.innerHTML = `
         <div class="pay__demo">
           <div class="cardform" aria-hidden="true">
@@ -1268,10 +1279,37 @@ const BIND = {
             <div class="cf-row"><span>Kart numarası</span><i>•••• •••• •••• ••••</i></div>
             <div class="cf-2"><div class="cf-row"><span>Son kullanma</span><i>AA/YY</i></div><div class="cf-row"><span>CVC</span><i>•••</i></div></div>
           </div>
-          <p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>
-          <button class="btn btn--primary btn--block" type="button" id="demoPay">${ai("lock")}${money(plan.price)} öde</button>
+          ${live ? `<p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>` : ""}
+          <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${money(plan.price)} öde</button>
+          <p class="err" id="payErr" hidden>Devam etmek için sözleşme onayını işaretle.</p>
+          <div class="soon" id="soon" hidden>
+            ${ai("info")}
+            <div>
+              <b>Web üzerinden ödeme çok yakında</b>
+              <p>Kartla ödeme altyapımız şu an devreye alınıyor; bu işlemden ücret alınmadı. Şimdilik uygulamayı indirip aboneliği uygulama içinden başlatabilirsin.</p>
+              <a class="btn btn--ghost btn--block" href="${freeUrl()}">Uygulamayı indir</a>
+            </div>
+          </div>
         </div>`;
-      box.querySelector("#demoPay").addEventListener("click", async (e) => {
+      const pay = box.querySelector("#demoPay");
+      const ok = app.querySelector("#legalOk");
+      const err = box.querySelector("#payErr");
+      ok.addEventListener("change", () => {
+        pay.classList.toggle("is-dim", !ok.checked);
+        if (ok.checked) err.hidden = true;
+      });
+      pay.addEventListener("click", async (e) => {
+        if (!ok.checked) {
+          err.hidden = false;
+          shake(ok.closest("label"));
+          return;
+        }
+        if (!live) {
+          track("payment_pending_click", { plan: plan.id });
+          box.querySelector("#soon").hidden = false;
+          pay.hidden = true;
+          return;
+        }
         e.currentTarget.disabled = true;
         e.currentTarget.innerHTML = `<span class="spin"></span>İşleniyor…`;
         await wait(1200);

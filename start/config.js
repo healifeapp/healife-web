@@ -5,9 +5,12 @@
 export const CONFIG = {
   apiBase: "https://dcp-humanos-410d767c97ce.herokuapp.com",
 
-  // "demo" → ödeme formu yerine bir yer tutucu + "ödemeyi tamamla" düğmesi.
-  // "paytr" → backend'den iFrame token'ı alınır, PayTR formu sayfaya gömülür.
-  paymentProvider: "demo",
+  // "demo"    → yer tutucu form + "öde" düğmesi başarı ekranına geçer (yalnız önizleme).
+  // "pending" → form + onaylar görünür ama ödeme alınmaz; "çok yakında" uyarısı.
+  //             Canlı sitede (hea-life.com) PayTR bağlanana dek bu kip: gerçek
+  //             ziyaretçi sahte "Premium'un aktif" ekranı görmesin.
+  // "paytr"   → backend'den iFrame token'ı alınır, PayTR formu sayfaya gömülür.
+  paymentProvider: /(^|\.)hea-life\.com$/.test(location.hostname) ? "pending" : "demo",
 
   // "demo" → giriş düğmeleri sahte bir kullanıcı üretir.
   // "live" → Apple/Google kimlik doğrulaması + backend /login-apple|google.
@@ -39,5 +42,15 @@ export const CONFIG = {
     terms: "/legal.html#kullanim-kosullari",
     privacy: "/legal.html#gizlilik",
     kvkk: "/legal.html#kvkk",
+    preInfo: "/legal.html#on-bilgilendirme",
+    distanceSale: "/legal.html#mesafeli-satis",
+  },
+
+  // Satıcı bilgileri (legal.html "Hizmet sağlayıcı bilgileri" ile aynı).
+  seller: {
+    name: "Healife Sağlık Ürünleri Pazarlama Sanayi İç ve Dış Ticaret Limited Şirketi",
+    address: "Atakent Mah. Haldun Taner Sk. No: 1 Ümraniye/İstanbul",
+    tax: "Alemdağ V.D. · 4610896992",
+    email: "destek@hea-life.com",
   },
 };

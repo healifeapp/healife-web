@@ -1951,6 +1951,54 @@ noscript p {
   letter-spacing: 0.06em;
   color: #9a9c92;
 }
+.btn.is-dim {
+  opacity: 0.45;
+  box-shadow: none;
+}
+.consent--legal {
+  margin: 1rem 0 0;
+  padding: 0.85rem 0.9rem;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.soon {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(187, 228, 72, 0.07);
+  border: 1px solid rgba(187, 228, 72, 0.35);
+}
+.soon > .ai {
+  color: var(--lime);
+  margin-top: 0.15rem;
+}
+.soon b {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+.soon p {
+  margin: 0 0 0.85rem;
+  font-size: 0.86rem;
+  color: var(--text-2);
+}
+.seller {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+.seller b {
+  color: var(--text-2);
+}
 .demo-note {
   display: flex;
   gap: 0.5rem;
