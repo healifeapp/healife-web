@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261014c";
-import { ICONS } from "./icons.js?v=20261014c";
+import { CONFIG } from "./config.js?v=20261014d";
+import { ICONS } from "./icons.js?v=20261014d";
 import {
   dailyTargets,
   trainingLevel,
@@ -24,7 +24,7 @@ import {
   createCheckout,
   getOrderStatus,
   wait,
-} from "./services.js?v=20261014c";
+} from "./services.js?v=20261014d";
 
 /* ============================================================ ikonlar */
 
@@ -966,7 +966,7 @@ const FEATURES = [
 ];
 
 const FAQ = [
-  ["Abonelik otomatik yenilenir mi?", "Hayır. Web'den aldığın abonelik tek ödemedir: seçtiğin dönem bitince premium kapanır, kartından tekrar çekim yapılmaz. Dilersen yeniden satın alırsın. Sorun olursa info@hea-life.com adresine yaz."],
+  ["Abonelik otomatik yenilenir mi?", "Hayır. Web'den aldığın abonelik tek ödemedir: seçtiğin dönem bitince premium kapanır, kartından tekrar çekim yapılmaz. Dilersen yeniden satın alırsın. Aboneliğinin durumunu hea-life.com/abonelik.html adresinden e-postanla görebilirsin."],
   ["Uygulamayı nasıl kullanacağım?", "Ödemeden sonra Healife'ı App Store veya Google Play'den indir ve burada kullandığın Apple ya da Google hesabıyla giriş yap. Planın ve premium hazır olur."],
   ["Planım nasıl hazırlanıyor?", "Kalori hedefin yaş, boy, kilo, cinsiyet ve aktivite seviyene göre Mifflin-St Jeor formülüyle hesaplanır. Antrenman seviyen deneyim ve performans cevaplarınla belirlenir; program hedefine ve gün sayına göre seçilir."],
   ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin Healife'a ulaşmaz, saklanmaz."],
@@ -1684,9 +1684,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg?v=20261014c").then((r) => r.text()),
-        fetch("/start/atlas/back.svg?v=20261014c").then((r) => r.text()),
-        fetch("/start/atlas/focus.json?v=20261014c").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261014d").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261014d").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261014d").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));

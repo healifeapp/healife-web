@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Abonelik yönetimi — Healife</title>
+    <meta
+      name="description"
+      content="hea-life.com üzerinden aldığın Healife aboneliğinin durumunu gör, otomatik yenilemeyi kapat."
+    />
+    <meta name="theme-color" content="#0b0b0c" />
+    <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://hea-life.com/abonelik.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Healife" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:url" content="https://hea-life.com/abonelik.html" />
+    <meta property="og:title" content="Healife abonelik yönetimi" />
+    <meta property="og:description" content="hea-life.com üzerinden aldığın Healife aboneliğinin durumunu gör, otomatik yenilemeyi kapat." />
+    <meta property="og:image" content="https://hea-life.com/assets/brand/og.jpg" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="500" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Healife abonelik yönetimi" />
+    <meta name="twitter:description" content="hea-life.com üzerinden aldığın Healife aboneliğinin durumunu gör, otomatik yenilemeyi kapat." />
+    <meta name="twitter:image" content="https://hea-life.com/assets/brand/og.jpg" />
+    <link rel="icon" href="assets/brand/icon.png?v=20260917a" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap"
+      />
+    </noscript>
+
+    <link rel="stylesheet" href="styles/tokens.css?v=20260917a" />
+    <link rel="stylesheet" href="styles/base.css?v=20261013a" />
+    <link rel="stylesheet" href="styles/sections.css?v=20261013g" />
+    <link rel="stylesheet" href="styles/legal.css?v=20261013b" />
+    <link rel="stylesheet" href="styles/abonelik.css?v=20261014a" />
+
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">İçeriğe geç</a>
+
+    <header class="topbar legal-topbar">
+      <div class="wrap topbar__inner">
+        <a class="topbar__logo" href="index.html" aria-label="Healife ana sayfa">
+          <img src="assets/brand/logo.svg?v=20260917a" alt="Healife" width="130" height="24" />
+        </a>
+        <a class="topbar__cta" href="index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H6m0 0 5-5m-5 5 5 5" />
+          </svg>
+          Ana sayfaya dön
+        </a>
+      </div>
+    </header>
+
+    <main class="legal" id="main">
+      <div class="wrap">
+        <div class="legal__head">
+          <p class="eyebrow">Web aboneliği</p>
+          <h1>Abonelik yönetimi</h1>
+          <p>hea-life.com üzerinden aldığın aboneliğin durumunu gör, otomatik yenilemeyi tek tıkla kapat. Giriş yok; sadece satın alırken kullandığın e-posta ve e-postana gelen kod yeter.</p>
+        </div>
+        <div class="legal__body legal__body--single">
+          <section class="sub" id="sub" data-api="https://dcp-humanos-410d767c97ce.herokuapp.com">
+
+            <form class="sub__step" id="stepEmail" novalidate>
+              <h2>1. E-posta adresin</h2>
+              <p>Satın alırken yazdığın e-posta. Doğrulama kodu bu adrese gelir.</p>
+              <label class="sub__field">
+                <span>E-posta</span>
+                <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="ornek@eposta.com" required />
+              </label>
+              <p class="sub__err" id="emailErr" hidden></p>
+              <button class="btn btn--primary" type="submit" id="emailBtn">Kod gönder</button>
+            </form>
+
+            <form class="sub__step" id="stepCode" hidden novalidate>
+              <h2>2. Doğrulama kodu</h2>
+              <p><b id="codeTo"></b> adresine 6 haneli bir kod gönderdik. Gelen kutusunda yoksa spam/gereksiz klasörüne bak. Kod 15 dakika geçerli.</p>
+              <label class="sub__field">
+                <span>Kod</span>
+                <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="7" placeholder="123456" required />
+              </label>
+              <p class="sub__err" id="codeErr" hidden></p>
+              <div class="sub__row">
+                <button class="btn btn--primary" type="submit" id="codeBtn">Doğrula</button>
+                <button class="linklike" type="button" id="resend">Yeni kod iste</button>
+              </div>
+            </form>
+
+            <div class="sub__step" id="stepList" hidden>
+              <h2>3. Aboneliklerin</h2>
+              <p class="sub__who">Hesap: <b id="listEmail"></b> · <button class="linklike" type="button" id="logout">Çıkış</button></p>
+              <div id="orders"></div>
+              <p class="sub__note">Sorun ya da iade için <a href="mailto:info@hea-life.com">info@hea-life.com</a> · <a href="tel:+908503057678">+90 850 305 76 78</a></p>
+            </div>
+
+            <p class="sub__note sub__note--legal">
+              Uygulama mağazasından (App Store / Google Play) aldığın aboneliği buradan yönetemezsin; onu uygulamada
+              Profil → Ayarlar → Abonelik yönetimi'nden ya da mağazanın abonelik ekranından yönetirsin.
+              Ayrıntılar: <a href="legal.html#on-bilgilendirme">Ön Bilgilendirme Formu</a>,
+              <a href="legal.html#mesafeli-satis">Mesafeli Satış Sözleşmesi</a>.
+            </p>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <div class="footer__pay">
+          <ul class="paycards" aria-label="Kabul edilen kartlar">
+            <li><img src="assets/brand/cards/mastercard.svg?v=20261013a" alt="Mastercard" width="34" height="21" loading="lazy" /></li>
+            <li><img src="assets/brand/cards/visa.svg?v=20261013a" alt="Visa" width="40" height="13" loading="lazy" /></li>
+            <li><img src="assets/brand/cards/amex.svg?v=20261013a" alt="American Express" width="28" height="28" loading="lazy" /></li>
+            <li><img src="assets/brand/cards/troy.svg?v=20261013a" alt="Troy" width="40" height="18" loading="lazy" /></li>
+          </ul>
+          <span>Web ödemeleri PayTR güvencesiyle</span>
+        </div>
+        <div class="footer__bottom">
+          <span>© <span id="year">2026</span> Healife. Tüm hakları saklıdır.</span>
+          <nav class="footer__legal" aria-label="Yasal">
+            <a href="index.html">Ana sayfa</a>
+            <a href="hakkimizda.html">Hakkımızda</a>
+            <a href="iletisim.html">İletişim</a>
+            <a href="abonelik.html">Abonelik yönetimi</a>
+            <a href="legal.html#kullanim-kosullari">Hizmet Koşulları</a>
+            <a href="legal.html#gizlilik">Gizlilik</a>
+            <a href="legal.html#kvkk">KVKK</a>
+            <a href="legal.html#mesafeli-satis">Mesafeli Satış</a>
+            <a href="legal.html#cerez">Çerez Politikası</a>
+            <button type="button" class="linklike" data-consent-open>Çerez tercihleri</button>
+            <a href="legal.html#sorumluluk-reddi">Sorumluluk Reddi</a>
+            <a href="legal.html#uyelik-sozlesmesi">Üyelik Sözleşmesi</a>
+            <a href="sources.html">Kaynaklar</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    </script>
+    <script src="scripts/consent.js?v=20261013e" defer></script>
+    <script src="scripts/abonelik.js?v=20261014a" defer></script>
+  </body>
+</html>

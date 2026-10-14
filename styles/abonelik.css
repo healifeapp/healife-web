@@ -1,0 +1,34 @@
+/* Abonelik yönetimi sayfası (abonelik.html) */
+.sub { display: grid; gap: 1.4rem; }
+.sub__step { padding: 1.3rem; border: 1px solid var(--hairline); border-radius: var(--r-lg); background: var(--surface); }
+.sub__step h2 { margin-top: 0; }
+.sub__step > p { color: var(--text-2); }
+.sub__field { display: block; margin: 0.9rem 0 0.5rem; }
+.sub__field span { display: block; font-size: var(--fs-small); color: var(--text-3); margin-bottom: 0.35rem; }
+.sub__field input {
+  width: 100%; min-height: 54px; padding: 0 1rem; font: inherit; font-size: 1.05rem;
+  color: var(--text); background: var(--bg); border: 1px solid var(--hairline-strong); border-radius: var(--r);
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.sub__field input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(187, 228, 72, 0.15); }
+.sub__field input[inputmode="numeric"] { letter-spacing: 0.3em; font-size: 1.4rem; font-weight: 600; }
+.sub__err { color: #ff6b6b; font-size: var(--fs-small); margin: 0.2rem 0 0.6rem; }
+.sub__row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; margin-top: 0.6rem; }
+.sub__who { color: var(--text-2); font-size: var(--fs-small); }
+.sub__note { color: var(--text-3); font-size: var(--fs-small); margin: 0.8rem 0 0; }
+.sub__note--legal { padding: 0 0.2rem; }
+.sub .btn[disabled] { opacity: 0.6; cursor: wait; }
+.sub .linklike { color: var(--lime); text-decoration: underline; text-underline-offset: 3px; }
+
+.order { padding: 1rem 1.1rem; border: 1px solid var(--hairline); border-radius: var(--r); background: var(--bg); margin-top: 0.8rem; }
+.order__top { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+.order__top b { font-size: 1.1rem; }
+.order__pill { font-size: var(--fs-micro); padding: 0.2rem 0.6rem; border-radius: var(--r-pill); border: 1px solid var(--hairline-strong); color: var(--text-2); white-space: nowrap; }
+.order__pill--on { border-color: var(--lime); color: var(--lime); }
+.order__pill--test { border-color: var(--warning); color: var(--warning); }
+.order dl { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 1rem; margin: 0.7rem 0 0; font-size: var(--fs-small); }
+.order dt { color: var(--text-3); }
+.order dd { margin: 0; color: var(--text); }
+.order__act { margin-top: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; }
+.order__ok { color: var(--lime); font-size: var(--fs-small); }
+.order__empty { color: var(--text-2); padding: 1rem 0; }
