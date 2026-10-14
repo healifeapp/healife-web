@@ -3,7 +3,7 @@
 // gösterilen kalori uygulamaya girince değişmesin diye.
 //   dailyTargets.js · levelScore.js · planResolver.js (MAX_TRAINING_LEVEL)
 
-import { CONFIG } from "./config.js?v=20261013i";
+import { CONFIG } from "./config.js?v=20261014a";
 
 /* ---------------------------------------------------------------- hesap */
 

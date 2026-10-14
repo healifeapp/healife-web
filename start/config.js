@@ -7,10 +7,10 @@ export const CONFIG = {
 
   // "demo"    → yer tutucu form + "öde" düğmesi başarı ekranına geçer (yalnız önizleme).
   // "pending" → form + onaylar görünür ama ödeme alınmaz; "çok yakında" uyarısı.
-  //             Canlı sitede (hea-life.com) PayTR bağlanana dek bu kip: gerçek
-  //             ziyaretçi sahte "Premium'un aktif" ekranı görmesin.
+  //             (14.10.2026'ya kadar canlı sitenin kipiydi; PayTR bağlandı.)
   // "paytr"   → backend'den iFrame token'ı alınır, PayTR formu sayfaya gömülür.
-  paymentProvider: /(^|\.)hea-life\.com$/.test(location.hostname) ? "pending" : "demo",
+  //             Gerçek para çekilip çekilmediğini backend'deki PAYTR_TEST_MODE belirler.
+  paymentProvider: /(^|\.)hea-life\.com$/.test(location.hostname) ? "paytr" : "demo",
 
   // "demo"    → giriş düğmeleri sahte bir kullanıcı üretir (yalnız önizleme).
   // "pending" → hesap adımı atlanır; canlı sitede gerçek ziyaretçiye sahte

@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261013i";
-import { ICONS } from "./icons.js?v=20261013i";
+import { CONFIG } from "./config.js?v=20261014a";
+import { ICONS } from "./icons.js?v=20261014a";
 import {
   dailyTargets,
   trainingLevel,
@@ -24,7 +24,7 @@ import {
   createCheckout,
   getOrderStatus,
   wait,
-} from "./services.js?v=20261013i";
+} from "./services.js?v=20261014a";
 
 /* ============================================================ ikonlar */
 
@@ -249,6 +249,7 @@ const STEPS = [
   { id: "paywall", kind: "paywall", chrome: "minimal" },
   { id: "account", kind: "account", chrome: "minimal", aside: "result", when: () => CONFIG.authProvider !== "pending" },
   { id: "checkout", kind: "checkout", chrome: "minimal" },
+  { id: "verifying", kind: "verifying", chrome: false },
   { id: "success", kind: "success", chrome: false },
 ];
 
@@ -334,6 +335,7 @@ const GUARDS = {
   account: () => (!S.email ? "email" : !S.planId ? "paywall" : S.user ? "checkout" : null),
   checkout: () =>
     !S.email ? "email" : !S.planId ? "paywall" : !S.user && CONFIG.authProvider !== "pending" ? "account" : null,
+  verifying: () => (!S.orderId ? (S.email ? "paywall" : "intro") : null),
   success: () => (!S.paid ? (S.email ? "paywall" : "intro") : null),
 };
 
@@ -805,6 +807,15 @@ const VIEWS = {
   },
 
   checkout: () => checkoutView(),
+  verifying: () => `
+  <section class="success">
+    <img class="intro__logo" src="/assets/brand/logo.svg?v=20260830b" alt="Healife" width="132" height="25" />
+    <div class="pay__loading" id="verifyMsg"><span class="spin"></span>Ödemen doğrulanıyor…</div>
+    <div id="verifyActions" hidden>
+      <p class="lead">Ödemen alındıysa birkaç dakika içinde premium'un açılır. Bu sayfayı kapatabilirsin; uygulamaya <b>${esc(S.email)}</b> ile girdiğinde premium hazır olur.</p>
+      <button class="btn btn--primary btn--block" type="button" id="verifyAgain">Tekrar kontrol et</button>
+    </div>
+  </section>`,
   success: () => successView(),
 };
 
@@ -1554,6 +1565,31 @@ const BIND = {
     });
   },
 
+  verifying: () => {
+    const plan = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];
+    const msg = app.querySelector("#verifyMsg");
+    const actions = app.querySelector("#verifyActions");
+    const poll = async () => {
+      actions.hidden = true;
+      msg.hidden = false;
+      for (let i = 0; i < 15; i++) {
+        const st = await getOrderStatus(S.orderId);
+        if (st === "paid" || st === "claimed") return completePurchase(plan);
+        if (st === "failed") {
+          S.payError = "Ödeme tamamlanamadı. Kart bilgilerini kontrol edip tekrar dene.";
+          S.orderId = null;
+          save();
+          return go("checkout", { replace: true });
+        }
+        await wait(2000);
+      }
+      msg.hidden = true;
+      actions.hidden = false;
+    };
+    app.querySelector("#verifyAgain").addEventListener("click", poll);
+    poll();
+  },
+
   success: () => app.querySelectorAll("[data-store]").forEach((a) => a.addEventListener("click", () => track("store_click", { store: a.dataset.store }))),
 };
 
@@ -1561,7 +1597,7 @@ function completePurchase(plan) {
   S.paid = true;
   // Reklam/analitik satın alması yalnız gerçek ödemede; önizleme demosu
   // Meta/GA verisini kirletmesin. PayTR'de event_id = merchant_oid (CAPI ile eşleşir).
-  if (CONFIG.paymentProvider === "paytr") track("purchase", { value: plan.price, currency: "TRY", plan: plan.id });
+  if (CONFIG.paymentProvider === "paytr") track("purchase", { value: plan.price, currency: "TRY", plan: plan.id, event_id: S.orderId || undefined });
   save();
   go("success", { replace: true });
 }
@@ -1616,9 +1652,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg?v=20261013i").then((r) => r.text()),
-        fetch("/start/atlas/back.svg?v=20261013i").then((r) => r.text()),
-        fetch("/start/atlas/focus.json?v=20261013i").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261014a").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261014a").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261014a").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));
@@ -1688,12 +1724,20 @@ function lev(a, b) {
 if (window.top !== window.self) window.top.location.href = location.href;
 
 const params = new URLSearchParams(location.search);
-// PayTR dönüş adresi. Gerçek ödeme bağlanmadan bu parametre hiçbir şey açmaz
-// (yoksa herkes ?odeme=tamam yazıp "Premium'un aktif" görürdü). Bağlanınca
-// burada /api/web/checkout/status ile sunucu onayı beklenmeli.
-if (CONFIG.paymentProvider === "paytr" && params.get("odeme") === "tamam" && S.user) {
-  S.paid = true;
-  S.step = "success";
+// PayTR dönüşü. "tamam" tek başına ödeme demek DEĞİL (herkes URL'ye yazabilir):
+// kaydedilmiş sipariş varsa verifying adımı sunucuya sorar. Sipariş yoksa
+// parametre yok sayılır.
+const odeme = params.get("odeme");
+if (CONFIG.paymentProvider === "paytr" && odeme && !S.paid) {
+  if (odeme === "tamam" && S.orderId) S.step = "verifying";
+  else if (odeme === "hata") {
+    S.payError = "Ödeme tamamlanamadı. Tekrar deneyebilirsin.";
+    S.orderId = null;
+    S.step = "checkout";
+  }
+  params.delete("odeme");
+  const qs = params.toString();
+  history.replaceState(null, "", `${location.pathname}${qs ? `?${qs}` : ""}`);
 }
 if (params.has("sifirla")) {
   storage.clear();
