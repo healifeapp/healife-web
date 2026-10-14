@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261014a";
-import { ICONS } from "./icons.js?v=20261014a";
+import { CONFIG } from "./config.js?v=20261014b";
+import { ICONS } from "./icons.js?v=20261014b";
 import {
   dailyTargets,
   trainingLevel,
@@ -24,7 +24,7 @@ import {
   createCheckout,
   getOrderStatus,
   wait,
-} from "./services.js?v=20261014a";
+} from "./services.js?v=20261014b";
 
 /* ============================================================ ikonlar */
 
@@ -1522,7 +1522,7 @@ const BIND = {
         pay.disabled = true;
         pay.innerHTML = `<span class="spin"></span>Ödeme formu hazırlanıyor…`;
         try {
-          const co = await createCheckout({ plan, email: S.email });
+          const co = await createCheckout({ plan, email: S.email, name: S.answers.name });
           S.orderId = co.merchantOid;
           save();
           track("checkout_form_open", { plan: plan.id });
@@ -1660,9 +1660,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg?v=20261014a").then((r) => r.text()),
-        fetch("/start/atlas/back.svg?v=20261014a").then((r) => r.text()),
-        fetch("/start/atlas/focus.json?v=20261014a").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261014b").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261014b").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261014b").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));

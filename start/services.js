@@ -201,7 +201,7 @@ export async function signIn(method, answers) {
 
 /**
  * PayTR iFrame API akışı (paymentProvider: "paytr"):
- *  1. POST {apiBase}/api/billing/web/checkout/paytr  { planId, email }
+ *  1. POST {apiBase}/api/billing/web/checkout/paytr  { planId, email, name }
  *     → backend WebOrder açar, PayTR get-token'dan token alır → { token, merchantOid }
  *  2. iFrame: https://www.paytr.com/odeme/guvenli/{token}
  *  3. PayTR, merchant_ok_url'e (/start/?odeme=tamam) döner. Asıl onay
@@ -209,14 +209,14 @@ export async function signIn(method, answers) {
  * Web'de giriş yok: sipariş e-postaya bağlıdır, kullanıcı uygulamaya aynı
  * e-postayla girince backend premium'u açar.
  */
-export async function createCheckout({ plan, email }) {
+export async function createCheckout({ plan, email, name }) {
   if (CONFIG.paymentProvider === "demo") return { mode: "demo" };
   if (CONFIG.paymentProvider === "pending") return { mode: "pending" };
 
   const res = await fetch(`${CONFIG.apiBase}/api/billing/web/checkout/paytr`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ planId: plan.id, email }),
+    body: JSON.stringify({ planId: plan.id, email, name: name || "" }),
   });
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.results?.token) throw new Error(data?.message || "Ödeme başlatılamadı");
