@@ -22,6 +22,7 @@ import {
   track,
   signIn,
   createCheckout,
+  getOrderStatus,
   wait,
 } from "./services.js?v=20261013i";
 
@@ -255,7 +256,7 @@ const QUESTION_KINDS = new Set(["gender", "multi", "single", "days", "focus", "w
 
 /* ============================================================ durum */
 
-const fresh = () => ({ step: "intro", answers: {}, email: "", marketing: false, planId: null, user: null, paid: false });
+const fresh = () => ({ step: "intro", answers: {}, email: "", marketing: false, planId: null, user: null, paid: false, orderId: null });
 let S = Object.assign(fresh(), storage.load() || {});
 if (S.paid) S.step = "success";
 let dir = "fwd";
@@ -1104,14 +1105,18 @@ function checkoutView() {
           <input type="checkbox" id="legalOk" />
           <span><a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme Formu</a>'nu ve <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış Sözleşmesi</a>'ni okudum, kabul ediyorum. Aboneliğin ödemeyle birlikte hemen başlamasını ve bu nedenle cayma hakkımın sona ereceğini onaylıyorum.</span>
         </label>
-        <div class="pay" id="pay"><div class="pay__loading"><span class="spin"></span>Güvenli ödeme formu yükleniyor…</div></div>
+        <div class="pay" id="pay">${
+          CONFIG.paymentProvider === "paytr"
+            ? `<p class="pay__note">${ai("info")}Sözleşmeyi onaylayıp "Güvenli ödemeye geç"e dokunduğunda PayTR ödeme formu burada açılır.</p>`
+            : `<div class="pay__loading"><span class="spin"></span>Güvenli ödeme formu yükleniyor…</div>`
+        }</div>
         <div class="co__secure">
           <span>${ai("lockFill")}PayTR güvencesiyle · 256-bit SSL · 3D Secure</span>
           <span class="cards" aria-label="Kabul edilen kartlar"><i class="card-mark card-mark--visa">VISA</i><i class="card-mark card-mark--mc"><b></b><b></b></i><i class="card-mark card-mark--troy">troy</i></span>
         </div>
         <div class="dock dock--pay" id="payDock" hidden>
           <p class="err" id="payErr" hidden>Devam etmek için sözleşme onayını işaretle.</p>
-          <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${money(p.price)} öde</button>
+          <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${CONFIG.paymentProvider === "paytr" ? "Güvenli ödemeye geç" : `${money(p.price)} öde`}</button>
           <div class="soon" id="soon" hidden>
             ${ai("info")}
             <div>
@@ -1139,7 +1144,7 @@ function device() {
 
 function successView() {
   const { ios, android } = device();
-  const method = S.user?.method === "google" ? "Google" : "Apple";
+  const method = S.user?.method === "google" ? "Google" : S.user?.method === "apple" ? "Apple" : null;
   const store = (kind) =>
     kind === "ios"
       ? `<a class="store" href="${CONFIG.stores.ios}" data-store="ios">${BRAND.apple}<em><span>İndir</span><strong>App Store</strong></em></a>`
@@ -1159,16 +1164,18 @@ function successView() {
     <ol class="steps">
       <li><span>1</span><div><b>Healife'ı indir</b><small>Ücretsiz, birkaç saniye sürer.</small></div>${ai("download")}</li>
       <li><span>2</span><div><b>“Giriş yap”a dokun</b><small>Açılış ekranının altındaki “Zaten hesabın var mı? Giriş yap”.</small></div>${ai("login")}</li>
-      <li><span>3</span><div><b>${method} ile giriş yap</b><small>Planın ve premium hazır olacak; soruları tekrar cevaplaman gerekmez.</small></div>${ai("checkCircle")}</li>
+      <li><span>3</span><div><b>${method ? `${method} ile giriş yap` : "Aynı e-postayla giriş yap"}</b><small>${method ? "Planın ve premium hazır olacak; soruları tekrar cevaplaman gerekmez." : `Apple ya da Google ile <b>${esc(S.email)}</b> adresini kullanarak gir; premium'un otomatik açılır.`}</small></div>${ai("checkCircle")}</li>
     </ol>
     <div class="acct" role="note">
       <div class="acct__head">${ai("info")}<b>Bu hesapla giriş yapmalısın</b></div>
       <div class="acct__id">
-        <span class="acct__logo">${method === "Google" ? BRAND.google : BRAND.apple}</span>
-        <div><small>${method} hesabı</small><b>${esc(S.user?.email || S.email)}</b></div>
+        <span class="acct__logo">${method === "Google" ? BRAND.google : method === "Apple" ? BRAND.apple : ai("send")}</span>
+        <div><small>${method ? `${method} hesabı` : "Ödeme e-postan"}</small><b>${esc(S.user?.email || S.email)}</b></div>
       </div>
       <p>Farklı bir hesapla ya da giriş yapmadan devam edersen aboneliğin görünmez.${
         method === "Apple" ? " Apple, e-postanı gizlediysen farklı bir adres gösterebilir; aynı Apple kimliğini seçmen yeterli." : ""
+      }${
+        !method ? " Apple ile girerken \"E-postamı gizle\" seçersen eşleşme olmaz; e-postanı paylaşmayı seç. Sorun olursa info@hea-life.com'a yaz." : ""
       }</p>
     </div>
     <div class="stores">${stores.join("")}</div>
@@ -1471,54 +1478,80 @@ const BIND = {
     app.querySelector("[data-change]").addEventListener("click", () => go("paywall"));
     const box = app.querySelector("#pay");
     const plan = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];
-    try {
-      const co = await createCheckout({ plan, email: S.email, userId: S.user?.userId });
-      if (co.mode === "iframe") {
-        box.innerHTML = `<iframe class="pay__frame" src="${co.url}" title="Güvenli ödeme" allow="payment"></iframe>`;
+    const dock = app.querySelector("#payDock");
+    const pay = dock.querySelector("#demoPay");
+    const ok = app.querySelector("#legalOk");
+    const err = dock.querySelector("#payErr");
+    const paytr = CONFIG.paymentProvider === "paytr";
+
+    // Dönüş hatası (?odeme=hata) ya da sunucunun "failed" demesi.
+    if (S.payError) {
+      box.insertAdjacentHTML("afterbegin", `<p class="err">${esc(S.payError)}</p>`);
+      S.payError = null;
+      save();
+    }
+
+    dock.hidden = false;
+    ok.addEventListener("change", () => {
+      pay.classList.toggle("is-dim", !ok.checked);
+      if (ok.checked) err.hidden = true;
+    });
+
+    const requireLegal = () => {
+      if (ok.checked) return true;
+      err.textContent = "Devam etmek için sözleşme onayını işaretle.";
+      err.hidden = false;
+      shake(ok.closest("label"));
+      return false;
+    };
+
+    if (paytr) {
+      pay.addEventListener("click", async () => {
+        if (!requireLegal()) return;
+        pay.disabled = true;
+        pay.innerHTML = `<span class="spin"></span>Ödeme formu hazırlanıyor…`;
+        try {
+          const co = await createCheckout({ plan, email: S.email });
+          S.orderId = co.merchantOid;
+          save();
+          track("checkout_form_open", { plan: plan.id });
+          box.innerHTML = `<iframe class="pay__frame" src="${co.url}" title="Güvenli ödeme" allow="payment"></iframe>`;
+          dock.hidden = true;
+          box.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (e) {
+          pay.disabled = false;
+          pay.innerHTML = `${ai("lock")}Güvenli ödemeye geç`;
+          err.textContent = `${e.message}. Lütfen tekrar dene.`;
+          err.hidden = false;
+        }
+      });
+      return;
+    }
+
+    // demo / pending kipleri (önizleme): yer tutucu kart formu.
+    const live = CONFIG.paymentProvider === "demo";
+    box.innerHTML = `
+      <div class="pay__demo">
+        <div class="cardform" aria-hidden="true">
+          <div class="cf-row"><span>Kart üzerindeki isim</span><i>${esc(S.answers.name || "Ad Soyad")}</i></div>
+          <div class="cf-row"><span>Kart numarası</span><i>•••• •••• •••• ••••</i></div>
+          <div class="cf-2"><div class="cf-row"><span>Son kullanma</span><i>AA/YY</i></div><div class="cf-row"><span>CVC</span><i>•••</i></div></div>
+        </div>
+        ${live ? `<p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>` : ""}
+      </div>`;
+    pay.addEventListener("click", async (e) => {
+      if (!requireLegal()) return;
+      if (!live) {
+        track("payment_pending_click", { plan: plan.id });
+        dock.querySelector("#soon").hidden = false;
+        pay.hidden = true;
         return;
       }
-      const live = co.mode === "demo";
-      box.innerHTML = `
-        <div class="pay__demo">
-          <div class="cardform" aria-hidden="true">
-            <div class="cf-row"><span>Kart üzerindeki isim</span><i>${esc(S.answers.name || "Ad Soyad")}</i></div>
-            <div class="cf-row"><span>Kart numarası</span><i>•••• •••• •••• ••••</i></div>
-            <div class="cf-2"><div class="cf-row"><span>Son kullanma</span><i>AA/YY</i></div><div class="cf-row"><span>CVC</span><i>•••</i></div></div>
-          </div>
-          ${live ? `<p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>` : ""}
-        </div>`;
-      // Öde düğmesi diğer adımlardaki gibi yapışkan dock'ta: kaydırmadan basılır.
-      // PayTR iFrame'inin kendi düğmesi var, o kipte dock gizli kalır.
-      const dock = app.querySelector("#payDock");
-      dock.hidden = false;
-      const pay = dock.querySelector("#demoPay");
-      const ok = app.querySelector("#legalOk");
-      const err = dock.querySelector("#payErr");
-      ok.addEventListener("change", () => {
-        pay.classList.toggle("is-dim", !ok.checked);
-        if (ok.checked) err.hidden = true;
-      });
-      pay.addEventListener("click", async (e) => {
-        if (!ok.checked) {
-          err.hidden = false;
-          shake(ok.closest("label"));
-          return;
-        }
-        if (!live) {
-          track("payment_pending_click", { plan: plan.id });
-          dock.querySelector("#soon").hidden = false;
-          pay.hidden = true;
-          return;
-        }
-        e.currentTarget.disabled = true;
-        e.currentTarget.innerHTML = `<span class="spin"></span>İşleniyor…`;
-        await wait(1200);
-        completePurchase(plan);
-      });
-    } catch (e) {
-      box.innerHTML = `<p class="err">${esc(e.message)}. Lütfen tekrar dene.</p><button class="btn btn--ghost btn--block" type="button" id="retry">Tekrar dene</button>`;
-      box.querySelector("#retry").addEventListener("click", () => render());
-    }
+      e.currentTarget.disabled = true;
+      e.currentTarget.innerHTML = `<span class="spin"></span>İşleniyor…`;
+      await wait(1200);
+      completePurchase(plan);
+    });
   },
 
   success: () => app.querySelectorAll("[data-store]").forEach((a) => a.addEventListener("click", () => track("store_click", { store: a.dataset.store }))),

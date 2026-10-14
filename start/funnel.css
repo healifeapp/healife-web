@@ -1901,6 +1901,17 @@ noscript p {
   border-radius: 16px;
   background: #fff;
 }
+.pay__note {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-size: 0.9rem;
+}
 .cardform {
   display: grid;
   gap: 0.6rem;
