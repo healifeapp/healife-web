@@ -201,27 +201,39 @@ export async function signIn(method, answers) {
 
 /**
  * PayTR iFrame API akışı (paymentProvider: "paytr"):
- *  1. POST {apiBase}/web/checkout/paytr  { planId, email, userId }
- *     → backend merchant_oid üretir, paytr_token hash'ini hesaplar,
- *       https://www.paytr.com/odeme/api/get-token'dan token alır → { token }
+ *  1. POST {apiBase}/api/billing/web/checkout/paytr  { planId, email }
+ *     → backend WebOrder açar, PayTR get-token'dan token alır → { token, merchantOid }
  *  2. iFrame: https://www.paytr.com/odeme/guvenli/{token}
  *  3. PayTR, merchant_ok_url'e (/start/?odeme=tamam) döner. Asıl onay
- *     backend'e gelen bildirim (callback) ile verilir; sayfa yalnızca
- *     /web/checkout/status ile o onayı bekler.
- * Tekrarlayan ödeme için PayTR'nin kart saklama / abonelik ürünü gerekir.
+ *     backend'e gelen bildirimle verilir; sayfa getOrderStatus ile onu bekler.
+ * Web'de giriş yok: sipariş e-postaya bağlıdır, kullanıcı uygulamaya aynı
+ * e-postayla girince backend premium'u açar.
  */
-export async function createCheckout({ plan, email, userId }) {
+export async function createCheckout({ plan, email }) {
   if (CONFIG.paymentProvider === "demo") return { mode: "demo" };
   if (CONFIG.paymentProvider === "pending") return { mode: "pending" };
 
-  const res = await fetch(`${CONFIG.apiBase}/web/checkout/paytr`, {
+  const res = await fetch(`${CONFIG.apiBase}/api/billing/web/checkout/paytr`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ planId: plan.id, email, userId }),
+    body: JSON.stringify({ planId: plan.id, email }),
   });
-  if (!res.ok) throw new Error("Ödeme başlatılamadı");
-  const { token } = await res.json();
-  return { mode: "iframe", url: `https://www.paytr.com/odeme/guvenli/${token}` };
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.results?.token) throw new Error(data?.message || "Ödeme başlatılamadı");
+  const { token, merchantOid } = data.results;
+  return { mode: "iframe", url: `https://www.paytr.com/odeme/guvenli/${token}`, merchantOid };
+}
+
+/** Sunucudaki sipariş durumu; bulunamazsa/ağ hatasında null. */
+export async function getOrderStatus(merchantOid) {
+  try {
+    const res = await fetch(`${CONFIG.apiBase}/api/billing/web/order/${encodeURIComponent(merchantOid)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.results?.status || null;
+  } catch {
+    return null;
+  }
 }
 
 export const wait = (ms) => new Promise((r) => setTimeout(r, ms));
