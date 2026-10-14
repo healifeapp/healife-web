@@ -1581,6 +1581,14 @@ const BIND = {
           save();
           return go("checkout", { replace: true });
         }
+        if (st === "review") {
+          // Para çekilmiş olabilir; "tekrar dene" dememek için elle inceleme metni.
+          msg.hidden = true;
+          actions.hidden = false;
+          actions.querySelector("#verifyAgain").hidden = true;
+          actions.querySelector(".lead").innerHTML = `Ödemen alındı, ekibimiz kontrol ediyor. Premium'un en geç 1 iş günü içinde <b>${esc(S.email)}</b> hesabında açılır. Soru için <a href="mailto:info@hea-life.com">info@hea-life.com</a>.`;
+          return;
+        }
         await wait(2000);
       }
       msg.hidden = true;
