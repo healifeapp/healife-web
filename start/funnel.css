@@ -2980,3 +2980,10 @@ noscript p {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Ödeme: ad soyad alanı (e-posta kutusunun altı) */
+.co__lbl { margin: 0.9rem 0 0.35rem 0.2rem; font-size: 0.9rem; font-weight: 600; color: var(--text-2); }
+.co__lbl small { font-weight: 400; color: var(--text-3); }
+.co__name { margin: 0; }
+.co__name.field--noic input { padding-left: 1rem; }
+.co__name + .err { margin-top: 0.4rem; }

@@ -7,8 +7,8 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261014b";
-import { ICONS } from "./icons.js?v=20261014b";
+import { CONFIG } from "./config.js?v=20261014c";
+import { ICONS } from "./icons.js?v=20261014c";
 import {
   dailyTargets,
   trainingLevel,
@@ -24,7 +24,7 @@ import {
   createCheckout,
   getOrderStatus,
   wait,
-} from "./services.js?v=20261014b";
+} from "./services.js?v=20261014c";
 
 /* ============================================================ ikonlar */
 
@@ -257,7 +257,7 @@ const QUESTION_KINDS = new Set(["gender", "multi", "single", "days", "focus", "w
 
 /* ============================================================ durum */
 
-const fresh = () => ({ step: "intro", answers: {}, email: "", marketing: false, planId: null, user: null, paid: false, orderId: null });
+const fresh = () => ({ step: "intro", answers: {}, email: "", fullName: "", marketing: false, planId: null, user: null, paid: false, orderId: null });
 let S = Object.assign(fresh(), storage.load() || {});
 if (S.paid) S.step = "success";
 let dir = "fwd";
@@ -966,7 +966,7 @@ const FEATURES = [
 ];
 
 const FAQ = [
-  ["Aboneliğimi nasıl iptal ederim?", "Web'den başlattığın aboneliği info@hea-life.com adresine yazarak istediğin zaman iptal edebilirsin. İptal ettiğinde ödediğin dönemin sonuna kadar premium açık kalır, sonra yenilenmez."],
+  ["Abonelik otomatik yenilenir mi?", "Hayır. Web'den aldığın abonelik tek ödemedir: seçtiğin dönem bitince premium kapanır, kartından tekrar çekim yapılmaz. Dilersen yeniden satın alırsın. Sorun olursa info@hea-life.com adresine yaz."],
   ["Uygulamayı nasıl kullanacağım?", "Ödemeden sonra Healife'ı App Store veya Google Play'den indir ve burada kullandığın Apple ya da Google hesabıyla giriş yap. Planın ve premium hazır olur."],
   ["Planım nasıl hazırlanıyor?", "Kalori hedefin yaş, boy, kilo, cinsiyet ve aktivite seviyene göre Mifflin-St Jeor formülüyle hesaplanır. Antrenman seviyen deneyim ve performans cevaplarınla belirlenir; program hedefine ve gün sayına göre seçilir."],
   ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin Healife'a ulaşmaz, saklanmaz."],
@@ -1009,7 +1009,7 @@ function paywallView() {
         <button class="plan${on ? " is-on" : ""}" type="button" role="radio" aria-checked="${on}" data-plan="${p.id}">
           ${p.badge ? `<span class="plan__badge">${p.badge}</span>` : ""}
           <span class="plan__radio">${on ? ai("check") : ""}</span>
-          <span class="plan__main"><b>${p.title}</b><small>${p.id === "weekly" ? "Her hafta yenilenir" : `Haftada ${money(Math.round(perWeek * 100) / 100)}'ye denk`}</small></span>
+          <span class="plan__main"><b>${p.title}</b><small>${p.id === "weekly" ? "7 günlük erişim" : `Haftada ${money(Math.round(perWeek * 100) / 100)}'ye denk`}</small></span>
           <span class="plan__per">${save >= 10 ? `<em>haftalığa göre %${save} tasarruf</em>` : ""}<b>${money(p.price)}</b><small>/ ${UNIT[p.id] || p.periodLabel}</small></span>
         </button>`;
         })
@@ -1030,13 +1030,13 @@ function paywallView() {
       ${FAQ.map(([q, ans]) => `<details><summary>${q}${ai("chevronDown")}</summary><p>${ans}</p></details>`).join("")}
     </div>
 
-    <p class="fine center legal">Abonelik, iptal edene kadar seçtiğin dönem sonunda aynı ücretle otomatik yenilenir. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul edersin.</p>
+    <p class="fine center legal">Tek ödeme; abonelik otomatik yenilenmez. Seçtiğin dönem bitince premium sona erer, dilersen yeniden satın alırsın. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul edersin.</p>
     ${legalFoot()}
   </section>
   <div class="dock dock--pw">
     <p class="pw-total">${(() => {
       const p = plans.find((x) => x.id === S.planId) || plans[0];
-      return `Bugün <b>${money(p.price)}</b> · ${p.periodLabel} yenilenir · istediğin zaman iptal`;
+      return `Bugün <b>${money(p.price)}</b> · tek ödeme · otomatik yenilenmez`;
     })()}</p>
     <button class="btn btn--primary btn--block" type="button" data-next>Devam et${ai("arrowRight")}</button>
     <a class="free-link" href="${freeUrl()}" data-free>Şimdilik ücretsiz sürümle devam et</a>
@@ -1061,8 +1061,8 @@ const legalFoot = () => `
     <p>${CONFIG.seller.name}<br />${CONFIG.seller.address} · ${CONFIG.seller.tax}<br />MERSİS ${CONFIG.seller.mersis} · Ticaret Sicil No ${CONFIG.seller.registry}<br /><a href="tel:${CONFIG.seller.phone.replace(/\s/g, "")}">${CONFIG.seller.phone}</a> · <a href="mailto:${CONFIG.seller.email}">${CONFIG.seller.email}</a></p>
   </footer>`;
 
-// Sonraki tahsilat tarihi (otomatik yenileme), plan dönemine göre.
-function renewDate(plan) {
+// Erişimin biteceği tarih (otomatik yenileme yok), plan dönemine göre.
+function endDate(plan) {
   const d = new Date();
   if (plan.id === "yearly") d.setFullYear(d.getFullYear() + 1);
   else if (plan.id === "monthly") d.setMonth(d.getMonth() + 1);
@@ -1091,7 +1091,7 @@ function checkoutView() {
           <div><dt>KDV</dt><dd>Fiyata dâhil</dd></div>
           <div class="is-total"><dt>Bugün ödenecek</dt><dd>${money(p.price)}</dd></div>
         </dl>
-        <p class="co__renew">${ai("refresh")}<span>Abonelik <b>${renewDate(p)}</b> tarihinde ${money(p.price)} ile yenilenir. İstediğin zaman iptal edebilirsin.</span></p>
+        <p class="co__renew">${ai("refresh")}<span>Erişim <b>${endDate(p)}</b> tarihine kadar. Otomatik yenilenmez; süre bitince dilersen yeniden satın alırsın.</span></p>
         <ul class="co__incl">
           <li>${ai("check")}Sana özel antrenman ve beslenme planı</li>
           <li>${ai("check")}Sınırsız AI koç ve fotoğrafla kalori hesaplama</li>
@@ -1112,6 +1112,13 @@ function checkoutView() {
           <div><small>Fatura ve abonelik e-postası</small><b>${esc(email || "—")}</b></div>`
           }
         </div>
+        <p class="co__lbl">Ad Soyad <small>sipariş kaydı için</small></p>
+        <label class="field co__name">
+          ${ai("person", "field__ic")}
+          <span class="sr">Ad Soyad</span>
+          <input id="fullName" type="text" autocomplete="name" autocapitalize="words" maxlength="60" placeholder="Ad Soyad" value="${esc(S.fullName || S.answers.name || "")}" required />
+        </label>
+        <p class="err" id="nameErr" hidden>Sipariş için ad ve soyadını gir.</p>
         <label class="optin optin--legal">
           <input type="checkbox" id="legalOk" />
           <span><a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme Formu</a>'nu ve <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış Sözleşmesi</a>'ni okudum, kabul ediyorum. Aboneliğin ödemeyle birlikte hemen başlamasını ve bu nedenle cayma hakkımın sona ereceğini onaylıyorum.</span>
@@ -1493,7 +1500,24 @@ const BIND = {
     const pay = dock.querySelector("#demoPay");
     const ok = app.querySelector("#legalOk");
     const err = dock.querySelector("#payErr");
+    const nameIn = app.querySelector("#fullName");
+    const nameErr = app.querySelector("#nameErr");
     const paytr = CONFIG.paymentProvider === "paytr";
+
+    // PayTR'ye ve siparişe gidecek ad soyad: en az iki kelime.
+    nameIn.addEventListener("input", () => (nameErr.hidden = true));
+    const requireName = () => {
+      const v = nameIn.value.trim().replace(/\s+/g, " ");
+      if (v.length >= 5 && v.split(" ").length >= 2) {
+        S.fullName = v;
+        save();
+        return true;
+      }
+      nameErr.hidden = false;
+      shake(nameIn.closest("label"));
+      nameIn.focus();
+      return false;
+    };
 
     // Dönüş hatası (?odeme=hata) ya da sunucunun "failed" demesi.
     if (S.payError) {
@@ -1518,11 +1542,11 @@ const BIND = {
 
     if (paytr) {
       pay.addEventListener("click", async () => {
-        if (!requireLegal()) return;
+        if (!requireName() || !requireLegal()) return;
         pay.disabled = true;
         pay.innerHTML = `<span class="spin"></span>Ödeme formu hazırlanıyor…`;
         try {
-          const co = await createCheckout({ plan, email: S.email, name: S.answers.name });
+          const co = await createCheckout({ plan, email: S.email, name: S.fullName });
           S.orderId = co.merchantOid;
           save();
           track("checkout_form_open", { plan: plan.id });
@@ -1551,7 +1575,7 @@ const BIND = {
         ${live ? `<p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>` : ""}
       </div>`;
     pay.addEventListener("click", async (e) => {
-      if (!requireLegal()) return;
+      if (!requireName() || !requireLegal()) return;
       if (!live) {
         track("payment_pending_click", { plan: plan.id });
         dock.querySelector("#soon").hidden = false;
@@ -1660,9 +1684,9 @@ async function loadAtlas() {
   try {
     if (!ATLAS.loaded) {
       const [front, back, map] = await Promise.all([
-        fetch("/start/atlas/front.svg?v=20261014b").then((r) => r.text()),
-        fetch("/start/atlas/back.svg?v=20261014b").then((r) => r.text()),
-        fetch("/start/atlas/focus.json?v=20261014b").then((r) => r.json()),
+        fetch("/start/atlas/front.svg?v=20261014c").then((r) => r.text()),
+        fetch("/start/atlas/back.svg?v=20261014c").then((r) => r.text()),
+        fetch("/start/atlas/focus.json?v=20261014c").then((r) => r.json()),
       ]);
       Object.assign(ATLAS, { front, back, loaded: true });
       for (const [area, ids] of Object.entries(map)) ids.forEach((id) => (ATLAS.byMuscle[id] = area));
