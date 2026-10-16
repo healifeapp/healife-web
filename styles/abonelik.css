@@ -26,6 +26,8 @@
 .order__pill { font-size: var(--fs-micro); padding: 0.2rem 0.6rem; border-radius: var(--r-pill); border: 1px solid var(--hairline-strong); color: var(--text-2); white-space: nowrap; }
 .order__pill--on { border-color: var(--lime); color: var(--lime); }
 .order__pill--test { border-color: var(--warning); color: var(--warning); }
+.order__pill--warn { border-color: #ff6b6b; color: #ff6b6b; }
+.sub__note a { color: var(--lime); }
 .order dl { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 1rem; margin: 0.7rem 0 0; font-size: var(--fs-small); }
 .order dt { color: var(--text-3); }
 .order dd { margin: 0; color: var(--text); }

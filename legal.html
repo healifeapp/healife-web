@@ -412,7 +412,8 @@
                   <strong>PayTR</strong> altyapısıyla kartla. Web üzerinden yapılan
                   satın almalarda <a href="#on-bilgilendirme">Ön Bilgilendirme
                   Formu</a> ve <a href="#mesafeli-satis">Mesafeli Satış
-                  Sözleşmesi</a> uygulanır; kart bilgileri Healife'a iletilmez.
+                  Sözleşmesi</a> uygulanır; kart bilgileri Healife'a iletilmez
+                  (otomatik yenileme seçildiyse kart PayTR tarafından saklanır).
                 </p>
               </div>
               <ul>
@@ -421,6 +422,9 @@
                     Kart veya banka bilgisi hiçbir aşamada Şirkete iletilmez,
                     Şirket tarafından görülmez, işlenmez veya saklanmaz.
                   </strong>
+                  Web satın almasında otomatik yenileme seçildiğinde kart, lisanslı
+                  ödeme kuruluşu PayTR tarafından saklanır; Şirket yalnızca PayTR'nin
+                  verdiği kart tokenını ve kartın son dört hanesini tutar.
                   Uygulama içi satın almalarda ödeme, Kullanıcının kendi Apple
                   veya Google hesabındaki kayıtlı ödeme yöntemiyle; web
                   satın almalarında PayTR'nin güvenli ödeme sayfasında kartla
@@ -449,7 +453,7 @@
                   Mağaza aboneliği, mevcut dönemin bitiminden
                   <strong>en az 24 saat önce</strong> iptal edilmediği takdirde
                   aynı süre için otomatik olarak yenilenir ve ücret, yenileme
-                  anında ilgili uygulama mağazası tarafından tahsil edilir. hea-life.com üzerinden satın alınan abonelik otomatik yenilenmez; seçilen dönemin sonunda erişim kendiliğinden sona erer ve Kullanıcı dilerse yeniden satın alır. Kart bilgileri saklanmaz.
+                  anında ilgili uygulama mağazası tarafından tahsil edilir. hea-life.com üzerinden satın alınan abonelikte otomatik yenileme, ödeme adımındaki seçime bağlıdır: seçildiyse abonelik, dönem bitiminden en az 24 saat önce kapatılmadığı takdirde aynı süre ve Kullanıcının onayladığı ücretle yenilenir; ücret, dönem bitiminden en fazla 24 saat önce PayTR'de saklanan karttan tahsil edilir. Seçilmediyse abonelik tek ödemedir; dönem sonunda erişim kendiliğinden sona erer ve Kullanıcı dilerse yeniden satın alır. Yenileme <a href="abonelik.html">hea-life.com/abonelik.html</a> adresinden ya da uygulamada Ayarlar › Abonelik'ten her zaman kapatılabilir.
                 </li>
                 <li>
                   Kullanıcı aboneliğini,
@@ -822,7 +826,9 @@
                   Store, Google Play veya (web satın almalarında) PayTR
                   üzerinden yürür; kart bilgisi hiçbir noktada uygulamaya veya
                   sunucularımıza girmez. Web satın almalarında PayTR'den yalnızca
-                  ödemenin sonucu, tutarı ve sipariş numarası alınır.
+                  ödemenin sonucu, tutarı ve sipariş numarası alınır; otomatik
+                  yenileme seçildiyse ayrıca PayTR'nin ürettiği kart tokenı ve
+                  kartın son dört hanesi saklanır (kart PayTR'de kalır).
                 </p>
               </div>
               <p>
@@ -992,7 +998,7 @@
                     <tr>
                       <th>PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş.</th>
                       <td>hea-life.com üzerinden kartla ödeme</td>
-                      <td>E-posta, sipariş numarası, tutar, ödeme sonucu (kart bilgisi PayTR'de kalır)</td>
+                      <td>E-posta, sipariş numarası, tutar, ödeme sonucu; otomatik yenilemede kart tokenı ve son dört hane (kart bilgisi PayTR'de kalır)</td>
                       <td>Türkiye</td>
                     </tr>
                     <tr>
@@ -2037,10 +2043,10 @@
               <p><strong>11.4.</strong> Uygulamada deneme süresi şeklinde bir hizmet verilmesi halinde deneme süresinin detayları, kapsamı ve şartları kullanıcıya bildirilir. Kullanıcı deneme süresi dahil paketi seçtiğinde seçtiği abonelik paketi deneme süresi sonunda otomatik ücretli aboneliğe dönüşür ve ücret tahsil edilir.</p>
 
               <h3>12. Abonelik, otomatik yenileme ve ödeme</h3>
-              <p><strong>12.1.</strong> Abonelik, Uygulama Mağazasında veya hea-life.com'da sunulan seçeneklere göre haftalık, aylık ve/veya yıllık dönemler hâlinde satın alınabilir. Bu dönemler aynı aboneliğin farklı faturalandırma süreleri olup kapsamları birbirinin aynıdır; Kullanıcı aynı anda yalnızca bir dönem seçebilir. Kullanıcı, abonelik süresi, güncel fiyatı, faturalandırma dönemi ve otomatik yenileme şartlarının satın alma aşamasında kendisine gösterileceğini kabul beyan ve taahhüt eder. İlgili Uygulama Mağazası kuralları ve emredici mevzuat saklı kalmak üzere, abonelik mevcut dönemin bitiminden en az 24 saat önce iptal edilmediği takdirde aynı süre için otomatik olarak yenilenir ve yenileme ücreti ilgili Uygulama Mağazası tarafından tahsil edilir. hea-life.com üzerinden satın alınan abonelik otomatik yenilenmez; seçilen dönemin sonunda erişim kendiliğinden sona erer ve Kullanıcı dilerse yeniden satın alır. Kullanıcı bu şartları kabul ettiğini beyan ve taahhüt eder.</p>
-              <p><strong>12.2.</strong> Kullanıcı, uygulama içinden satın aldığı otomatik yenilemeli aboneliğini yalnızca satın almanın gerçekleştirildiği Uygulama Mağazasının abonelik yönetim ekranı üzerinden iptal edebilir. Uygulama içinde yer alan “Aboneliği Yönet” veya benzeri bağlantılar Kullanıcıyı ilgili Uygulama Mağazasının abonelik yönetim ekranına yönlendirir. hea-life.com üzerinden satın alınan abonelik otomatik yenilenmediğinden ayrıca iptal gerektirmez; erişim, ödemesi yapılmış dönemin sonunda kendiliğinden sona erer. Kullanıcı aboneliğinin durumunu ve (sunulduğu takdirde) otomatik yenileme ayarını <a href="abonelik.html">hea-life.com/abonelik.html</a> adresinden, satın alma e-postasına gönderilen doğrulama koduyla, giriş yapmadan yönetebilir. Uygulamanın cihazdan silinmesi tek başına aboneliğin iptali anlamına gelmez.</p>
+              <p><strong>12.1.</strong> Abonelik, Uygulama Mağazasında veya hea-life.com'da sunulan seçeneklere göre haftalık, aylık ve/veya yıllık dönemler hâlinde satın alınabilir. Bu dönemler aynı aboneliğin farklı faturalandırma süreleri olup kapsamları birbirinin aynıdır; Kullanıcı aynı anda yalnızca bir dönem seçebilir. Kullanıcı, abonelik süresi, güncel fiyatı, faturalandırma dönemi ve otomatik yenileme şartlarının satın alma aşamasında kendisine gösterileceğini kabul beyan ve taahhüt eder. İlgili Uygulama Mağazası kuralları ve emredici mevzuat saklı kalmak üzere, abonelik mevcut dönemin bitiminden en az 24 saat önce iptal edilmediği takdirde aynı süre için otomatik olarak yenilenir ve yenileme ücreti ilgili Uygulama Mağazası tarafından tahsil edilir. hea-life.com üzerinden satın alınan abonelikte otomatik yenileme, Kullanıcının ödeme adımındaki seçimine bağlıdır: seçildiyse abonelik, dönem bitiminden en az 24 saat önce kapatılmadığı takdirde aynı süre ve Kullanıcının onayladığı ücretle yenilenir ve ücret, dönem bitiminden en fazla 24 saat önce PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş. nezdinde saklanan karttan tahsil edilir; seçilmediyse abonelik tek ödemedir ve seçilen dönemin sonunda erişim kendiliğinden sona erer. Kullanıcı bu şartları kabul ettiğini beyan ve taahhüt eder.</p>
+              <p><strong>12.2.</strong> Kullanıcı, uygulama içinden satın aldığı otomatik yenilemeli aboneliğini yalnızca satın almanın gerçekleştirildiği Uygulama Mağazasının abonelik yönetim ekranı üzerinden iptal edebilir. Uygulama içinde yer alan “Aboneliği Yönet” veya benzeri bağlantılar Kullanıcıyı ilgili Uygulama Mağazasının abonelik yönetim ekranına yönlendirir. hea-life.com üzerinden satın alınan abonelikte otomatik yenileme açıksa Kullanıcı bunu <a href="abonelik.html">hea-life.com/abonelik.html</a> adresinden (satın alma e-postasına gönderilen doğrulama koduyla, giriş yapmadan) ya da uygulamada Ayarlar › Abonelik ekranından dilediği zaman kapatabilir; kapatma hâlinde erişim, ödemesi yapılmış dönemin sonuna kadar sürer ve sonraki dönem için ücret alınmaz. Otomatik yenileme seçilmemiş abonelik ayrıca iptal gerektirmez; erişim dönem sonunda kendiliğinden sona erer. Yenileme ödemesi karttan alınamazsa Şirket Kullanıcıyı e-posta ile bilgilendirir, 24 saat arayla en fazla üç kez dener ve başarısızlık hâlinde otomatik yenilemeyi kapatır. Uygulamanın cihazdan silinmesi tek başına aboneliğin iptali anlamına gelmez.</p>
               <p><strong>12.3.</strong> Şirket, abonelik ücretlerinde yapılacak değişiklikleri yürürlükteki mevzuatın ve ilgili uygulama mağazası kurallarının gerektirdiği şekilde Kullanıcıya bildirir. Fiyat değişiklikleri, ileriye etkili uygulanır ve aksi mevzuatta öngörülmedikçe, Kullanıcının onayladığı mevcut ücretli dönemi geriye dönük olarak etkilemez.</p>
-              <p><strong>12.4.</strong> Ücretli abonelikler Uygulama içi satın alma yoluyla Apple App Store veya Google Play üzerinden ya da hea-life.com üzerinden PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş. altyapısıyla gerçekleştirilir. Her iki kanalda da Kullanıcının kredi kartı veya banka kartı bilgileri Şirkete iletilmez, Şirket tarafından görülmez, işlenmez veya saklanmaz. Uygulama Mağazası satın almalarında ödeme belgelendirmesi ilgili mağazanın kuralları çerçevesinde yürütülür ve fatura Apple yahut Google şirketleri tarafından kesilir. hea-life.com üzerinden yapılan satın almalarda fatura Şirket tarafından elektronik ortamda düzenlenir ve Kullanıcının e-posta adresine gönderilir; bu satın almalara <a href="#mesafeli-satis">Mesafeli Satış Sözleşmesi</a> uygulanır. Şirket tarafından abonelik durumunun teknik olarak eşleştirilmesi ve hak yönetimi amacıyla üçüncü taraf teknik altyapılardan yararlanılabilir; bu altyapılar da ödeme tahsilatı gerçekleştirmez.</p>
+              <p><strong>12.4.</strong> Ücretli abonelikler Uygulama içi satın alma yoluyla Apple App Store veya Google Play üzerinden ya da hea-life.com üzerinden PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş. altyapısıyla gerçekleştirilir. Her iki kanalda da Kullanıcının kredi kartı veya banka kartı bilgileri Şirkete iletilmez, Şirket tarafından görülmez, işlenmez veya saklanmaz; hea-life.com'da otomatik yenileme seçildiğinde kart PayTR tarafından saklanır ve Şirket yalnızca kart tokenı ile son dört haneyi tutar. Uygulama Mağazası satın almalarında ödeme belgelendirmesi ilgili mağazanın kuralları çerçevesinde yürütülür ve fatura Apple yahut Google şirketleri tarafından kesilir. hea-life.com üzerinden yapılan satın almalarda fatura Şirket tarafından elektronik ortamda düzenlenir ve Kullanıcının e-posta adresine gönderilir; bu satın almalara <a href="#mesafeli-satis">Mesafeli Satış Sözleşmesi</a> uygulanır. Şirket tarafından abonelik durumunun teknik olarak eşleştirilmesi ve hak yönetimi amacıyla üçüncü taraf teknik altyapılardan yararlanılabilir; bu altyapılar da ödeme tahsilatı gerçekleştirmez.</p>
 
               <h3>13. Cayma, iptal ve iade</h3>
               <p><strong>13.1.</strong> Kullanıcı cayma, aboneliği sona erdirme ve ücret iadesine ilişkin hakları; 6502 sayılı Tüketicinin Korunması Hakkında Kanun, Mesafeli Sözleşmeler Yönetmeliği, ilgili sair tüketici mevzuatı ile satın almanın gerçekleştirildiği uygulama mağazasının uygulanabilir koşulları çerçevesinde belirleceğini kabul beyan ve taahhüt eder. Kullanıcının emredici mevzuattan doğan hakları saklıdır.</p>
@@ -2203,17 +2209,25 @@
                 Fiyatlara tüm vergiler dâhildir; ayrıca teslimat veya kargo ücreti
                 yoktur. Ödeme, PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş. altyapısı
                 ile kredi kartı veya banka kartı üzerinden 3D Secure doğrulamasıyla
-                alınır. Kart bilgileri Satıcı tarafından görülmez ve saklanmaz.
+                alınır. Kart bilgileri Satıcı tarafından görülmez ve saklanmaz;
+                otomatik yenileme seçildiyse kart PayTR tarafından saklanır ve
+                yenileme ödemeleri bu karttan alınır.
               </p>
               <h3>7.4. Abonelik süresi ve sona erme</h3>
               <p>
-                Abonelik, seçilen dönem (hafta, ay veya yıl) için geçerlidir ve
-                otomatik olarak yenilenmez. Dönem sonunda erişim kendiliğinden
-                sona erer; sonraki dönem için ücret alınmaz ve kart bilgileri
-                saklanmaz. Tüketici dilerse aynı veya farklı bir dönemi yeniden
-                satın alabilir. Fiyat değişiklikleri yalnızca sonraki satın
+                Abonelik, seçilen dönem (hafta, ay veya yıl) için geçerlidir.
+                Ödeme adımında "Aboneliğim otomatik yenilensin" seçildiyse
+                abonelik, dönem bitiminden en az 24 saat önce kapatılmadığı
+                takdirde aynı süre ve bu formda onaylanan ücretle yenilenir;
+                yenileme ücreti dönem bitiminden en fazla 24 saat önce PayTR'de
+                saklanan karttan tahsil edilir ve Tüketiciye e-posta ile
+                bildirilir. Seçilmediyse abonelik tek ödemedir: dönem sonunda
+                erişim kendiliğinden sona erer, sonraki dönem için ücret alınmaz
+                ve kart bilgileri saklanmaz. Tüketici dilerse aynı veya farklı
+                bir dönemi yeniden satın alabilir. Fiyat değişiklikleri mevcut
+                aboneliğin yenilemelerine uygulanmaz; yalnızca yeni satın
                 almalara uygulanır. Tüketici aboneliğinin durumunu ve
-                (sunulduğu takdirde) otomatik yenileme ayarını
+                otomatik yenileme ayarını
                 <a href="abonelik.html">hea-life.com/abonelik.html</a>
                 adresinden, giriş yapmadan, e-postasına gelen doğrulama
                 koduyla yönetebilir. Sorular için
@@ -2298,11 +2312,18 @@
               </p>
               <h3>8.5. Süre ve sona erme</h3>
               <p>
-                Abonelik otomatik yenilenmez; ödemesi yapılmış dönemin sonunda
-                erişim kendiliğinden sona erer ve sonraki dönem için ücret
-                alınmaz. Alıcı dilerse yeniden satın alır. Dönem ortasında
-                kısmi iade yapılmaz. Alıcı abonelik durumunu ve (sunulduğu
-                takdirde) otomatik yenileme ayarını
+                Ödeme adımında otomatik yenileme seçildiyse abonelik, dönem
+                bitiminden en az 24 saat önce kapatılmadığı takdirde aynı süre
+                ve Sözleşmedeki ücretle yenilenir; yenileme ücreti dönem
+                bitiminden en fazla 24 saat önce PayTR'de saklanan karttan
+                tahsil edilir. Yenileme ödemesi alınamazsa Satıcı, Alıcıyı
+                e-posta ile bilgilendirir, 24 saat arayla en fazla üç kez dener
+                ve başarısızlık hâlinde otomatik yenilemeyi kapatır. Otomatik
+                yenileme seçilmediyse abonelik tek ödemedir; ödemesi yapılmış
+                dönemin sonunda erişim kendiliğinden sona erer ve sonraki dönem
+                için ücret alınmaz. Alıcı dilerse yeniden satın alır. Dönem
+                ortasında kısmi iade yapılmaz. Alıcı abonelik durumunu ve
+                otomatik yenileme ayarını
                 <a href="abonelik.html">hea-life.com/abonelik.html</a>
                 adresinden yönetebilir. Sorular için
                 <a href="mailto:info@hea-life.com">info@hea-life.com</a>.

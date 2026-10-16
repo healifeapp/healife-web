@@ -45,22 +45,30 @@
     }
     box.innerHTML = state.orders.map(function (o) {
       var active = o.periodEnd && new Date(o.periodEnd) > new Date();
+      var money = function (k) { return k == null ? "" : "₺" + (k / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+      var card = o.cardLast4 ? "•••• " + esc(o.cardLast4) : "kayıtlı kartın";
       var pill = o.autoRenew
         ? '<span class="order__pill order__pill--on">Otomatik yenileme açık</span>'
-        : (o.renewalCancelledAt ? '<span class="order__pill">Yenileme kapatıldı</span>' : '<span class="order__pill">Otomatik yenilenmez</span>');
+        : (o.renewalFailedAt ? '<span class="order__pill order__pill--warn">Yenileme yapılamadı</span>'
+          : o.renewalCancelledAt ? '<span class="order__pill">Yenileme kapatıldı</span>'
+          : o.kind === "renewal" ? '<span class="order__pill">Yenileme</span>'
+          : '<span class="order__pill">Otomatik yenilenmez</span>');
       var act = o.autoRenew
-        ? '<div class="order__act"><button class="btn btn--ghost" type="button" data-cancel="' + esc(o.merchantOid) + '">Otomatik yenilemeyi kapat</button><span class="sub__note">Erişimin ' + esc(fmtDate(o.periodEnd)) + ' tarihine kadar sürer; sonra ücret alınmaz.</span></div>'
-        : '<p class="sub__note">' + (active ? 'Erişimin ' + esc(fmtDate(o.periodEnd)) + ' tarihinde kendiliğinden biter; kartından tekrar çekim yapılmaz. Dilersen o zaman yeniden satın alırsın.' : 'Bu abonelik sona erdi.') + '</p>';
+        ? '<div class="order__act"><button class="btn btn--ghost" type="button" data-cancel="' + esc(o.merchantOid) + '">Otomatik yenilemeyi kapat</button><span class="sub__note">Sonraki ödeme ' + esc(fmtDate(o.nextChargeAt || o.periodEnd)) + ' (en fazla 24 saat önce): ' + esc(money(o.nextChargeKurus)) + ', ' + card + '. Kapatınca erişimin dönem sonuna kadar sürer, sonra ücret alınmaz.</span></div>'
+        : o.renewalFailedAt
+          ? '<p class="sub__note">Yenileme ödemesi kartından alınamadı, otomatik yenileme kapatıldı. ' + (active ? 'Erişimin ' + esc(fmtDate(o.periodEnd)) + ' tarihine kadar sürer; ' : '') + 'devam etmek için <a href="/start/">yeniden satın alabilirsin</a>.</p>'
+          : '<p class="sub__note">' + (active ? 'Erişimin ' + esc(fmtDate(o.periodEnd)) + ' tarihinde kendiliğinden biter; kartından tekrar çekim yapılmaz. Dilersen o zaman yeniden satın alırsın.' : 'Bu abonelik sona erdi.') + '</p>';
       return '<article class="order">' +
         '<div class="order__top"><b>Healife Premium · ' + esc(PLAN[o.planId] || o.planTitle || o.planId) + '</b>' + pill + (o.testMode ? '<span class="order__pill order__pill--test">Test</span>' : '') + '</div>' +
         '<dl><dt>Durum</dt><dd>' + esc(STATUS[o.status] || o.status) + '</dd>' +
         '<dt>Ödeme</dt><dd>' + esc(fmtDate(o.paidAt)) + '</dd>' +
         '<dt>Erişim bitişi</dt><dd>' + esc(fmtDate(o.periodEnd)) + '</dd>' +
+        (o.cardLast4 ? '<dt>Kart</dt><dd>•••• ' + esc(o.cardLast4) + (o.cardBrand ? ' · ' + esc(o.cardBrand) : '') + '</dd>' : '') +
         '<dt>Sipariş no</dt><dd>' + esc(o.merchantOid) + '</dd></dl>' + act + '</article>';
     }).join("");
     box.querySelectorAll("[data-cancel]").forEach(function (b) {
       b.addEventListener("click", function () {
-        if (!confirm("Otomatik yenileme kapatılsın mı? Erişimin dönem sonuna kadar sürer, sonra ücret alınmaz.")) return;
+        if (!confirm("Otomatik yenileme kapatılsın mı? Erişimin dönem sonuna kadar sürer, sonra kartından ücret alınmaz. Dilersen daha sonra yeniden satın alabilirsin.")) return;
         busy(b, true, "Kapatılıyor…");
         api("/cancel", { merchantOid: b.getAttribute("data-cancel") }, true).then(function (r) {
           if (r.status === 401) { alert("Oturum süresi doldu, yeni kod iste."); return logout(); }
