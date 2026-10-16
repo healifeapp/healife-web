@@ -1901,6 +1901,75 @@ noscript p {
   border-radius: 16px;
   background: #fff;
 }
+/* Direkt API kart formu (16.10.2026) */
+.cf {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.2rem;
+}
+.cf .co__lbl {
+  margin-bottom: 0;
+}
+.field--plain input {
+  padding-left: 1rem;
+  min-height: 56px;
+  font-variant-numeric: tabular-nums;
+}
+.cf__num input {
+  padding-right: 4.2rem;
+  letter-spacing: 0.04em;
+}
+.cf__brand {
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  min-width: 40px;
+  padding: 0 0.45rem;
+  border-radius: 6px;
+  background: #fff;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 0.7rem;
+  line-height: 24px;
+  text-align: center;
+  display: none;
+}
+.cf__brand[data-brand="visa"] { display: block; color: #1a1f71; font-style: italic; }
+.cf__brand[data-brand="visa"]::after { content: "VISA"; }
+.cf__brand[data-brand="mastercard"] { display: block; color: #eb001b; }
+.cf__brand[data-brand="mastercard"]::after { content: "MC"; }
+.cf__brand[data-brand="troy"] { display: block; color: #00a19b; }
+.cf__brand[data-brand="troy"]::after { content: "troy"; }
+.cf__brand[data-brand="amex"] { display: block; color: #2e77bc; }
+.cf__brand[data-brand="amex"]::after { content: "AMEX"; }
+.cf__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+.cf .err {
+  margin-top: -0.2rem;
+}
+.optin--renew {
+  margin-top: 0.4rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+.optin--renew b {
+  color: var(--text);
+}
+.optin--renew a {
+  color: var(--lime);
+}
+.optin--renew:has(input:checked) {
+  border-color: rgba(187, 228, 72, 0.5);
+}
 .pay__note {
   display: flex;
   gap: 0.5rem;

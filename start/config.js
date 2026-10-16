@@ -1,6 +1,10 @@
-// Web funnel ayarları. Ödeme ve giriş henüz bağlanmadı: ikisi de "demo"
-// kipinde çalışıyor; PayTR anlaşması ve backend uçları hazır olunca
-// buradaki iki satırı değiştirmek yeterli (bkz. services.js).
+// Web funnel ayarları. Ödeme canlı (PayTR Direkt API, bkz. services.js);
+// giriş hâlâ "pending".
+
+const onSite = /(^|\.)hea-life\.com$/.test(location.hostname);
+// Yerelde kart formunu görmek için: http://localhost:8000/start/?provider=paytr
+// (yalnız localhost'ta geçerli; backend canlı sipariş açar, "öde"ye basma).
+const forcedProvider = location.hostname === "localhost" ? new URLSearchParams(location.search).get("provider") : null;
 
 export const CONFIG = {
   apiBase: "https://dcp-humanos-410d767c97ce.herokuapp.com",
@@ -8,15 +12,18 @@ export const CONFIG = {
   // "demo"    → yer tutucu form + "öde" düğmesi başarı ekranına geçer (yalnız önizleme).
   // "pending" → form + onaylar görünür ama ödeme alınmaz; "çok yakında" uyarısı.
   //             (14.10.2026'ya kadar canlı sitenin kipiydi; PayTR bağlandı.)
-  // "paytr"   → backend'den iFrame token'ı alınır, PayTR formu sayfaya gömülür.
-  //             Gerçek para çekilip çekilmediğini backend'deki PAYTR_TEST_MODE belirler.
-  paymentProvider: /(^|\.)hea-life\.com$/.test(location.hostname) ? "paytr" : "demo",
+  // "paytr"   → kart formu sitede; backend imzalı alanları verir, tarayıcı kartı
+  //             doğrudan PayTR'ye POST eder (3D). "Otomatik yenile" seçiliyse kart
+  //             PayTR'de saklanır ve backend dönem sonunda yeniler (16.10.2026).
+  //             Gerçek para çekilip çekilmediğini backend'deki PAYTR_TEST_MODE /
+  //             PAYTR_TEST_EMAILS belirler.
+  paymentProvider: forcedProvider || (onSite ? "paytr" : "demo"),
 
   // "demo"    → giriş düğmeleri sahte bir kullanıcı üretir (yalnız önizleme).
   // "pending" → hesap adımı atlanır; canlı sitede gerçek ziyaretçiye sahte
   //             "Google hesabın bağlandı" gösterilmesin (backend uçları yok).
   // "live"    → Apple/Google kimlik doğrulaması + backend /api/user/login-apple|google.
-  authProvider: /(^|\.)hea-life\.com$/.test(location.hostname) ? "pending" : "demo",
+  authProvider: onSite ? "pending" : "demo",
 
   // Backend'e aday (e-posta + cevaplar + pazarlama izni) gönderme ucu henüz yok.
   // false iken pazarlama izni kutusu gösterilmez: kaydedilmeyen bir izin

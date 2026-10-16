@@ -3,7 +3,7 @@
 // gösterilen kalori uygulamaya girince değişmesin diye.
 //   dailyTargets.js · levelScore.js · planResolver.js (MAX_TRAINING_LEVEL)
 
-import { CONFIG } from "./config.js?v=20261014a";
+import { CONFIG } from "./config.js?v=20261016a";
 
 /* ---------------------------------------------------------------- hesap */
 
@@ -200,28 +200,49 @@ export async function signIn(method, answers) {
 /* ------------------------------------------------------------ ödeme */
 
 /**
- * PayTR iFrame API akışı (paymentProvider: "paytr"):
- *  1. POST {apiBase}/api/billing/web/checkout/paytr  { planId, email, name }
- *     → backend WebOrder açar, PayTR get-token'dan token alır → { token, merchantOid }
- *  2. iFrame: https://www.paytr.com/odeme/guvenli/{token}
+ * PayTR Direkt API akışı (paymentProvider: "paytr"), 16.10.2026:
+ *  1. POST {apiBase}/api/billing/web/checkout/paytr  { planId, email, name, autoRenew }
+ *     → backend WebOrder açar, imzalı form alanlarını döner → { merchantOid, action, fields }
+ *     (store_card = autoRenew: kart PayTR'de saklanır, dönem sonunda backend yeniler)
+ *  2. submitToPaytr: alanlar + kart bilgileri gizli bir formla ÜST PENCEREDE
+ *     doğrudan https://www.paytr.com/odeme adresine POST edilir (3D Secure).
+ *     Kart verisi hea-life.com sunucusuna ya da backend'e hiç gitmez.
  *  3. PayTR, merchant_ok_url'e (/start/?odeme=tamam) döner. Asıl onay
  *     backend'e gelen bildirimle verilir; sayfa getOrderStatus ile onu bekler.
  * Web'de giriş yok: sipariş e-postaya bağlıdır, kullanıcı uygulamaya aynı
  * e-postayla girince backend premium'u açar.
  */
-export async function createCheckout({ plan, email, name }) {
+export async function createCheckout({ plan, email, name, autoRenew = true }) {
   if (CONFIG.paymentProvider === "demo") return { mode: "demo" };
   if (CONFIG.paymentProvider === "pending") return { mode: "pending" };
 
   const res = await fetch(`${CONFIG.apiBase}/api/billing/web/checkout/paytr`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ planId: plan.id, email, name: name || "" }),
+    body: JSON.stringify({ planId: plan.id, email, name: name || "", autoRenew: !!autoRenew, flow: "direct" }),
   });
   const data = await res.json().catch(() => null);
-  if (!res.ok || !data?.results?.token) throw new Error(data?.message || "Ödeme başlatılamadı");
-  const { token, merchantOid } = data.results;
-  return { mode: "iframe", url: `https://www.paytr.com/odeme/guvenli/${token}`, merchantOid };
+  const r = data?.results;
+  if (!res.ok || !r?.fields || !r?.action || !r?.merchantOid) throw new Error(data?.message || "Ödeme başlatılamadı");
+  return { mode: "direct", action: r.action, fields: r.fields, merchantOid: r.merchantOid };
+}
+
+/** İmzalı alanlar + kart alanlarını gizli formla PayTR'ye gönderir (sayfa PayTR'ye gider). */
+export function submitToPaytr(action, fields, card) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = action;
+  form.acceptCharset = "UTF-8";
+  form.style.display = "none";
+  for (const [k, v] of Object.entries({ ...fields, ...card })) {
+    const i = document.createElement("input");
+    i.type = "hidden";
+    i.name = k;
+    i.value = String(v ?? "");
+    form.appendChild(i);
+  }
+  document.body.appendChild(form);
+  form.submit();
 }
 
 /** Sunucudaki sipariş durumu; bulunamazsa/ağ hatasında null. */

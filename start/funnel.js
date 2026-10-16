@@ -7,7 +7,7 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261014d";
+import { CONFIG } from "./config.js?v=20261016a";
 import { ICONS } from "./icons.js?v=20261014d";
 import {
   dailyTargets,
@@ -24,7 +24,9 @@ import {
   createCheckout,
   getOrderStatus,
   wait,
-} from "./services.js?v=20261014d";
+  submitToPaytr,
+} from "./services.js?v=20261016a";
+import { formatCardNumber, formatExpiry, cardBrand, validateCard } from "./card.js?v=20261016a";
 
 /* ============================================================ ikonlar */
 
@@ -966,10 +968,10 @@ const FEATURES = [
 ];
 
 const FAQ = [
-  ["Abonelik otomatik yenilenir mi?", "Hayır. Web'den aldığın abonelik tek ödemedir: seçtiğin dönem bitince premium kapanır, kartından tekrar çekim yapılmaz. Dilersen yeniden satın alırsın. Aboneliğinin durumunu hea-life.com/abonelik.html adresinden e-postanla görebilirsin."],
+  ["Abonelik otomatik yenilenir mi?", "Sen istersen. Ödeme adımındaki \"Aboneliğim otomatik yenilensin\" kutusu işaretliyse dönem bitiminde aynı süre ve ücretle, PayTR'de saklanan kartından yenilenir; dönem bitiminden en az 24 saat önce hea-life.com/abonelik.html adresinden (e-postana gelen kodla) ya da uygulamada Ayarlar › Abonelik'ten kapatabilirsin. Kutuyu kaldırırsan tek ödemedir: dönem bitince premium kapanır, kartından tekrar çekim yapılmaz."],
   ["Uygulamayı nasıl kullanacağım?", "Ödemeden sonra Healife'ı App Store veya Google Play'den indir ve burada kullandığın Apple ya da Google hesabıyla giriş yap. Planın ve premium hazır olur."],
   ["Planım nasıl hazırlanıyor?", "Kalori hedefin yaş, boy, kilo, cinsiyet ve aktivite seviyene göre Mifflin-St Jeor formülüyle hesaplanır. Antrenman seviyen deneyim ve performans cevaplarınla belirlenir; program hedefine ve gün sayına göre seçilir."],
-  ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin Healife'a ulaşmaz, saklanmaz."],
+  ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin tarayıcından doğrudan PayTR'ye gider, Healife sunucularına ulaşmaz. Otomatik yenilemeyi seçersen kartın PayTR'de saklanır; Healife yalnızca kartın son 4 hanesini görür."],
 ];
 
 // Sitedeki "Ücretsiz başla" / "İndir" de funnel'ı açıyor; ödemek istemeyen
@@ -1030,13 +1032,13 @@ function paywallView() {
       ${FAQ.map(([q, ans]) => `<details><summary>${q}${ai("chevronDown")}</summary><p>${ans}</p></details>`).join("")}
     </div>
 
-    <p class="fine center legal">Tek ödeme; abonelik otomatik yenilenmez. Seçtiğin dönem bitince premium sona erer, dilersen yeniden satın alırsın. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul edersin.</p>
+    <p class="fine center legal">Otomatik yenilemeyi ödeme adımında sen seçersin: açıksa dönem bitiminde aynı ücretle yenilenir ve dilediğinde kapatırsın; kapalıysa tek ödemedir, dönem bitince premium sona erer. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul edersin.</p>
     ${legalFoot()}
   </section>
   <div class="dock dock--pw">
     <p class="pw-total">${(() => {
       const p = plans.find((x) => x.id === S.planId) || plans[0];
-      return `Bugün <b>${money(p.price)}</b> · tek ödeme · otomatik yenilenmez`;
+      return `Bugün <b>${money(p.price)}</b> · ${UNIT[p.id] || p.periodLabel} başına · yenileme isteğe bağlı`;
     })()}</p>
     <button class="btn btn--primary btn--block" type="button" data-next>Devam et${ai("arrowRight")}</button>
     <a class="free-link" href="${freeUrl()}" data-free>Şimdilik ücretsiz sürümle devam et</a>
@@ -1072,6 +1074,40 @@ function endDate(plan) {
 
 const UNIT = { yearly: "yıl", monthly: "ay", weekly: "hafta" };
 
+/** Sipariş özetindeki yenileme satırı; kutuya göre değişir. */
+function renewSummary(p, on) {
+  return on
+    ? `${ai("refresh")}<span>Sonraki ödeme <b>${endDate(p)}</b>: ${money(p.price)}. Otomatik yenileme açık; dilediğinde abonelik sayfasından ya da uygulamadan kapatırsın, erişim dönem sonuna kadar sürer.</span>`
+    : `${ai("refresh")}<span>Erişim <b>${endDate(p)}</b> tarihine kadar. Otomatik yenilenmez; süre bitince dilersen yeniden satın alırsın.</span>`;
+}
+
+/** PayTR Direkt API kart formu. Alanlar backend'e DEĞİL, doğrudan PayTR'ye gider (services.submitToPaytr). */
+function cardFormHtml(p) {
+  const on = S.autoRenew !== false;
+  return `
+        <div class="cf">
+          <p class="co__lbl">Kart bilgileri <small>doğrudan PayTR'ye iletilir</small></p>
+          <label class="field field--plain cf__num">
+            <span class="sr">Kart numarası</span>
+            <input id="ccNumber" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="Kart numarası" maxlength="23" spellcheck="false" />
+            <i class="cf__brand" id="ccBrand" aria-hidden="true"></i>
+          </label>
+          <p class="err" id="ccNumberErr" hidden></p>
+          <div class="cf__row">
+            <label class="field field--plain"><span class="sr">Son kullanma</span><input id="ccExp" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="AA/YY" maxlength="5" /></label>
+            <label class="field field--plain"><span class="sr">CVV</span><input id="ccCvv" type="password" inputmode="numeric" autocomplete="cc-csc" placeholder="CVV" maxlength="4" /></label>
+          </div>
+          <p class="err" id="ccExpErr" hidden></p>
+          <p class="err" id="ccCvvErr" hidden></p>
+          <label class="field field--plain"><span class="sr">Kart üzerindeki isim</span><input id="ccName" type="text" autocomplete="cc-name" autocapitalize="words" placeholder="Kart üzerindeki isim" maxlength="50" value="${esc(S.fullName || S.answers.name || "")}" /></label>
+          <p class="err" id="ccNameErr" hidden></p>
+          <label class="optin optin--renew">
+            <input type="checkbox" id="renewOk" ${on ? "checked" : ""} />
+            <span><b>Aboneliğim otomatik yenilensin.</b> Kartın PayTR'de güvenle saklanır; her ${UNIT[p.id] || p.periodLabel} ${money(p.price)} çekilir ve premium kesintisiz sürer. İstediğin zaman <a href="/abonelik.html" target="_blank" rel="noopener">abonelik sayfasından</a> ya da uygulamadan kapatabilirsin; kapatınca erişim dönem sonuna kadar devam eder, sonra ücret alınmaz.</span>
+          </label>
+        </div>`;
+}
+
 function checkoutView() {
   const p = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];
   const via = !S.user ? null : S.user.method === "apple" ? ["apple", "Apple hesabı"] : ["google", "Google hesabı"];
@@ -1091,7 +1127,7 @@ function checkoutView() {
           <div><dt>KDV</dt><dd>Fiyata dâhil</dd></div>
           <div class="is-total"><dt>Bugün ödenecek</dt><dd>${money(p.price)}</dd></div>
         </dl>
-        <p class="co__renew">${ai("refresh")}<span>Erişim <b>${endDate(p)}</b> tarihine kadar. Otomatik yenilenmez; süre bitince dilersen yeniden satın alırsın.</span></p>
+        <p class="co__renew" id="coRenew">${renewSummary(p, S.autoRenew !== false)}</p>
         <ul class="co__incl">
           <li>${ai("check")}Sana özel antrenman ve beslenme planı</li>
           <li>${ai("check")}Sınırsız AI koç ve fotoğrafla kalori hesaplama</li>
@@ -1125,7 +1161,7 @@ function checkoutView() {
         </label>
         <div class="pay" id="pay">${
           CONFIG.paymentProvider === "paytr"
-            ? `<p class="pay__note">${ai("info")}Sözleşmeyi onaylayıp "Güvenli ödemeye geç"e dokunduğunda PayTR ödeme formu burada açılır.</p>`
+            ? cardFormHtml(p)
             : `<div class="pay__loading"><span class="spin"></span>Güvenli ödeme formu yükleniyor…</div>`
         }</div>
         <div class="co__secure">
@@ -1134,7 +1170,7 @@ function checkoutView() {
         </div>
         <div class="dock dock--pay" id="payDock" hidden>
           <p class="err" id="payErr" hidden>Devam etmek için sözleşme onayını işaretle.</p>
-          <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${CONFIG.paymentProvider === "paytr" ? "Güvenli ödemeye geç" : `${money(p.price)} öde`}</button>
+          <button class="btn btn--primary btn--block is-dim" type="button" id="demoPay">${ai("lock")}${money(p.price)} öde</button>
           <div class="soon" id="soon" hidden>
             ${ai("info")}
             <div>
@@ -1541,21 +1577,69 @@ const BIND = {
     };
 
     if (paytr) {
+      const num = app.querySelector("#ccNumber");
+      const exp = app.querySelector("#ccExp");
+      const cvv = app.querySelector("#ccCvv");
+      const cname = app.querySelector("#ccName");
+      const brand = app.querySelector("#ccBrand");
+      const renew = app.querySelector("#renewOk");
+      const errOf = { number: "#ccNumberErr", expiry: "#ccExpErr", cvv: "#ccCvvErr", holder: "#ccNameErr" };
+      const fieldOf = { number: num, expiry: exp, cvv, holder: cname };
+      const clearErr = (k) => (app.querySelector(errOf[k]).hidden = true);
+
+      num.addEventListener("input", () => {
+        num.value = formatCardNumber(num.value);
+        brand.dataset.brand = cardBrand(num.value) || "";
+        clearErr("number");
+      });
+      exp.addEventListener("input", () => {
+        exp.value = formatExpiry(exp.value);
+        clearErr("expiry");
+      });
+      cvv.addEventListener("input", () => clearErr("cvv"));
+      cname.addEventListener("input", () => clearErr("holder"));
+      // Ad Soyad yazılırken kart adı boşsa onu izler.
+      nameIn.addEventListener("input", () => {
+        if (!cname.dataset.touched) cname.value = nameIn.value;
+      });
+      cname.addEventListener("input", () => (cname.dataset.touched = "1"));
+
+      renew.addEventListener("change", () => {
+        S.autoRenew = renew.checked;
+        save();
+        app.querySelector("#coRenew").innerHTML = renewSummary(plan, renew.checked);
+        track("renew_toggle", { on: renew.checked });
+      });
+
       pay.addEventListener("click", async () => {
         if (!requireName() || !requireLegal()) return;
+        const v = validateCard({ number: num.value, expiry: exp.value, cvv: cvv.value, holder: cname.value });
+        if (!v.ok) {
+          let first = null;
+          for (const k of ["number", "expiry", "cvv", "holder"]) {
+            const el = app.querySelector(errOf[k]);
+            el.textContent = v.errors[k] || "";
+            el.hidden = !v.errors[k];
+            if (v.errors[k] && !first) first = fieldOf[k];
+          }
+          shake(first.closest("label"));
+          first.focus();
+          return;
+        }
+        S.autoRenew = renew.checked;
+        save();
         pay.disabled = true;
-        pay.innerHTML = `<span class="spin"></span>Ödeme formu hazırlanıyor…`;
+        pay.innerHTML = `<span class="spin"></span>PayTR'ye yönlendiriliyorsun…`;
         try {
-          const co = await createCheckout({ plan, email: S.email, name: S.fullName });
+          const co = await createCheckout({ plan, email: S.email, name: S.fullName, autoRenew: renew.checked });
           S.orderId = co.merchantOid;
           save();
-          track("checkout_form_open", { plan: plan.id });
-          box.innerHTML = `<iframe class="pay__frame" src="${co.url}" title="Güvenli ödeme" allow="payment"></iframe>`;
-          dock.hidden = true;
-          box.scrollIntoView({ behavior: "smooth", block: "start" });
+          track("checkout_form_open", { plan: plan.id, auto_renew: renew.checked });
+          // Sayfa PayTR'ye (3D Secure) gider; dönüşte ?odeme=tamam|hata ile verifying adımı.
+          submitToPaytr(co.action, co.fields, v.card);
         } catch (e) {
           pay.disabled = false;
-          pay.innerHTML = `${ai("lock")}Güvenli ödemeye geç`;
+          pay.innerHTML = `${ai("lock")}${money(plan.price)} öde`;
           err.textContent = `${e.message}. Lütfen tekrar dene.`;
           err.hidden = false;
         }
