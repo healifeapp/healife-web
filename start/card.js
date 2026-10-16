@@ -48,7 +48,7 @@ export function parseExpiry(s, now = new Date()) {
   const curY = now.getFullYear() % 100;
   const curM = now.getMonth() + 1;
   if (year < curY || (year === curY && month < curM) || year > curY + 20) return null;
-  return { month: String(month), year: String(year).padStart(2, "0") };
+  return { month: String(month).padStart(2, "0"), year: String(year).padStart(2, "0") };
 }
 
 /** "12/30" biçimine getirir (yazarken). */

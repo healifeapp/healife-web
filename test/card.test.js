@@ -30,7 +30,7 @@ test("cardBrand", () => {
 
 test("parseExpiry: geçerli, geçmiş, bozuk", () => {
   assert.deepEqual(parseExpiry("12/30", NOW), { month: "12", year: "30" });
-  assert.deepEqual(parseExpiry("0128", NOW), { month: "1", year: "28" });
+  assert.deepEqual(parseExpiry("0128", NOW), { month: "01", year: "28" });
   assert.deepEqual(parseExpiry("10/26", NOW), { month: "10", year: "26" });
   assert.equal(parseExpiry("09/26", NOW), null);
   assert.equal(parseExpiry("13/30", NOW), null);
