@@ -40,11 +40,11 @@ function log(message) {
 }
 
 function parseArgs(argv) {
-  const options = { sourcePath: null, withGuides: false };
+  const options = { sourcePath: null, withGuides: true };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--source") options.sourcePath = resolve(argv[++index] ?? "");
-    else if (arg === "--with-guides") options.withGuides = true;
+    else if (arg === "--no-guides") options.withGuides = false;
     else throw new Error(`Bilinmeyen argüman: ${arg}`);
   }
   if (!options.sourcePath) throw new Error("--source <explore-free.json> gerekli");
@@ -85,8 +85,8 @@ function writePages(dir, pages) {
 function main() {
   const { sourcePath, withGuides } = parseArgs(process.argv.slice(2));
   const items = loadSource(sourcePath);
-  // Rehber metinleri uzman onayı bekliyor (2.11.2026: kaynaksız/hatalı sağlık
-  // iddiaları). Onaylanana kadar varsayılan üretim rehber yayınlamaz.
+  // Rehberler yalnızca tools/guide-overrides/ altındaki düzeltilmiş metinle
+  // yayınlanır (bkz. prepareGuides); DB metni doğrudan siteye çıkmaz.
   const versions = { ...extractAssetVersions(readFileSync(CHROME_SOURCE, "utf8")), guidesEnabled: withGuides };
   const homeNumbers = extractHomeRecipeNumbers(readFileSync(HOME_PAGE, "utf8"));
 
@@ -105,7 +105,7 @@ function main() {
     writePages(GUIDES_DIR, guidePages);
   } else if (existsSync(GUIDES_DIR)) {
     rmSync(GUIDES_DIR, { recursive: true });
-    log("rehber/ kaldırıldı (--with-guides verilmedi)");
+    log("rehber/ kaldırıldı (--no-guides)");
   }
 
   log(`Kaynak: ${sourcePath} (${items.length} kayıt)`);
