@@ -29,6 +29,15 @@ SAYFALAR
                     noindex, siteden link YOK, sitemap.xml'de YOK.
                     API: dcp-humanos-410d767c97ce.herokuapp.com — bu
                     adres .htaccess CSP connect-src'te izinli olmali.
+  kalori-hesaplama.html, makro-hesaplama.html, bazal-metabolizma-hesaplama.html
+                    SEO hesaplayicilari (02.11.2026). Hesap scripts/calc.js'te,
+                    backend dailyTargets ile birebir.
+  tarifler/         Uygulamadaki ucretsiz tariflerin statik sayfalari
+                    (02.11.2026). ELLE DUZENLEMEYIN: tools/build-recipes.mjs
+                    ile uretilir; kaynak canli DB (tools/export-explore.cjs).
+                    Listeden dusen tarifin sayfasi uretimde silinir; sunucuda
+                    da silinmeli.
+  tools/, test/     Gelistirme araclari — SUNUCUYA YUKLENMEZ.
   site.webmanifest  Web manifest (ikonlar)
   .htaccess         www -> hea-life.com ve HTTP -> HTTPS 301, guvenlik
                     basliklari (HSTS, CSP, nosniff, Referrer-Policy),
