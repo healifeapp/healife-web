@@ -51,6 +51,17 @@ function parseArgs(argv) {
   return options;
 }
 
+const GUIDE_OVERRIDES_DIR = join(dirname(fileURLToPath(import.meta.url)), "guide-overrides");
+
+function loadGuideOverrides() {
+  const overrides = new Map();
+  if (!existsSync(GUIDE_OVERRIDES_DIR)) return overrides;
+  for (const file of readdirSync(GUIDE_OVERRIDES_DIR)) {
+    if (file.endsWith(".md")) overrides.set(file.slice(0, -3), readFileSync(join(GUIDE_OVERRIDES_DIR, file), "utf8"));
+  }
+  return overrides;
+}
+
 function loadSource(path) {
   if (!existsSync(path)) throw new Error(`Kaynak dosya yok: ${path}`);
   const items = JSON.parse(readFileSync(path, "utf8"));
@@ -81,7 +92,7 @@ function main() {
 
   const prepared = prepareRecipes(items, homeNumbers);
   const recipes = assignSlugs(prepared.recipes);
-  const { guides, skipped: skippedGuides } = withGuides ? prepareGuides(items) : { guides: [], skipped: [] };
+  const { guides, skipped: skippedGuides } = withGuides ? prepareGuides(items, loadGuideOverrides()) : { guides: [], skipped: [] };
   if (withGuides && guides.length === 0) throw new Error("Yayınlanacak rehber yok");
 
   const recipePages = new Map([["index.html", renderHubPage(recipes, versions)]]);

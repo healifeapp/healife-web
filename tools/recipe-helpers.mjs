@@ -786,7 +786,12 @@ function turkishDate(isoDay) {
   return `${day} ${TURKISH_MONTHS[month - 1]} ${year}`;
 }
 
-export function prepareGuides(items) {
+const WORDS_PER_MINUTE = 200;
+
+// overrides: slug → düzeltilmiş metin (tools/guide-overrides/<slug>.md). DB'deki
+// rehber metinleri doğrulanmamış sağlık iddiaları içerdiği için (2.11.2026)
+// yalnızca düzeltilmiş metni olan rehber yayınlanır.
+export function prepareGuides(items, overrides = new Map()) {
   const skipped = [];
   const guides = [];
   for (const item of items) {
@@ -797,8 +802,15 @@ export function prepareGuides(items) {
     else if (typeof item.content !== "string" || !item.content.trim()) reason = "içerik yok";
     else if (typeof item.thumbnailUrl !== "string" || !item.thumbnailUrl.includes("/image/upload/")) reason = "görsel yok";
     else if (!isoDate(item.createdAt)) reason = "createdAt yok";
-    if (reason) skipped.push({ title: item.title, reason });
-    else guides.push({ ...item, slug: slugify(item.title) });
+    const slug = slugify(item.title);
+    if (!reason && !overrides.has(slug)) reason = "düzeltilmiş metin yok";
+    if (reason) {
+      skipped.push({ title: item.title, reason });
+      continue;
+    }
+    const content = overrides.get(slug);
+    const minutes = Math.max(1, Math.round(content.split(/\s+/).filter(Boolean).length / WORDS_PER_MINUTE));
+    guides.push({ ...item, slug, content, readTime: `${minutes} dk` });
   }
   guides.sort((a, b) => a.slug.localeCompare(b.slug));
   return { guides, skipped };

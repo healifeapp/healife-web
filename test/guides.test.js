@@ -89,9 +89,21 @@ test("prepareGuides: premium, pasif ve içeriksiz rehber yayınlanmaz", () => {
     guide({ title: "Pasif", isActive: false }),
     guide({ title: "Boş", content: "  " }),
     { title: "Tarif", category: "recipes" },
-  ]);
+  ], new Map([["yumurta", "**Düzeltilmiş**\n- Metin"], ["gizli", "x"], ["pasif", "x"], ["bos", "x"]]));
   assert.deepEqual(guides.map((item) => item.slug), ["yumurta"]);
   assert.deepEqual(skipped.map((entry) => entry.reason), ["premium", "aktif değil", "içerik yok"]);
+});
+
+test("prepareGuides: DB metni değil düzeltilmiş metin yayınlanır; düzeltmesi olmayan atlanır", () => {
+  const { guides, skipped } = prepareGuides(
+    [guide(), guide({ title: "Uyku" })],
+    new Map([["yumurta", "**Düzeltilmiş başlık**\n- doğru bilgi"]]),
+  );
+  assert.equal(guides.length, 1);
+  assert.equal(guides[0].content, "**Düzeltilmiş başlık**\n- doğru bilgi");
+  assert.equal(guides[0].readTime, "1 dk");
+  assert.deepEqual(skipped, [{ title: "Uyku", reason: "düzeltilmiş metin yok" }]);
+  assert.equal(prepareGuides([guide()]).guides.length, 0);
 });
 
 test("Article JSON-LD: tarihler, görsel, yayıncı", () => {
