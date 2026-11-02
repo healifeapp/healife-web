@@ -6,11 +6,11 @@ RewriteEngine On
 RewriteCond %{HTTP_HOST} ^www\.hea-life\.com$ [NC,OR]
 RewriteCond %{HTTPS} !=on
 RewriteRule ^(.*)$ https://hea-life.com/$1 [R=301,L]
-# Ana sayfanın tek adresi "/" olsun; /index.html aynı içeriği ikinci bir URL'de
-# sunuyordu. THE_REQUEST yalnızca istemcinin yazdığı yola bakar, böylece
+# Klasörlerin tek adresi "/" ile bitsin (/, /tarifler/); .../index.html aynı
+# içeriği ikinci bir URL'de sunuyordu. THE_REQUEST yalnızca istemcinin yazdığı yola bakar, böylece
 # DirectoryIndex'in iç yönlendirmesi döngüye girmez.
-RewriteCond %{THE_REQUEST} \s/index\.html[\s?#]
-RewriteRule ^index\.html$ / [R=301,L]
+RewriteCond %{THE_REQUEST} \s/(.*/)?index\.html[\s?#]
+RewriteRule ^(.*/)?index\.html$ /$1 [R=301,L]
 
 # ── Özel 404 (I-81) ──
 ErrorDocument 404 /404.html

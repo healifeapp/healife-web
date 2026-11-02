@@ -1,0 +1,347 @@
+/* Tarif sayfaları (tarifler/) — tokens.css + base.css + sections.css üzerine
+   biner. Ana sayfadaki Keşfet kartlarıyla aynı "kâğıt" zemin; kart görünümü
+   sections.css'teki .recipe'ten gelir. */
+
+/* Sayfaya özel sade üst şerit — legal.css'teki .legal-topbar'ın aynısı;
+   bu sayfalar legal.css'i yüklemiyor. */
+.rcp-topbar {
+  background: rgba(11, 11, 12, 0.75);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border-bottom: 1px solid var(--hairline);
+}
+.rcp-topbar .topbar__inner {
+  height: 68px;
+}
+.rcp-topbar .topbar__cta:hover svg {
+  transform: translateX(-3px);
+}
+
+.recipes {
+  background: var(--paper);
+  color: var(--paper-ink);
+  padding-block: calc(68px + clamp(1.5rem, 4vw, 2.5rem)) clamp(4rem, 8vw, 6rem);
+}
+/* Lime odak çizgisi kâğıt zeminde zor seçiliyor. */
+.recipes :focus-visible {
+  outline-color: var(--paper-ink);
+}
+
+.recipes h2 {
+  font-size: clamp(1.375rem, 1.1rem + 1.1vw, 1.875rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+/* ── Sayfa yolu ─────────────────────────────────────── */
+
+.crumbs {
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  font-size: var(--fs-small);
+  color: var(--paper-muted);
+}
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+}
+.crumbs li + li::before {
+  content: "/";
+  margin-right: 0.5rem;
+  color: var(--paper-line);
+}
+.crumbs a {
+  text-decoration: underline;
+  text-decoration-color: var(--paper-line);
+  text-underline-offset: 3px;
+}
+.crumbs a:hover {
+  color: var(--paper-ink);
+  text-decoration-color: currentColor;
+}
+.crumbs [aria-current] {
+  color: var(--paper-ink);
+  font-weight: 600;
+}
+
+/* ── Tarifler ana sayfası ───────────────────────────── */
+
+.recipes__head {
+  max-width: 62ch;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+.recipes__head h1,
+.rcp-hero h1 {
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.recipes__head p {
+  margin-top: 1rem;
+  color: var(--paper-muted);
+  line-height: 1.65;
+}
+.recipes__head h1 + p {
+  margin-top: 1.25rem;
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+}
+
+.recipes__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: clamp(0.875rem, 1.6vw, 1.5rem);
+}
+.recipes__grid > li {
+  display: flex;
+}
+
+/* Kartın tamamı bağlantı: yalnızca kenar rengi değişir, kart yerinden oynamaz. */
+.recipe--link {
+  width: 100%;
+  transition: border-color 0.25s var(--ease);
+}
+.recipe--link:hover {
+  border-color: rgba(20, 21, 15, 0.38);
+}
+.recipe--link:hover .recipe__title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.recipe__body .recipe__title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+/* ── Tarif sayfası: başlık ve görsel ────────────────── */
+
+.rcp-hero {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .rcp-hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+.rcp-hero__photo {
+  aspect-ratio: 3 / 2;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--paper-2);
+}
+.rcp-hero__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.rcp-lead {
+  margin-top: 1rem;
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+  color: var(--paper-muted);
+}
+
+.rcp-macros {
+  margin: 1.5rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--paper-line);
+}
+.rcp-macros > div {
+  background: #fff;
+  padding: 0.85rem clamp(0.6rem, 2.6vw, 1rem);
+}
+.rcp-macros dt {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: var(--paper-muted);
+}
+.rcp-macros dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+.rcp-macros__kcal {
+  grid-column: 1 / -1;
+}
+.rcp-macros__kcal dd {
+  font-size: clamp(2.25rem, 1.8rem + 2vw, 3rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.rcp-macros__kcal dd span {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--paper-muted);
+}
+/* Uygulamadaki makro renkleri: küçük, düz bir işaret. */
+.rcp-macros__item dt {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.rcp-macros__item dt::before {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.rcp-macros__item--protein dt::before {
+  background: var(--protein);
+}
+.rcp-macros__item--carb dt::before {
+  background: var(--carb);
+}
+.rcp-macros__item--fat dt::before {
+  background: var(--fat);
+}
+
+.rcp-meta {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  font-weight: 600;
+}
+.rcp-meta__label {
+  font-weight: 400;
+  color: var(--paper-muted);
+}
+.rcp-estimate {
+  margin-top: 1rem;
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  color: var(--paper-muted);
+}
+
+/* ── Malzemeler ve hazırlanışı ──────────────────────── */
+
+.rcp-body {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .rcp-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  }
+}
+
+.rcp-ing {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--r-lg);
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+.rcp-ing__groups {
+  margin-top: 1rem;
+}
+.rcp-ing__group {
+  margin-top: 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.rcp-ing__list li {
+  padding-block: 0.6rem;
+  border-bottom: 1px solid var(--paper-line);
+  line-height: 1.5;
+}
+.rcp-ing__list li:last-child {
+  border-bottom: 0;
+}
+
+.rcp-steps__list {
+  margin-top: 1.25rem;
+  counter-reset: rcp-step;
+  display: grid;
+  gap: 1.25rem;
+}
+.rcp-steps__list li {
+  counter-increment: rcp-step;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 1rem;
+  line-height: 1.65;
+}
+.rcp-steps__list li::before {
+  content: counter(rcp-step);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--on-lime);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.rcp-note {
+  margin-top: 1.75rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--lime-olive);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: var(--paper-2);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.rcp-note p + p {
+  margin-top: 0.5rem;
+}
+
+/* ── Uygulama çağrısı ───────────────────────────────── */
+
+.rcp-cta {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: var(--r-lg);
+  background: var(--ink);
+  color: var(--text);
+}
+@media (min-width: 900px) {
+  .rcp-cta {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+.rcp-cta p {
+  margin-top: 0.6rem;
+  max-width: 52ch;
+  color: var(--text-2);
+}
+.rcp-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.rcp-cta :focus-visible {
+  outline-color: var(--lime);
+}
+
+.rcp-related {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+}
+.rcp-related .recipes__grid {
+  margin-top: 1.25rem;
+}

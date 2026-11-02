@@ -1,0 +1,462 @@
+/* Hesaplayıcı sayfaları (kalori, makro, bazal metabolizma) —
+   tokens.css + base.css + legal.css üzerine biner. legal.css'ten yalnız sade
+   üst şerit, .legal__table ve .formula kullanılır; .legal kabuğu (lime hüzme)
+   bilerek kullanılmıyor. Düz yüzey, hairline; lime yalnız birincil eylem ve
+   sonuç vurgusunda. */
+
+.tool {
+  padding-block: clamp(6.5rem, 12vh, 8.5rem) clamp(4rem, 8vw, 6rem);
+}
+.tool .wrap {
+  max-width: calc(46rem + 2 * var(--gutter));
+}
+
+/* ── Ekmek kırıntısı ─────────────────────────────────── */
+
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: var(--fs-small);
+  color: var(--text-3);
+}
+.crumbs li + li::before {
+  content: "/";
+  margin-right: 0.4rem;
+  color: var(--text-3);
+}
+.crumbs a {
+  color: var(--text-2);
+}
+.crumbs a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Başlık ──────────────────────────────────────────── */
+
+.tool__head {
+  margin-top: 1.25rem;
+  margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+}
+.tool__head h1 {
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+}
+.tool__head p {
+  margin-top: 1rem;
+  color: var(--text-2);
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+  max-width: 40ch;
+}
+
+/* ── Hesaplayıcı: form + sonuç ───────────────────────── */
+
+.calc {
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 760px) {
+  .calc {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.calc__form,
+.calc__result {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.calc__form {
+  display: grid;
+  gap: 1.1rem;
+}
+.calc__row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.field > label,
+.field > legend {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text);
+  padding: 0;
+}
+.field__hint {
+  font-weight: 400;
+  color: var(--text-3);
+}
+
+.field input[type="text"],
+.field select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s var(--ease);
+}
+.field select {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aeaeb2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+}
+.field input[type="text"]:hover,
+.field select:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.field input:focus-visible,
+.field select:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.field [aria-invalid="true"] {
+  border-color: var(--protein);
+}
+
+/* Cinsiyet: iki parçalı düz seçici; gerçek radio düğmeleri erişilebilir kalır. */
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.segmented label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 46px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--bg);
+  cursor: pointer;
+}
+.segmented label + label {
+  border-left: 1px solid var(--hairline-strong);
+}
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.segmented label:has(input:checked) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.segmented label:has(input:focus-visible) {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+.segmented:has([aria-invalid="true"]) {
+  border-color: var(--protein);
+}
+
+.field__error {
+  font-size: 0.8125rem;
+  color: #ff8a80;
+}
+
+.calc__submit {
+  justify-self: start;
+}
+/* JS varken sonuç anında güncellenir; düğme yalnız eksikleri göstermek için kalır. */
+.calc__form.is-enhanced .calc__submit {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--hairline-strong);
+}
+.calc__form.is-enhanced .calc__submit:hover {
+  border-color: var(--text-2);
+}
+
+/* ── Sonuç ───────────────────────────────────────────── */
+
+.calc__result {
+  display: grid;
+  gap: 1rem;
+}
+.result__label {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-2);
+}
+.result__value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: clamp(2.75rem, 2rem + 3vw, 3.75rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.calc__result[data-state="ready"] .result__value {
+  color: var(--lime);
+}
+.result__unit {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-2);
+}
+.result__empty {
+  font-size: 0.9375rem;
+  color: var(--text-3);
+  line-height: 1.55;
+}
+.calc__result[data-state="ready"] .result__empty,
+.calc__result:not([data-state="ready"]) .result__ready {
+  display: none;
+}
+
+.result__lines {
+  display: grid;
+  border-top: 1px solid var(--hairline);
+}
+.result__lines > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 0.9375rem;
+}
+.result__lines dt {
+  color: var(--text-2);
+}
+.result__lines dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.result__lines dd small {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.result__note {
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.result__note:empty {
+  display: none;
+}
+
+/* Makro dağılımı: düz, ince bir şerit; renkler uygulamadaki makro renkleri. */
+.macro-bar {
+  display: flex;
+  height: 8px;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.macro-bar span {
+  flex: 0 0 0%;
+}
+.macro-bar span + span {
+  border-left: 2px solid var(--surface);
+}
+.macro-bar [data-bar="protein"] {
+  background: var(--protein);
+}
+.macro-bar [data-bar="carbs"] {
+  background: var(--carb);
+}
+.macro-bar [data-bar="fat"] {
+  background: var(--fat);
+}
+.macro-key {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  vertical-align: 0.1em;
+}
+.macro-key--protein {
+  background: var(--protein);
+}
+.macro-key--carbs {
+  background: var(--carb);
+}
+.macro-key--fat {
+  background: var(--fat);
+}
+
+.result__cta {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+.result__cta p {
+  font-size: 0.875rem;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.result__cta .btn {
+  justify-self: start;
+}
+
+/* ── Açıklama metni ──────────────────────────────────── */
+
+.prose {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+.prose section {
+  scroll-margin-top: 96px;
+  padding-block: clamp(1.75rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--hairline);
+}
+.prose h2 {
+  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+.prose h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.prose p,
+.prose li {
+  color: var(--text-2);
+  line-height: 1.7;
+}
+.prose p + p {
+  margin-top: 0.9rem;
+}
+.prose ul,
+.prose ol {
+  margin-top: 0.9rem;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.45rem;
+}
+.prose ul {
+  list-style: disc;
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose li::marker {
+  color: var(--text-3);
+}
+.prose strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.prose a:not(.btn),
+.calc a:not(.btn) {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
+}
+.prose a:not(.btn):hover,
+.calc a:not(.btn):hover {
+  text-decoration-color: currentColor;
+}
+.tool .formula code b {
+  color: var(--text);
+}
+.tool .legal__table th[scope="row"] {
+  font-weight: 600;
+}
+.prose .disclaimer {
+  margin-top: 1.25rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: 0.9375rem;
+}
+
+/* SSS: yerel details/summary — JS'siz de açılır. */
+.qa {
+  border-bottom: 1px solid var(--hairline);
+}
+.qa summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+}
+.qa summary::-webkit-details-marker {
+  display: none;
+}
+.qa summary::after {
+  content: "+";
+  flex: none;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.qa[open] summary::after {
+  content: "−";
+}
+.qa summary:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.qa p {
+  padding-bottom: 1.1rem;
+}
+
+.related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-top: 0.9rem;
+}
+
+@media (max-width: 420px) {
+  .calc__row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .calc__row .field:first-child {
+    grid-column: 1 / -1;
+  }
+}

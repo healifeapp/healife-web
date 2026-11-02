@@ -3260,3 +3260,25 @@ html[data-platform="android"] .topbar__badge--android {
     display: none;
   }
 }
+
+/* Ana sayfadaki tarif kartları /tarifler/ sayfalarına bağlanır: başlık bağlantısı
+   tüm kartı tıklanabilir yapar, kart ayrı bir <a> ile sarılmadan. */
+.recipe {
+  position: relative;
+}
+.recipe__body h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.recipe__body h3 a:focus-visible {
+  outline: none;
+}
+.recipe:has(h3 a:focus-visible) {
+  outline: 2px solid var(--lime-olive);
+  outline-offset: 2px;
+}
+.showcase__more {
+  margin-top: 1.5rem;
+  font-weight: 600;
+}
