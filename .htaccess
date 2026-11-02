@@ -12,6 +12,14 @@ RewriteRule ^(.*)$ https://hea-life.com/$1 [R=301,L]
 RewriteCond %{THE_REQUEST} \s/(.*/)?index\.html[\s?#]
 RewriteRule ^(.*/)?index\.html$ /$1 [R=301,L]
 
+# Kaldırılan dosyalar (2.11.2026): yükleme üzerine kopyalama olduğu için
+# sunucuda kalabilirler; 410 hem erişimi kapatır hem Google'a kalıcı
+# kaldırıldığını söyler.
+RewriteRule ^scripts/field\.js$ - [G,L]
+RewriteRule ^assets/img/(athlete-abs|athlete-run)\.(png|webp)$ - [G,L]
+RewriteRule ^assets/img/progress\.(jpg|webp)$ - [G,L]
+RewriteRule ^assets/img/runner-lime\.png$ - [G,L]
+
 # ── Özel 404 (I-81) ──
 ErrorDocument 404 /404.html
 
