@@ -5,7 +5,7 @@
 export const SITE_ORIGIN = "https://hea-life.com";
 export const RECIPES_PATH = "/tarifler/";
 export const DATE_PUBLISHED = "2026-11-02";
-export const RECIPES_CSS_VERSION = "20261102a";
+export const RECIPES_CSS_VERSION = "20261102b";
 export const PAGE_TITLE_MAX = 60;
 export const META_DESCRIPTION_MAX = 160;
 export const RELATED_COUNT = 4;
@@ -19,18 +19,25 @@ const HUB_EAGER_IMAGES = 4;
 
 const DIFFICULTY_LABELS = { easy: "Kolay", medium: "Orta", hard: "Zor" };
 
-// Başlıktaki anahtar kelimeye göre kategori. Sıra önemli: "Red Velvet Pankek
-// Pasta" kahvaltı değil tatlı. Eşleşmeyen tarifte recipeCategory hiç yazılmaz;
-// uydurma bir kategori, eksik olandan kötü.
+// Başlıktaki anahtar kelimeye göre kategori. Sıra önemli: "Fırında Baharatlı
+// Tatlı Patates" tatlı değil; "Tavuklu Sebze Sote" sebze yemeği değil ana yemek.
+// Eşleşmeyen tarifte recipeCategory hiç yazılmaz; uydurma bir kategori, eksik
+// olandan kötü. Hub'da bunlar "Diğer" altında listelenir.
 const CATEGORY_RULES = [
+  ["Sebze yemekleri", /tatlı patates/],
   ["Tatlı", /cheesecake|brownie|\bkek\b|mousse|\bmus\b|dondurma|revani|tatlı|puding|sufle|pasta|kurabiye|tiramisu|sütlaç|\bbar\b|barı|toplar|muffin/],
-  ["Kahvaltı", /pankek|pancake|omlet|kahvaltı|lapası|menemen/],
-  ["Atıştırmalık", /kraker|çubuk|atıştırmalık|cips/],
   ["Salata", /salata/],
-  ["İçecek", /smoothie|limonata|\bsüt\b/],
-  ["Hamur işi", /börek|ekmek|pide|poğaça/],
-  ["Ana yemek", /pizza|burger|tavuk|tenders|köfte|somon|kıyma|sandviç|dürüm|wrap|çorba/],
+  ["İçecek", /smoothie|limonata|\bsüt\b|içecek|ayran|(?<![a-zçğıöşü])çay(?![a-zçğıöşü])/],
+  ["Kahvaltı", /pankek|pancake|omlet|kahvaltı|lapası|menemen|\btost\b/],
+  ["Hamur işi", /böre[kğ]|ekmek|pide|poğaça/],
+  ["Atıştırmalık", /kraker|çubuk|atıştırmalık|cips|ara öğün|rulo|dilimleri|humus|kasesi|püresi|fırın nohut|fıstık ezmeli/],
+  ["Ana yemek", /pizza|burger|tavuk|tenders|köfte|somon|kıyma|sandviç|dürüm|wrap|çorba|makarna|ton balık|hindi|tabağı/],
+  ["Sebze yemekleri", /zeytinyağlı|söğürme|ekşili|karnabahar|patates|kabak|mantar|brokoli|ıspanak|sebze|semizotu|biber|havuç|mücver|nohut|fasulye|enginar|patlıcan/],
 ];
+
+// Hub'daki grup sırası: önce öğünler, sonra ara öğün ve tatlılar.
+export const CATEGORY_ORDER = ["Ana yemek", "Kahvaltı", "Salata", "Sebze yemekleri", "Hamur işi", "Atıştırmalık", "Tatlı", "İçecek"];
+export const UNCATEGORIZED_LABEL = "Diğer";
 
 const TURKISH_ASCII = { ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u", â: "a", î: "i", û: "u" };
 
@@ -39,7 +46,7 @@ export function slugify(text) {
     .toLocaleLowerCase("tr")
     .replace(/[çğıöşüâîû]/g, (char) => TURKISH_ASCII[char])
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -176,47 +183,70 @@ function contentKey(recipe) {
   return JSON.stringify([recipe.ingredients, recipe.steps]);
 }
 
-// Seed sırasıyla ilk `count` tarif. Malzemesi ve adımları birebir aynı olan
-// tarif (seed'de "Protein Cheesecake" = "Cheesecake") atlanır: aynı içeriği iki
-// URL'de yayınlamak arama motorunda ikisini de zayıflatır. `requiredNumbers`
-// ana sayfada kartı olan tarifler; listede yoksa sondan yer açılır.
-export function selectRecipes(seed, count, requiredNumbers = []) {
-  const seen = new Set();
-  const unique = [];
-  const skipped = [];
-  for (const recipe of seed) {
-    const key = contentKey(recipe);
-    if (seen.has(key)) {
-      skipped.push(recipe);
-      continue;
-    }
-    seen.add(key);
-    unique.push(recipe);
-  }
-  const selected = unique.slice(0, count);
-  const missing = requiredNumbers.filter(
-    (number) => !selected.some((recipe) => recipeNumber(recipe.thumbnailUrl) === number),
-  );
-  for (const number of missing) {
-    const recipe = unique.find((candidate) => recipeNumber(candidate.thumbnailUrl) === number);
-    if (!recipe) throw new Error(`Ana sayfadaki recipe_${number} seed'de bulunamadı`);
-    const replaceIndex = findLastReplaceable(selected, requiredNumbers);
-    if (replaceIndex < 0) throw new Error(`--count ${count} ana sayfadaki ${requiredNumbers.length} tarifi almaya yetmiyor`);
-    selected.splice(replaceIndex, 1);
-    selected.push(recipe);
-  }
-  return { selected, skipped };
+// Bazı kayıtlarda adımlar `steps` yerine `instructions` alanında; dizi string
+// ya da {text}/{description} nesnesi olabilir.
+function instructionLines(instructions) {
+  if (!Array.isArray(instructions)) return [];
+  return instructions
+    .map((entry) => (typeof entry === "string" ? entry : entry?.text ?? entry?.description ?? ""))
+    .filter((line) => typeof line === "string" && line.trim());
 }
 
-function findLastReplaceable(selected, requiredNumbers) {
-  for (let index = selected.length - 1; index >= 0; index -= 1) {
-    if (!requiredNumbers.includes(recipeNumber(selected[index].thumbnailUrl))) return index;
+function skipReason(item) {
+  if (item.isPremium === true) return "premium";
+  if (item.isActive === false) return "aktif değil";
+  if (typeof item.thumbnailUrl !== "string" || recipeNumber(item.thumbnailUrl) == null) return "görsel yok";
+  if (!Array.isArray(item.ingredients) || item.ingredients.length === 0) return "malzeme yok";
+  if (item.steps.length === 0) return "adım yok";
+  const validNumbers =
+    Number.isFinite(item.calories) &&
+    item.macros &&
+    ["protein", "carb", "fat"].every((key) => Number.isFinite(item.macros[key]));
+  if (!validNumbers) return "kalori/makro eksik";
+  if (typeof item.title !== "string" || typeof item.description !== "string") return "başlık/açıklama eksik";
+  return null;
+}
+
+// DB dışa aktarımından yayınlanacak tarifler. Sıra görsel numarasıdır
+// (recipe_<n>): DB'deki `order` panelden değişebilir, görsel numarası değişmez;
+// böylece aynı başlıklı tariflerde slug sahibi ve tekrar elemesinde kalan
+// tarif her üretimde aynıdır. Malzemesi ve adımları birebir aynı olan tarif
+// ("Cheesecake" = "Protein Cheesecake") atlanır: aynı içeriği iki URL'de
+// yayınlamak arama motorunda ikisini de zayıflatır. `requiredNumbers` ana
+// sayfada kartı olan tarifler; biri yayınlanamıyorsa üretim durur.
+export function prepareRecipes(items, requiredNumbers = []) {
+  const skipped = [];
+  const candidates = [];
+  for (const raw of items) {
+    if (raw.category !== "recipes") continue;
+    const steps = Array.isArray(raw.steps) && raw.steps.length ? raw.steps : instructionLines(raw.instructions);
+    const item = { ...raw, steps };
+    const reason = skipReason(item);
+    if (reason) skipped.push({ title: raw.title, reason });
+    else candidates.push(item);
   }
-  return -1;
+  candidates.sort((a, b) => recipeNumber(a.thumbnailUrl) - recipeNumber(b.thumbnailUrl));
+  const seen = new Map();
+  const recipes = [];
+  for (const recipe of candidates) {
+    const key = contentKey(recipe);
+    if (seen.has(key)) {
+      skipped.push({ title: recipe.title, reason: `içerik "${seen.get(key)}" ile birebir aynı` });
+      continue;
+    }
+    seen.set(key, recipe.title);
+    recipes.push(recipe);
+  }
+  for (const number of requiredNumbers) {
+    if (!recipes.some((recipe) => recipeNumber(recipe.thumbnailUrl) === number)) {
+      throw new Error(`Ana sayfadaki recipe_${number} yayınlanacak tarifler arasında yok`);
+    }
+  }
+  return { recipes, skipped };
 }
 
 // Aynı başlık iki kez geçerse ("Hurma Brownie") ikinciye görsel numarası
-// eklenir; seed sırası sabit olduğu sürece slug'lar da sabit kalır.
+// eklenir; liste görsel numarasına göre sıralı geldiği için slug'lar sabit kalır.
 export function assignSlugs(recipes) {
   const used = new Set();
   return recipes.map((recipe) => {
@@ -225,25 +255,6 @@ export function assignSlugs(recipes) {
     used.add(slug);
     return { ...recipe, slug };
   });
-}
-
-// Backend'in scripts/.recipe-preptimes.json dosyası prod'a uygulanmış, seed'e
-// yansımamış süreleri tutar. Yalnızca dosyanın "before" değeri seed'deki
-// değerle aynıysa ve başlık seed'de tekse uygulanır; aksi halde eşleşme
-// güvenilir değildir.
-export function applyPrepTimeOverrides(seed, overrides) {
-  const titleCounts = new Map();
-  for (const recipe of seed) titleCounts.set(recipe.title, (titleCounts.get(recipe.title) ?? 0) + 1);
-  const applied = [];
-  const result = seed.map((recipe) => {
-    const override = overrides.find((entry) => entry.title === recipe.title);
-    if (!override || titleCounts.get(recipe.title) !== 1) return recipe;
-    if (override.before !== recipe.prepTime || !Number.isInteger(override.minutes) || override.minutes <= 0) return recipe;
-    const prepTime = `${override.minutes} dk`;
-    applied.push({ title: recipe.title, from: recipe.prepTime, to: prepTime });
-    return { ...recipe, prepTime };
-  });
-  return { recipes: result, applied };
 }
 
 export function relatedRecipes(recipe, all, count = RELATED_COUNT) {
@@ -451,7 +462,7 @@ function footer(versions) {
             <a href="/makro-hesaplama.html">Makro hesaplama</a>
             <a href="/bazal-metabolizma-hesaplama.html">Bazal metabolizma</a>
             <a href="/tarifler/">Tarifler</a>
-            <a href="/sources.html">Kaynaklar</a>
+${versions.guidesEnabled ? '            <a href="/rehber/">Rehberler</a>\n' : ""}            <a href="/sources.html">Kaynaklar</a>
           </nav>
         </div>
       </div>
@@ -627,13 +638,23 @@ export const HUB_TITLE = "Fit Tarifler: Kalori ve Makro Değerleriyle | Healife"
 export const HUB_DESCRIPTION =
   "Kalori, protein, karbonhidrat ve yağ değerleri yazılı fit tarifler: tavuk, kıyma, yumurta ve yulafla pratik yemekler, şekersiz tatlılar ve ara öğünler.";
 
+// Hub'daki gruplar; ItemList de aynı sırayı izler ki görünen ve işaretlenen
+// liste birbirini tutsun.
+export function groupRecipes(recipes) {
+  const groups = new Map([...CATEGORY_ORDER, UNCATEGORIZED_LABEL].map((label) => [label, []]));
+  for (const recipe of recipes) groups.get(recipeCategory(recipe.title) ?? UNCATEGORIZED_LABEL).push(recipe);
+  return [...groups].filter(([, items]) => items.length > 0).map(([label, items]) => ({ label, id: slugify(label), items }));
+}
+
 export function renderHubPage(recipes, versions) {
+  const groups = groupRecipes(recipes);
+  const ordered = groups.flatMap((group) => group.items);
   const itemList = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Fit tarifler",
-    numberOfItems: recipes.length,
-    itemListElement: recipes.map((recipe, index) => ({
+    numberOfItems: ordered.length,
+    itemListElement: ordered.map((recipe, index) => ({
       "@type": "ListItem",
       position: index + 1,
       url: recipeUrl(recipe.slug),
@@ -644,7 +665,18 @@ export function renderHubPage(recipes, versions) {
     ["Ana sayfa", `${SITE_ORIGIN}/`],
     ["Tarifler", HUB_URL],
   ]);
-  const ogSource = recipes[0];
+  const ogSource = ordered[0];
+  let cardIndex = 0;
+  const groupSections = groups
+    .map(
+      (group) => `<section class="recipes__group" id="${group.id}" aria-labelledby="${group.id}-baslik">
+          <h2 id="${group.id}-baslik">${escapeHtml(group.label)} <span class="recipes__count">${group.items.length}</span></h2>
+          <ul class="recipes__grid">
+              ${group.items.map((recipe) => card(recipe, "h3", { eager: cardIndex++ < HUB_EAGER_IMAGES })).join("\n              ")}
+          </ul>
+        </section>`,
+    )
+    .join("\n\n        ");
 
   return `${head({
     versions,
@@ -672,29 +704,33 @@ ${topbar(versions, "/", "Ana sayfaya dön")}
         <header class="recipes__head">
           <h1>Fit tarifler</h1>
           <p>
-            Bu sayfadaki tarifler, Healife uygulamasının Keşfet bölümündeki
-            fit tariflerden seçildi. Her tarifte 1 porsiyonun kalorisi, protein,
+            Healife uygulamasının Keşfet bölümündeki ${ordered.length} ücretsiz
+            tarifin hepsi burada. Her tarifte 1 porsiyonun kalorisi, protein,
             karbonhidrat ve yağ miktarı, hazırlık süresi ve zorluk derecesi
             yazıyor; böylece günlük kalori ve makro hedefine uyan öğünü
             pişirmeden önce seçebilirsin.
           </p>
           <p>
             Tariflerin çoğu tavuk göğsü, yağsız kıyma, yumurta, lor peyniri,
-            yoğurt ve yulaf gibi her markette bulunan malzemelerle hazırlanıyor.
-            Tatlılarda şeker yerine tatlandırıcı, hurma ya da muz; hamur
-            işlerinde lavaş, tam buğday ekmek veya yulaf kullanılıyor.
+            yoğurt, sebze ve yulaf gibi her markette bulunan malzemelerle
+            hazırlanıyor. Tatlılarda şeker yerine tatlandırıcı, hurma ya da muz
+            kullanılıyor.
           </p>
           <p>
             Değerler, tarifteki miktarlara göre hesaplanmış tahminlerdir.
             Kullandığın markaya, porsiyonun büyüklüğüne ve pişirme yöntemine
-            göre değişebilir. Daha fazla tarife uygulamadan ulaşabilir,
-            yediklerini kaydederek günlük hedefini takip edebilirsin.
+            göre değişebilir. Yediklerini uygulamada kaydederek günlük hedefini
+            takip edebilirsin.
           </p>
         </header>
 
-        <ul class="recipes__grid">
-              ${recipes.map((recipe, index) => card(recipe, "h2", { eager: index < HUB_EAGER_IMAGES })).join("\n              ")}
-        </ul>
+        <nav class="recipes__jump" aria-label="Tarif grupları">
+          <ul>
+            ${groups.map((group) => `<li><a href="#${group.id}">${escapeHtml(group.label)}</a></li>`).join("\n            ")}
+          </ul>
+        </nav>
+
+        ${groupSections}
 
         <aside class="rcp-cta" aria-labelledby="uygulama">
           <div>
@@ -712,21 +748,363 @@ ${topbar(versions, "/", "Ana sayfaya dön")}
 ${footer(versions)}`;
 }
 
-export function sitemapFragment(recipes) {
-  const entries = [
-    { loc: HUB_URL, changefreq: "weekly", priority: "0.7" },
-    ...recipes.map((recipe) => ({ loc: recipeUrl(recipe.slug), changefreq: "monthly", priority: "0.6" })),
+// ── Rehberler (/rehber/) ────────────────────────────────
+
+export const GUIDES_PATH = "/rehber/";
+const GUIDES_HUB_URL = `${SITE_ORIGIN}${GUIDES_PATH}`;
+export const GUIDES_HUB_TITLE = "Beslenme ve Antrenman Rehberleri | Healife";
+export const GUIDES_HUB_DESCRIPTION =
+  "Kalori hesabı, uyku ve toparlanma, yumurta ve antrenman üzerine Healife'ın kısa rehberleri. Genel bilgilendirme amaçlıdır.";
+const GUIDE_CATEGORIES = new Set(["mini_guides", "quick_tips", "training"]);
+const GUIDE_KIND_LABELS = { mini_guides: "Mini rehber", quick_tips: "Kısa bilgi", training: "Antrenman rehberi" };
+const RELATED_RECIPE_COUNT = 3;
+const ORG_LOGO = `${SITE_ORIGIN}/assets/brand/icon.png`;
+
+// Rehbere özel iç bağlantılar. Tarif bağlantıları sabit yazılmaz; tarif
+// listesinden malzemeye göre seçilir (bkz. guideRecipeLinks).
+const GUIDE_TOOL_LINKS = {
+  "kalori-hesaplama": [
+    { href: "/kalori-hesaplama.html", label: "Kalori hesaplama aracı", text: "Yaşına, boyuna, kilona ve aktivitene göre günlük kalori ihtiyacını hesapla." },
+    { href: "/bazal-metabolizma-hesaplama.html", label: "Bazal metabolizma hesaplama", text: "Hiç hareket etmesen de harcadığın kaloriyi (BMR) hesapla." },
+  ],
+};
+const GUIDE_RECIPE_INGREDIENT = { yumurta: /yumurta/ };
+
+export function guideUrl(slug) {
+  return `${SITE_ORIGIN}${GUIDES_PATH}${slug}.html`;
+}
+
+function isoDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+}
+
+const TURKISH_MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+
+function turkishDate(isoDay) {
+  const [year, month, day] = isoDay.split("-").map(Number);
+  return `${day} ${TURKISH_MONTHS[month - 1]} ${year}`;
+}
+
+export function prepareGuides(items) {
+  const skipped = [];
+  const guides = [];
+  for (const item of items) {
+    if (!GUIDE_CATEGORIES.has(item.category)) continue;
+    let reason = null;
+    if (item.isPremium === true) reason = "premium";
+    else if (item.isActive === false) reason = "aktif değil";
+    else if (typeof item.content !== "string" || !item.content.trim()) reason = "içerik yok";
+    else if (typeof item.thumbnailUrl !== "string" || !item.thumbnailUrl.includes("/image/upload/")) reason = "görsel yok";
+    else if (!isoDate(item.createdAt)) reason = "createdAt yok";
+    if (reason) skipped.push({ title: item.title, reason });
+    else guides.push({ ...item, slug: slugify(item.title) });
+  }
+  guides.sort((a, b) => a.slug.localeCompare(b.slug));
+  return { guides, skipped };
+}
+
+// Yalnızca paired **kalın** biçimlenir; kalan yıldızlar biçim artığıdır
+// ("***Gün içerisinde ...") ve atılır. Metin önce kaçırılır, HTML üretilmez.
+function inlineMarkdown(text) {
+  return escapeHtml(text)
+    .replace(/\*\*(\S(?:.*?\S)?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*+/g, "");
+}
+
+// DB'deki rehber metni: "**Başlık**" satırları, "- " maddeler, "- - " alt
+// maddeler ve ara sıra düz satırlar. Bunun dışında hiçbir markdown desteklenmez.
+export function renderGuideContent(content) {
+  const html = [];
+  let listOpen = false;
+  const closeList = () => {
+    if (listOpen) html.push("</ul>");
+    listOpen = false;
+  };
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = stripEmoji(rawLine);
+    if (!line) {
+      closeList();
+      continue;
+    }
+    const heading = line.match(/^\*\*(.+?)\*{1,2}$/);
+    if (heading && !heading[1].includes("**")) {
+      closeList();
+      html.push(`<h2>${inlineMarkdown(heading[1].trim())}</h2>`);
+      continue;
+    }
+    const bullet = line.match(/^-\s*(-\s*)?(.*)$/);
+    if (bullet) {
+      if (!bullet[2].trim()) continue;
+      if (!listOpen) html.push('<ul class="guide__list">');
+      listOpen = true;
+      const subClass = bullet[1] ? ' class="guide__sub"' : "";
+      html.push(`<li${subClass}>${inlineMarkdown(bullet[2].trim())}</li>`);
+      continue;
+    }
+    closeList();
+    html.push(`<p>${inlineMarkdown(line)}</p>`);
+  }
+  closeList();
+  return html.join("\n              ");
+}
+
+export function guidePageTitle(guide) {
+  const candidates = [`${guide.title} Rehberi | Healife`, `${guide.title} | Healife`];
+  return candidates.find((candidate) => candidate.length <= PAGE_TITLE_MAX) ?? candidates[candidates.length - 1];
+}
+
+export function buildArticleJsonLd(guide) {
+  const url = guideUrl(guide.slug);
+  const organization = {
+    "@type": "Organization",
+    "@id": ORG_ID,
+    name: "Healife",
+    url: `${SITE_ORIGIN}/`,
+    logo: { "@type": "ImageObject", url: ORG_LOGO },
+  };
+  const modified = isoDate(guide.updatedAt);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": `${url}#article`,
+    headline: guide.title,
+    description: guide.description.trim(),
+    url,
+    mainEntityOfPage: url,
+    image: ["ar_1:1", "ar_4:3", "ar_16:9"].map((ratio) =>
+      cloudinaryUrl(guide.thumbnailUrl, `f_jpg,q_auto,c_fill,${ratio},w_1200`),
+    ),
+    author: organization,
+    publisher: organization,
+    datePublished: isoDate(guide.createdAt),
+    ...(modified && { dateModified: modified }),
+    inLanguage: "tr",
+    ...(Array.isArray(guide.tags) && guide.tags.length && { keywords: guide.tags.join(", ") }),
+  };
+}
+
+export function guideRecipeLinks(guide, recipes, count = RELATED_RECIPE_COUNT) {
+  const pattern = GUIDE_RECIPE_INGREDIENT[guide.slug];
+  if (!pattern) return [];
+  const matches = recipes.filter((recipe) =>
+    recipe.ingredients.some((line) => pattern.test(line.toLocaleLowerCase("tr"))),
+  );
+  // Adında da geçen tarif (omlet, yumurtalı salata) konuya en yakın olanı.
+  const inTitle = matches.filter((recipe) => pattern.test(recipe.title.toLocaleLowerCase("tr")) || /omlet/.test(recipe.title.toLocaleLowerCase("tr")));
+  return [...new Set([...inTitle, ...matches])].slice(0, count);
+}
+
+function guideCard(guide, headingTag) {
+  const small = cloudinaryUrl(guide.thumbnailUrl, "f_auto,q_auto,c_fill,ar_4:3,w_600");
+  const large = cloudinaryUrl(guide.thumbnailUrl, "f_auto,q_auto,c_fill,ar_4:3,w_1200");
+  const readTime = guide.readTime ? `<span>${escapeHtml(guide.readTime)} okuma</span>` : "";
+  return `<li>
+                <a class="recipe recipe--link" href="${GUIDES_PATH}${guide.slug}.html">
+                  <div class="recipe__img">
+                    <img src="${small}" srcset="${small} 600w, ${large} 1200w" sizes="(min-width: 1100px) 280px, (min-width: 600px) 45vw, 90vw" alt="${escapeHtml(guide.title)}" width="600" height="450" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="recipe__body">
+                    <p class="guide-kind">${GUIDE_KIND_LABELS[guide.category]}</p>
+                    <${headingTag} class="recipe__title">${escapeHtml(guide.title)}</${headingTag}>
+                    <p>${escapeHtml(guide.description.trim())}</p>
+                    <div class="recipe__foot">${readTime}</div>
+                  </div>
+                </a>
+              </li>`;
+}
+
+export function renderGuidePage(guide, allGuides, recipes, versions) {
+  const url = guideUrl(guide.slug);
+  const published = isoDate(guide.createdAt);
+  const modified = isoDate(guide.updatedAt) ?? published;
+  const heroSrc = (width) => cloudinaryUrl(guide.thumbnailUrl, `f_auto,q_auto,c_fill,ar_3:2,w_${width}`);
+  const tools = GUIDE_TOOL_LINKS[guide.slug] ?? [];
+  const relatedRecipeItems = guideRecipeLinks(guide, recipes);
+  const otherGuides = allGuides.filter((other) => other.slug !== guide.slug);
+  const breadcrumb = breadcrumbJsonLd([
+    ["Ana sayfa", `${SITE_ORIGIN}/`],
+    ["Rehberler", GUIDES_HUB_URL],
+    [guide.title, url],
+  ]);
+  const toolsHtml = tools.length
+    ? `
+        <section class="guide-links" aria-labelledby="araclar">
+          <h2 id="araclar">Hesaplama araçları</h2>
+          <ul>
+            ${tools.map((tool) => `<li><a href="${tool.href}"><strong>${escapeHtml(tool.label)}</strong><span>${escapeHtml(tool.text)}</span></a></li>`).join("\n            ")}
+          </ul>
+        </section>`
+    : "";
+  const recipesHtml = relatedRecipeItems.length
+    ? `
+        <section class="rcp-related" aria-labelledby="ilgili-tarifler">
+          <h2 id="ilgili-tarifler">İçinde ${escapeHtml(guide.title.toLocaleLowerCase("tr"))} olan tarifler</h2>
+          <ul class="recipes__grid">
+              ${relatedRecipeItems.map((recipe) => card(recipe, "h3")).join("\n              ")}
+          </ul>
+        </section>`
+    : "";
+
+  return `${head({
+    versions,
+    title: guidePageTitle(guide),
+    description: truncateAtWord(guide.description.trim(), META_DESCRIPTION_MAX),
+    canonical: url,
+    ogType: "article",
+    ogImage: { url: cloudinaryUrl(guide.thumbnailUrl, "f_jpg,q_auto,c_fill,ar_3:2,w_1200"), width: 1200, height: 800 },
+    ogImageAlt: guide.title,
+    jsonLd: [buildArticleJsonLd(guide), breadcrumb],
+  })}
+  <body>
+    <a class="skip-link" href="#main">İçeriğe geç</a>
+
+${topbar(versions, GUIDES_PATH, "Tüm rehberler")}
+
+    <main class="recipes" id="main">
+      <div class="wrap">
+        ${crumbs([["Ana sayfa", "/"], ["Rehberler", GUIDES_PATH], [guide.title, null]])}
+
+        <article class="guide-page">
+          <header class="guide-page__head">
+            <p class="guide-kind">${GUIDE_KIND_LABELS[guide.category]}</p>
+            <h1>${escapeHtml(guide.title)}</h1>
+            <p class="rcp-lead">${escapeHtml(guide.description.trim())}</p>
+            <ul class="rcp-meta">
+              ${guide.readTime ? `<li><span class="rcp-meta__label">Okuma</span> ${escapeHtml(guide.readTime)}</li>` : ""}
+              <li><span class="rcp-meta__label">Güncelleme</span> <time datetime="${modified}">${turkishDate(modified)}</time></li>
+            </ul>
+          </header>
+          <figure class="guide-page__photo">
+            <img src="${heroSrc(900)}" srcset="${heroSrc(600)} 600w, ${heroSrc(900)} 900w, ${heroSrc(1200)} 1200w" sizes="(min-width: 860px) 780px, 100vw" alt="${escapeHtml(guide.title)}" width="1200" height="800" fetchpriority="high" decoding="async" />
+          </figure>
+          <div class="guide-page__body">
+              ${renderGuideContent(guide.content)}
+          </div>
+          <div class="rcp-note guide-page__note">
+            <p>Genel bilgilendirme amaçlıdır; tıbbi tavsiye değildir. Bir sağlık sorunun varsa beslenme veya antrenman düzenini değiştirmeden önce hekimine danış. Önerilerin hangi kaynaklara dayandığını <a href="/sources.html">Kaynaklar</a> sayfasında bulabilirsin.</p>
+          </div>
+        </article>
+${toolsHtml}${recipesHtml}
+
+        <aside class="rcp-cta" aria-labelledby="uygulama">
+          <div>
+            <h2 id="uygulama">Hedefine göre planını oluştur</h2>
+            <p>Healife kısa bir testle günlük kalori ve makro hedefini hesaplar, öğünlerini ve antrenmanını buna göre planlar.</p>
+          </div>
+          <div class="rcp-cta__actions">
+            <a class="btn btn--primary" href="${START_URL}">Planını oluştur</a>
+            <a class="btn btn--ghost" href="${DOWNLOAD_URL}">Uygulamayı indir</a>
+          </div>
+        </aside>
+
+        <section class="rcp-related" aria-labelledby="diger-rehberler">
+          <h2 id="diger-rehberler">Diğer rehberler</h2>
+          <ul class="recipes__grid">
+              ${otherGuides.map((other) => guideCard(other, "h3")).join("\n              ")}
+          </ul>
+        </section>
+      </div>
+    </main>
+
+${footer(versions)}`;
+}
+
+export function renderGuidesHubPage(guides, versions) {
+  const itemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Healife rehberleri",
+    numberOfItems: guides.length,
+    itemListElement: guides.map((guide, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: guideUrl(guide.slug),
+      name: guide.title,
+    })),
+  };
+  const breadcrumb = breadcrumbJsonLd([
+    ["Ana sayfa", `${SITE_ORIGIN}/`],
+    ["Rehberler", GUIDES_HUB_URL],
+  ]);
+  const ogSource = guides[0];
+
+  return `${head({
+    versions,
+    title: GUIDES_HUB_TITLE,
+    description: GUIDES_HUB_DESCRIPTION,
+    canonical: GUIDES_HUB_URL,
+    ogType: "website",
+    ogImage: { url: cloudinaryUrl(ogSource.thumbnailUrl, "f_jpg,q_auto,c_fill,ar_3:2,w_1200"), width: 1200, height: 800 },
+    ogImageAlt: ogSource.title,
+    jsonLd: [itemList, breadcrumb],
+  })}
+  <body>
+    <a class="skip-link" href="#main">İçeriğe geç</a>
+
+${topbar(versions, "/", "Ana sayfaya dön")}
+
+    <main class="recipes" id="main">
+      <div class="wrap">
+        ${crumbs([["Ana sayfa", "/"], ["Rehberler", null]])}
+
+        <header class="recipes__head">
+          <h1>Rehberler</h1>
+          <p>
+            Healife uygulamasının Keşfet bölümündeki ücretsiz rehberler:
+            kalorinin nasıl hesaplandığı, uykunun toparlanmaya etkisi, yumurtanın
+            besin değeri ve ağırlık antrenmanında yük ve tekrar seçimi.
+          </p>
+          <p>
+            Rehberler genel bilgilendirme amaçlıdır; tıbbi tavsiye yerine geçmez.
+            Hesaplamalarımızın dayandığı kaynakları <a href="/sources.html">Kaynaklar</a>
+            sayfasında bulabilirsin.
+          </p>
+        </header>
+
+        <ul class="recipes__grid">
+              ${guides.map((guide) => guideCard(guide, "h2")).join("\n              ")}
+        </ul>
+
+        <aside class="rcp-cta" aria-labelledby="uygulama">
+          <div>
+            <h2 id="uygulama">Tarifler de burada</h2>
+            <p>Kalori ve makro değerleri yazılı fit tariflerle rehberlerdeki bilgiyi mutfağa taşı.</p>
+          </div>
+          <div class="rcp-cta__actions">
+            <a class="btn btn--primary" href="${RECIPES_PATH}">Tariflere göz at</a>
+            <a class="btn btn--ghost" href="${START_URL}">Planını oluştur</a>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+${footer(versions)}`;
+}
+
+function sitemapEntry(loc, changefreq, priority, lastmod) {
+  return `  <url>
+    <loc>${loc}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
+}
+
+export function sitemapFragment(recipes, guides = []) {
+  const recipeEntries = [
+    sitemapEntry(HUB_URL, "weekly", "0.7", DATE_PUBLISHED),
+    ...recipes.map((recipe) => sitemapEntry(recipeUrl(recipe.slug), "monthly", "0.6", DATE_PUBLISHED)),
   ];
-  return entries
-    .map(
-      (entry) => `  <url>
-    <loc>${entry.loc}</loc>
-    <lastmod>${DATE_PUBLISHED}</lastmod>
-    <changefreq>${entry.changefreq}</changefreq>
-    <priority>${entry.priority}</priority>
-  </url>`,
-    )
-    .join("\n");
+  const guideEntries = guides.length
+    ? [
+        sitemapEntry(GUIDES_HUB_URL, "monthly", "0.6", DATE_PUBLISHED),
+        ...guides.map((guide) =>
+          sitemapEntry(guideUrl(guide.slug), "monthly", "0.6", isoDate(guide.updatedAt) ?? isoDate(guide.createdAt)),
+        ),
+      ]
+    : [];
+  return [...recipeEntries, ...guideEntries].join("\n");
 }
 
 // hakkimizda.html'deki "styles/base.css?v=20261102a" gibi referanslardan

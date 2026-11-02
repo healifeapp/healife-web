@@ -345,3 +345,156 @@
 .rcp-related .recipes__grid {
   margin-top: 1.25rem;
 }
+
+/* ── Tarif grupları (hub) ───────────────────────────── */
+
+.recipes__jump {
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+.recipes__jump ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.recipes__jump a {
+  display: inline-block;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--r-pill);
+  background: #fff;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  transition: border-color 0.25s var(--ease);
+}
+.recipes__jump a:hover {
+  border-color: var(--paper-ink);
+}
+
+.recipes__group + .recipes__group {
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+.recipes__group > h2 {
+  margin-bottom: 1.25rem;
+}
+/* Fixed üst şeridin altında kalmasın. */
+.recipes__group {
+  scroll-margin-top: 88px;
+}
+.recipes__count {
+  font-size: 0.6em;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--paper-muted);
+  vertical-align: 0.15em;
+}
+
+/* ── Rehber sayfaları ───────────────────────────────── */
+
+.guide-kind {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: var(--lime-olive);
+}
+.recipe__body .guide-kind {
+  -webkit-line-clamp: none;
+  line-clamp: none;
+  color: var(--lime-olive);
+}
+
+.guide-page {
+  max-width: var(--max-narrow);
+}
+.guide-page__head h1 {
+  margin-top: 0.5rem;
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.guide-page__photo {
+  margin-top: clamp(1.5rem, 3vw, 2rem);
+  aspect-ratio: 3 / 2;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--paper-2);
+}
+.guide-page__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.guide-page__body {
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.7;
+}
+.guide-page__body h2 {
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+}
+.guide-page__body h2:first-child {
+  margin-top: 0;
+}
+.guide-page__body p {
+  margin-top: 0.75rem;
+}
+.guide__list {
+  display: grid;
+  gap: 0.6rem;
+}
+.guide__list li {
+  position: relative;
+  padding-left: 1.25rem;
+}
+.guide__list li::before {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 0.7em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--lime-olive);
+}
+.guide__list .guide__sub {
+  margin-left: 1.25rem;
+}
+.guide__list .guide__sub::before {
+  background: transparent;
+  border: 1.5px solid var(--lime-olive);
+}
+.guide-page__note a,
+.guide-page__body a,
+.recipes__head a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.guide-links {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+}
+.guide-links ul {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: clamp(0.875rem, 1.6vw, 1.5rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+.guide-links a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: 100%;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--r-lg);
+  background: #fff;
+  transition: border-color 0.25s var(--ease);
+}
+.guide-links a:hover {
+  border-color: rgba(20, 21, 15, 0.38);
+}
+.guide-links span {
+  font-size: var(--fs-small);
+  color: var(--paper-muted);
+  line-height: 1.55;
+}

@@ -12,9 +12,9 @@ import {
   parseYield,
   pageTitle,
   metaDescription,
-  selectRecipes,
+  prepareRecipes,
   assignSlugs,
-  applyPrepTimeOverrides,
+  groupRecipes,
   relatedRecipes,
   recipeCategory,
   renderRecipePage,
@@ -120,13 +120,22 @@ test("metaDescription makroları içerir ve sınırı aşmaz", () => {
   assert.match(description, /440 kcal, 41 g protein, 32 g karbonhidrat, 16 g yağ\.$/);
 });
 
-test("selectRecipes: birebir tekrar atlanır, ana sayfadaki tarif dahil edilir", () => {
-  const seed = [1, 2, 3, 4, 5].map((n) => fixture({ title: `T${n}`, thumbnailUrl: IMG(n), steps: [`adım ${n}`] }));
-  seed.splice(2, 0, { ...seed[1], title: "Kopya", thumbnailUrl: IMG(9) });
-  const { selected, skipped } = selectRecipes(seed, 3, [5]);
-  assert.deepEqual(skipped.map((recipe) => recipe.title), ["Kopya"]);
-  assert.deepEqual(selected.map((recipe) => recipe.title), ["T1", "T2", "T5"]);
-  assert.throws(() => selectRecipes(seed, 3, [42]), /recipe_42/);
+test("prepareRecipes: görsel numarasına göre sıralar, birebir tekrarı ve eksik kaydı atlar", () => {
+  const items = [5, 1, 2, 3, 4].map((n) => fixture({ title: `T${n}`, thumbnailUrl: IMG(n), steps: [`adım ${n}`], category: "recipes" }));
+  items.push({ ...items[2], title: "Kopya", thumbnailUrl: IMG(9) });
+  items.push(fixture({ title: "Premium", thumbnailUrl: IMG(10), category: "recipes", isPremium: true }));
+  items.push(fixture({ title: "Adımsız", thumbnailUrl: IMG(11), category: "recipes", steps: [] }));
+  items.push(fixture({ title: "Talimatlı", thumbnailUrl: IMG(12), category: "recipes", steps: [], instructions: ["Karıştır."] }));
+  items.push(fixture({ title: "Görselsiz", thumbnailUrl: "", category: "recipes" }));
+  items.push({ title: "Rehber", category: "mini_guides" });
+  const { recipes, skipped } = prepareRecipes(items, [5]);
+  assert.deepEqual(recipes.map((recipe) => recipe.title), ["T1", "T2", "T3", "T4", "T5", "Talimatlı"]);
+  assert.deepEqual(recipes[5].steps, ["Karıştır."]);
+  assert.deepEqual(
+    skipped.map((entry) => `${entry.title}: ${entry.reason}`).sort(),
+    ["Adımsız: adım yok", "Görselsiz: görsel yok", "Kopya: içerik \"T2\" ile birebir aynı", "Premium: premium"],
+  );
+  assert.throws(() => prepareRecipes(items, [42]), /recipe_42/);
 });
 
 test("assignSlugs: aynı başlıkta görsel numarası eklenir", () => {
@@ -134,22 +143,15 @@ test("assignSlugs: aynı başlıkta görsel numarası eklenir", () => {
   assert.deepEqual(slugs.map((recipe) => recipe.slug), ["hurma-brownie", "hurma-brownie-23"]);
 });
 
-test("applyPrepTimeOverrides yalnızca 'before' seed ile eşleşirse uygular", () => {
-  const seed = [fixture(), fixture({ title: "Başka", prepTime: "30 dk" })];
-  const { recipes, applied } = applyPrepTimeOverrides(seed, [
-    { title: "Lavaş Burger", before: "15 dk", minutes: 20 },
-    { title: "Başka", before: "15 dk", minutes: 5 },
-  ]);
-  assert.equal(recipes[0].prepTime, "20 dk");
-  assert.equal(recipes[1].prepTime, "30 dk");
-  assert.equal(applied.length, 1);
-});
-
 test("recipeCategory ve relatedRecipes", () => {
   assert.equal(recipeCategory("Red Velvet Pankek Pasta"), "Tatlı");
   assert.equal(recipeCategory("Tuzlu Pankek"), "Kahvaltı");
   assert.equal(recipeCategory("Lavaş Burger"), "Ana yemek");
   assert.equal(recipeCategory("Tek Malzeme"), null);
+  assert.equal(recipeCategory("Fırında Baharatlı Tatlı Patates"), "Sebze yemekleri");
+  assert.equal(recipeCategory("Kolay Su Böreği"), "Hamur işi");
+  assert.equal(recipeCategory("Soğuk Demleme Şeftalili Çay"), "İçecek");
+  assert.equal(recipeCategory("Tavuklu Sebze Sote"), "Ana yemek");
   const all = assignSlugs(["Brownie", "Lavaş Burger", "Kek", "Pizza", "Mousse", "Omlet"].map((title, n) => fixture({ title, thumbnailUrl: IMG(n + 1) })));
   const related = relatedRecipes(all[0], all);
   assert.equal(related.length, 4);
@@ -182,6 +184,16 @@ test("hub sayfası: ItemList JSON-LD tüm tarifleri sayar", () => {
   const itemList = blocks.find((block) => block["@type"] === "ItemList");
   assert.equal(itemList.itemListElement.length, 2);
   assert.equal(itemList.itemListElement[1].url, "https://hea-life.com/tarifler/protein-kek.html");
+});
+
+test("hub grupları: sıra sabit, eşleşmeyen 'Diğer'e düşer, ItemList görünen sırayı izler", () => {
+  const recipes = assignSlugs(["Brownie", "Tek Malzeme", "Lavaş Burger"].map((title, n) => fixture({ title, thumbnailUrl: IMG(n + 1) })));
+  assert.deepEqual(groupRecipes(recipes).map((group) => [group.label, group.id]), [["Ana yemek", "ana-yemek"], ["Tatlı", "tatli"], ["Diğer", "diger"]]);
+  const html = renderHubPage(recipes, VERSIONS);
+  const itemList = jsonLdBlocks(html).find((block) => block["@type"] === "ItemList");
+  assert.deepEqual(itemList.itemListElement.map((item) => item.name), ["Lavaş Burger", "Brownie", "Tek Malzeme"]);
+  assert.match(html, /<a href="#tatli">Tatlı<\/a>/);
+  assert.match(html, /<section class="recipes__group" id="tatli"/);
 });
 
 test("üretilmiş tarifler/ sayfaları: JSON-LD geçerli, emoji yok, yollar mutlak", { skip: !existsSync(RECIPES_DIR) }, () => {
