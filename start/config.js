@@ -25,10 +25,10 @@ export const CONFIG = {
   // "live"    → Apple/Google kimlik doğrulaması + backend /api/user/login-apple|google.
   authProvider: onSite ? "pending" : "demo",
 
-  // Backend'e aday (e-posta + cevaplar + pazarlama izni) gönderme ucu henüz yok.
-  // false iken pazarlama izni kutusu gösterilmez: kaydedilmeyen bir izin
-  // toplamak İYS/KVKK açısından yanıltıcı olur.
-  collectLeads: false,
+  // E-posta adımı POST /api/billing/web/lead ile sunucuya kaydediliyor (v219).
+  // Pazarlama izni kutusu bununla birlikte görünür; metni değişirse backend'deki
+  // CONSENT_TEXT_VERSION da değişmeli. false yapılırsa ikisi birden kapanır.
+  collectLeads: true,
 
   // Uygulamadaki fiyatlarla aynı (RC offering "healife", 15.09.2026).
   // Web'e özel indirim verilecekse yalnızca bu tabloyu değiştirin.

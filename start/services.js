@@ -3,7 +3,7 @@
 // gösterilen kalori uygulamaya girince değişmesin diye.
 //   dailyTargets.js · levelScore.js · planResolver.js (MAX_TRAINING_LEVEL)
 
-import { CONFIG } from "./config.js?v=20261016a";
+import { CONFIG } from "./config.js?v=20261102a";
 
 /* ---------------------------------------------------------------- hesap */
 
@@ -171,8 +171,29 @@ export function track(event, props = {}) {
       if (FB_EVENT[event]) window.fbq("track", FB_EVENT[event], { ...money, ...content }, props.event_id ? { eventID: props.event_id } : undefined);
       else if (FB_CUSTOM[event]) window.fbq("trackCustom", FB_CUSTOM[event]);
     }
+    // Clarity adresteki #adım değişimini görmüyor; her adım ayrı olay olarak
+    // gitmezse hangi soruda çıkıldığı ölçülemiyor. Yalnız çerez izni verildiyse var.
+    if (typeof window.clarity === "function") {
+      window.clarity("event", event === "step_view" && props.step ? `step_${props.step}` : `funnel_${event}`);
+      if (props.step) window.clarity("set", "funnel_step", props.step);
+    }
   } catch {}
   if (location.hostname === "localhost") console.debug("[funnel]", event, props);
+}
+
+/** E-posta adımını sunucuya kaydeder. Hata akışı durdurmaz: plan yine gösterilir. */
+export async function submitLead({ email, name, goal, marketing, answers, utm }) {
+  if (!CONFIG.collectLeads) return;
+  try {
+    await fetch(`${CONFIG.apiBase}/api/billing/web/lead`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, name, goal, marketing: marketing === true, answers, utm }),
+      keepalive: true,
+    });
+  } catch {
+    /* ağ hatası: ziyaretçinin akışını bozma */
+  }
 }
 
 /* ------------------------------------------------------------- giriş */
@@ -245,13 +266,14 @@ export function submitToPaytr(action, fields, card) {
   form.submit();
 }
 
-/** Sunucudaki sipariş durumu; bulunamazsa/ağ hatasında null. */
+/** Sunucudaki sipariş: { status, testMode }; bulunamazsa/ağ hatasında null. */
 export async function getOrderStatus(merchantOid) {
   try {
     const res = await fetch(`${CONFIG.apiBase}/api/billing/web/order/${encodeURIComponent(merchantOid)}`);
     if (!res.ok) return null;
     const data = await res.json();
-    return data?.results?.status || null;
+    const r = data?.results;
+    return r?.status ? { status: r.status, testMode: r.testMode === true } : null;
   } catch {
     return null;
   }

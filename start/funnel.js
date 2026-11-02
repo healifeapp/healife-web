@@ -7,7 +7,7 @@
 // üründen gelen gerçek bir sayıdır. Sahte yorum, uydurma istatistik ve geri
 // sayım sayacı yok.
 
-import { CONFIG } from "./config.js?v=20261016a";
+import { CONFIG } from "./config.js?v=20261102a";
 import { ICONS } from "./icons.js?v=20261014d";
 import {
   dailyTargets,
@@ -23,9 +23,10 @@ import {
   signIn,
   createCheckout,
   getOrderStatus,
+  submitLead,
   wait,
   submitToPaytr,
-} from "./services.js?v=20261016a";
+} from "./services.js?v=20261102a";
 import { formatCardNumber, formatExpiry, cardBrand, validateCard } from "./card.js?v=20261016a";
 
 /* ============================================================ ikonlar */
@@ -1479,6 +1480,7 @@ const BIND = {
       S.email = v.toLowerCase();
       S.marketing = !!app.querySelector("#marketing")?.checked;
       track("lead", { goal: mainGoal(S.answers) });
+      submitLead({ email: S.email, name: S.answers.name, goal: mainGoal(S.answers), marketing: S.marketing, answers: toOnboardingData(S.answers), utm: S.utm });
       save();
       next();
     });
@@ -1681,8 +1683,9 @@ const BIND = {
       actions.hidden = true;
       msg.hidden = false;
       for (let i = 0; i < 15; i++) {
-        const st = await getOrderStatus(S.orderId);
-        if (st === "paid" || st === "claimed") return completePurchase(plan);
+        const order = await getOrderStatus(S.orderId);
+        const st = order?.status;
+        if (st === "paid" || st === "claimed") return completePurchase(plan, { testMode: order.testMode });
         if (st === "failed") {
           S.payError = "Ödeme tamamlanamadı. Kart bilgilerini kontrol edip tekrar dene.";
           S.orderId = null;
@@ -1709,11 +1712,12 @@ const BIND = {
   success: () => app.querySelectorAll("[data-store]").forEach((a) => a.addEventListener("click", () => track("store_click", { store: a.dataset.store }))),
 };
 
-function completePurchase(plan) {
+function completePurchase(plan, { testMode = false } = {}) {
   S.paid = true;
-  // Reklam/analitik satın alması yalnız gerçek ödemede; önizleme demosu
-  // Meta/GA verisini kirletmesin. PayTR'de event_id = merchant_oid (CAPI ile eşleşir).
-  if (CONFIG.paymentProvider === "paytr") track("purchase", { value: plan.price, currency: "TRY", plan: plan.id, event_id: S.orderId || undefined });
+  // Reklam/analitik satın alması yalnız gerçek ödemede: ne önizleme demosu ne de
+  // PayTR test siparişi Meta/GA'ya satış yazmasın (Ekim'de 1 gerçek satış 4 göründü).
+  // PayTR'de event_id = merchant_oid (CAPI ile eşleşir).
+  if (CONFIG.paymentProvider === "paytr" && !testMode) track("purchase", { value: plan.price, currency: "TRY", plan: plan.id, event_id: S.orderId || undefined });
   save();
   go("success", { replace: true });
 }
