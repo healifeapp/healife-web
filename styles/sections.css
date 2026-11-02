@@ -61,8 +61,8 @@
 }
 
 /* ══ Yüzen dock ═════════════════════════════════════════
-   Cam kapsül. Kenarlığı düz bir çizgi değil, lime'dan beyaza geçen bir
-   degrade — mask ile yalnızca 1px'lik çerçeve olarak boyanıyor. */
+   Cam kapsül, düz hairline. Renkli parıltı ve degrade kenarlık şablon gibi
+   okunuyordu; lime yalnızca CTA dolgusunda kalıyor. */
 
 .dock {
   position: fixed;
@@ -77,9 +77,8 @@
   background: rgba(18, 18, 20, 0.72);
   backdrop-filter: saturate(180%) blur(22px);
   -webkit-backdrop-filter: saturate(180%) blur(22px);
-  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 30px 70px -40px rgba(187, 228, 72, 0.55);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.9);
 
   /* Görünürlük: JS `is-in` (hero geçildi) ve `is-hidden` (aşağı kaydırılıyor)
      sınıflarını yönetir. İkisi de yokken dock yukarıda gizli bekler. */
@@ -101,28 +100,6 @@
   opacity: 0;
   transform: translateY(-140%) scale(0.94);
   visibility: hidden;
-}
-
-/* Degrade hairline */
-.dock::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    130deg,
-    rgba(187, 228, 72, 0.65),
-    rgba(255, 255, 255, 0.14) 38%,
-    rgba(255, 255, 255, 0.05) 62%,
-    rgba(212, 240, 126, 0.4)
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
 }
 
 .dock__links {
@@ -158,14 +135,7 @@
   height: calc(100% + 2px);
   width: var(--pill-w, 0px);
   border-radius: var(--r-pill);
-  background: linear-gradient(
-    140deg,
-    rgba(187, 228, 72, 0.24),
-    rgba(187, 228, 72, 0.1) 55%,
-    rgba(255, 255, 255, 0.06)
-  );
-  box-shadow: 0 0 0 1px rgba(187, 228, 72, 0.3) inset,
-    0 6px 18px -8px rgba(187, 228, 72, 0.55);
+  background: rgba(255, 255, 255, 0.08);
   translate: var(--pill-x, 0px) -50%;
   opacity: 0;
   transition: translate 0.45s var(--ease), width 0.45s var(--ease),
@@ -188,12 +158,10 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   white-space: nowrap;
-  box-shadow: 0 8px 22px -10px rgba(187, 228, 72, 0.9);
-  transition: background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  transition: background-color 0.25s var(--ease);
 }
 .dock__cta:hover {
   background: var(--lime-bright);
-  box-shadow: 0 12px 28px -10px rgba(187, 228, 72, 1);
 }
 .dock__cta svg {
   width: 15px;
@@ -304,8 +272,6 @@
   position: absolute;
   inset: 0;
   background:
-    /* sağ tarafa lime sıcaklık */
-    radial-gradient(58% 70% at 76% 44%, rgba(187, 228, 72, 0.1), transparent 70%),
     /* metnin oturduğu sağ taraf koyulaşsın */
     linear-gradient(
       90deg,
@@ -349,17 +315,15 @@
 }
 
 /* Hero etiketi. Bilerek düğmeye benzemiyor: zemin, kenarlık ve dolu çip
-   yok — onlar varken tıklanabilir okunuyordu. Kalan sinyal yalnızca nabız
-   atan lime nokta. */
+   yok — onlar varken tıklanabilir okunuyordu. Nabız noktası da anlamsız
+   bir işaret olduğu için kaldırıldı; vurgu yalnızca "Yeni" kelimesinde. */
 .hero__kicker {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
   margin-bottom: 2.1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.5;
   color: var(--text-2);
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
@@ -373,39 +337,9 @@
   margin-inline: 0.15rem;
 }
 
-.hero__pulse {
-  position: relative;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--lime);
-  flex: none;
-  box-shadow: 0 0 12px rgba(187, 228, 72, 0.9);
-}
-.hero__pulse::after {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 1px solid var(--lime);
-  animation: pulse 2.6s var(--ease) infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(0.55);
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
 @media (max-width: 560px) {
   .hero__kicker {
-    font-size: 0.6875rem;
-    letter-spacing: 0.11em;
+    font-size: 0.8125rem;
   }
 }
 
@@ -430,12 +364,9 @@
   background: var(--lime);
   color: var(--on-lime);
   font-size: clamp(0.9375rem, 0.9rem + 0.3vw, 1.0625rem);
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  box-shadow: 0 18px 44px -18px rgba(187, 228, 72, 0.95);
-  transition: transform 0.28s var(--ease), background-color 0.28s var(--ease),
-    box-shadow 0.28s var(--ease);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: background-color 0.28s var(--ease);
 }
 .hero__cta svg {
   width: 19px;
@@ -444,8 +375,6 @@
 }
 .hero__cta:hover {
   background: var(--lime-bright);
-  transform: translateY(-3px);
-  box-shadow: 0 24px 54px -18px rgba(187, 228, 72, 1);
 }
 .hero__cta:hover svg {
   transform: translateX(4px);
@@ -537,12 +466,7 @@
     object-position: 50% 62%;
   }
   .hero__scrim {
-    background: radial-gradient(
-        70% 45% at 50% 18%,
-        rgba(187, 228, 72, 0.1),
-        transparent 70%
-      ),
-      linear-gradient(
+    background: linear-gradient(
         180deg,
         rgba(11, 11, 12, 0.9) 0%,
         rgba(11, 11, 12, 0.78) 34%,
@@ -738,49 +662,6 @@
   color: var(--text-2);
 }
 
-.marquee {
-  margin-top: clamp(2rem, 4vw, 3rem);
-  overflow: hidden;
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent,
-    #000 8%,
-    #000 92%,
-    transparent
-  );
-}
-.marquee__track {
-  display: flex;
-  width: max-content;
-  gap: 0;
-  animation: marquee 42s linear infinite;
-}
-.marquee__group {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;
-  padding-right: 2.5rem;
-  flex: none;
-}
-.marquee span {
-  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.375rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--text-3);
-  white-space: nowrap;
-}
-.marquee i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--lime);
-  flex: none;
-}
-.marquee:hover .marquee__track {
-  animation-play-state: paused;
-}
-
 /* ══ Nasıl çalışır ══════════════════════════════════════ */
 
 .how {
@@ -889,9 +770,8 @@
     display: block;
     width: 100%;
     height: var(--rail, 0%);
-    background: linear-gradient(180deg, var(--lime-bright), var(--lime));
+    background: var(--lime);
     border-radius: 2px;
-    box-shadow: 0 0 12px rgba(187, 228, 72, 0.7);
     transition: height 0.25s linear;
   }
 }
@@ -1020,8 +900,7 @@
     height: 100%;
     width: var(--rail, 0%);
     border-radius: 2px;
-    background: linear-gradient(90deg, var(--lime-bright), var(--lime));
-    box-shadow: 0 0 12px rgba(187, 228, 72, 0.7);
+    background: var(--lime);
     transition: width 0.25s linear;
   }
 }
@@ -1196,13 +1075,7 @@
   padding: clamp(1.25rem, 2.5vw, 1.75rem);
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent);
-  transition: border-color 0.35s var(--ease), background-color 0.35s var(--ease),
-    transform 0.35s var(--ease);
-}
-.step:hover {
-  border-color: var(--hairline-strong);
-  transform: translateX(4px);
+  transition: border-color 0.35s var(--ease), background-color 0.35s var(--ease);
 }
 
 /* Kaydırılan adım vurgulanır — sol taraftaki ekran da onunla değişir.
@@ -1212,7 +1085,7 @@
    eziliyordu — soluklaştırma hiç çalışmıyordu. */
 .step {
   transition: border-color 0.35s var(--ease), background-color 0.35s var(--ease),
-    transform 0.35s var(--ease), opacity 0.45s var(--ease);
+    opacity 0.45s var(--ease);
 }
 .js .how .steps .step {
   opacity: 0.42;
@@ -1223,13 +1096,11 @@
 .step.is-current {
   opacity: 1;
   border-color: rgba(187, 228, 72, 0.45);
-  background: linear-gradient(180deg, rgba(187, 228, 72, 0.09), transparent 70%);
 }
 .step.is-current .step__no {
   background: var(--lime);
   color: var(--on-lime);
   border-color: var(--lime);
-  box-shadow: 0 0 24px -6px rgba(187, 228, 72, 0.8);
 }
 .step.is-current p {
   color: var(--text);
@@ -1325,12 +1196,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
   isolation: isolate;
-}
-.tile:hover {
-  border-color: var(--hairline-strong);
-  transform: translateY(-4px);
 }
 
 .tile__icon {
@@ -1394,41 +1260,112 @@
 }
 
 .tile--dark {
-  background: linear-gradient(160deg, #1b2410, #121214 55%);
+  background: var(--surface);
 }
 
-.tile__art {
+/* Tabak tarama karosu: fotoğraf kırpımı + üstüne binen sonuç kartı.
+   Kırpım değerleri scan.webp içindeki tabağın konumundan (genişliğin
+   ~%78'i, merkez x %50 / y genişliğin %67'si); kenardaki tarama köşeleri
+   kadrajın dışında kalır. */
+.scan {
+  margin-top: auto;
+  padding-top: 1.25rem;
+}
+.scan__photo {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--bg);
+}
+.scan__photo img {
   position: absolute;
-  z-index: -1;
-  pointer-events: none;
+  width: 123%;
+  max-width: none;
+  left: -11.5%;
+  top: -31%;
 }
-.tile__art--runner {
-  right: -14%;
-  bottom: -6%;
-  width: 62%;
-  opacity: 0.85;
+.scan__card {
+  position: relative;
+  margin: -28% 0.75rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: var(--r);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.8);
+  color: var(--text);
+  font-weight: 400;
 }
-.tile__art--athlete {
-  right: -8%;
-  bottom: -8%;
-  width: 54%;
-  opacity: 0.55;
-  mask-image: linear-gradient(180deg, #000 55%, transparent);
-  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+.tile .scan__name {
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.tile .scan__kcal {
+  margin-top: 0.15rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.scan__kcal small {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-2);
+}
+.scan__macros {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.scan__macros li {
+  display: grid;
+  gap: 0.1rem;
+  padding-top: 0.5rem;
+  border-top: 3px solid var(--c);
+}
+.scan__macros span {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.scan__macros b {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tile .scan__done {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--lime);
+}
+.scan__done svg {
+  width: 15px;
+  height: 15px;
 }
 
 /* Koç kartı: örnek konuşma (revizyon 07) */
+/* Sohbet karonun dibine oturur: metin üstte, örnek altta. Karo boyu komşu
+   karodan geldiği için aksi hâlde altta boş bir bant kalıyordu. */
 .coachchat {
   display: grid;
   gap: 0.5rem;
   max-width: 34rem;
-  margin: 0.9rem 0 0;
+  margin: auto 0 0;
+  padding-top: 0.9rem;
 }
 .coachchat figcaption {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--fs-small);
+  font-weight: 500;
   color: var(--text-3);
 }
 .tile .coachchat__msg {
@@ -1448,6 +1385,22 @@
   border-color: transparent;
   color: var(--on-lime);
   font-weight: 600;
+}
+.coachchat__src {
+  list-style: none;
+  margin: 0 0 0.35rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.coachchat__src li {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hairline-strong);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-2);
 }
 .macros--compact {
   gap: 0.45rem;
@@ -1534,7 +1487,7 @@
 }
 
 .movecard {
-  background: linear-gradient(165deg, #1b2410, #17181b 55%);
+  background: var(--surface);
   align-items: center;
   text-align: center;
 }
@@ -1599,16 +1552,6 @@
   height: 6px;
   border-radius: 50%;
   background: var(--lime);
-  animation: pulse-dot 1.8s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.25;
-  }
 }
 
 .movescreen__map {
@@ -1627,7 +1570,6 @@
   stroke-width: 7;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 8px rgba(187, 228, 72, 0.55));
   stroke-dasharray: 900;
   stroke-dashoffset: 900;
   animation: draw-route 4.5s var(--ease) forwards;
@@ -1729,9 +1671,6 @@
     animation: none;
     stroke-dashoffset: 0;
   }
-  .movescreen__dot {
-    animation: none;
-  }
 }
 
 /* HIIT kartı — turuncu, uygulamadaki HIIT kartının rengiyle aynı aile */
@@ -1740,7 +1679,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   align-items: center;
-  background: linear-gradient(150deg, #2a1a0d, #1c1613 58%);
+  background: var(--surface);
   border-color: rgba(255, 122, 26, 0.22);
   overflow: hidden;
   position: relative;
@@ -1759,10 +1698,8 @@
   border-radius: var(--r-pill);
   background: var(--flame);
   color: #1a0d03;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.8125rem;
+  font-weight: 700;
   margin-bottom: 0.75rem;
 }
 .hiitcard__copy p {
@@ -1880,10 +1817,6 @@
   border: 1px solid var(--paper-line);
   background: var(--paper-2);
   box-shadow: 0 30px 50px -34px rgba(20, 21, 15, 0.55);
-  transition: transform 0.4s var(--ease);
-}
-.tour__item:hover img {
-  transform: translateY(-6px);
 }
 .tour__item figcaption {
   margin-top: 1rem;
@@ -1915,22 +1848,98 @@
   }
 }
 
-.science__art {
-  position: relative;
-  border-radius: var(--r-xl);
-  overflow: hidden;
+/* Yöntem akışı: profil → formül → yapay zeka. Adımlar tek bir dikey çizgiyle
+   bağlı; vurgu yalnızca sonuçta, böylece göz plana iner. */
+.flow {
+  margin: 0;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-radius: var(--r-lg);
+  background: var(--surface);
   border: 1px solid var(--hairline);
 }
-.science__art img {
-  width: 100%;
-  filter: saturate(0.85) contrast(1.05);
+.flow__label {
+  font-size: var(--fs-small);
+  color: var(--text-3);
+  margin-bottom: 1.25rem;
 }
-.science__art::after {
+.flow__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.75rem;
+}
+.flow__step {
+  position: relative;
+  display: grid;
+  gap: 0.4rem;
+  padding-left: 1.75rem;
+}
+.flow__step::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(200deg, rgba(187, 228, 72, 0.16), transparent 55%),
-    linear-gradient(0deg, rgba(11, 11, 12, 0.85), transparent 55%);
+  left: 0;
+  top: 0.45rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--text-3);
+  background: var(--surface);
+}
+.flow__step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 3.5px;
+  top: 1.25rem;
+  bottom: -1.5rem;
+  width: 2px;
+  background: var(--hairline-strong);
+}
+.flow__kind {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-2);
+}
+.flow__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.flow__chips span {
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  font-size: var(--fs-small);
+  color: var(--text);
+}
+.flow__value {
+  font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.flow__value small {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-2);
+}
+.flow__meta {
+  font-size: var(--fs-small);
+  color: var(--text-3);
+}
+.flow__step--result::before {
+  border-color: var(--lime);
+  background: var(--lime);
+}
+.flow__plan {
+  justify-self: start;
+  padding: 0.55rem 0.95rem;
+  border-radius: var(--r-sm);
+  background: var(--lime);
+  color: var(--on-lime);
+  font-weight: 700;
 }
 
 /* auto-fit, 1440px'de üç sütun + tek başına kalan dördüncü veriyordu.
@@ -2008,30 +2017,6 @@
   color: var(--lime-bright);
 }
 
-/* Yöntem bölümünün 3B nokta alanı — içeriğin arkasında, kenarları maskeli */
-.science__field {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0.55;
-  -webkit-mask-image: radial-gradient(
-    ellipse 80% 70% at 50% 55%,
-    #000 25%,
-    transparent 78%
-  );
-  mask-image: radial-gradient(
-    ellipse 80% 70% at 50% 55%,
-    #000 25%,
-    transparent 78%
-  );
-}
-.science .wrap {
-  position: relative;
-  z-index: 1;
-}
 
 /* ══ İçerik vitrini ═════════════════════════════════════ */
 
@@ -2085,11 +2070,6 @@
   border: 1px solid var(--paper-line);
   display: flex;
   flex-direction: column;
-  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
-}
-.recipe:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 26px 44px -30px rgba(20, 21, 15, 0.6);
 }
 .recipe__img {
   aspect-ratio: 4 / 3;
@@ -2161,11 +2141,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
-}
-.guide:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 26px 44px -30px rgba(20, 21, 15, 0.6);
 }
 .guide .micro {
   color: var(--lime-olive);
@@ -2200,11 +2175,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
-  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
-}
-.why:hover {
-  border-color: var(--hairline-strong);
-  transform: translateY(-4px);
 }
 
 .why__icon {
@@ -2271,8 +2241,6 @@
 }
 .plan--featured {
   border-color: rgba(187, 228, 72, 0.45);
-  background: linear-gradient(180deg, rgba(187, 228, 72, 0.08), var(--surface) 45%);
-  box-shadow: 0 30px 60px -40px rgba(187, 228, 72, 0.5);
 }
 .plan__tag {
   position: absolute;
@@ -2282,10 +2250,8 @@
   border-radius: var(--r-pill);
   background: var(--lime);
   color: var(--on-lime);
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 .plan h3 {
   font-size: 1.375rem;
@@ -2382,10 +2348,8 @@
 .gate dt {
   padding: 0.2rem 0.6rem;
   border-radius: var(--r-pill);
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.8125rem;
+  font-weight: 700;
   white-space: nowrap;
   line-height: 1.5;
 }
@@ -2508,15 +2472,6 @@
   margin-inline: auto;
   max-width: 52ch;
 }
-.final__art {
-  position: absolute;
-  bottom: -6%;
-  right: -4%;
-  width: min(420px, 44vw);
-  opacity: 0.16;
-  pointer-events: none;
-  filter: grayscale(1);
-}
 .final .stores {
   justify-content: center;
   margin-top: 2.5rem;
@@ -2579,10 +2534,8 @@
   max-width: 34ch;
 }
 .footer h4 {
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-3);
   margin-bottom: 1rem;
 }
@@ -2923,10 +2876,8 @@
   background: rgba(187, 228, 72, 0.06);
 }
 .split__head {
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-3);
   margin-bottom: 0.6rem;
 }
@@ -2969,11 +2920,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
-}
-.pillar:hover {
-  border-color: rgba(187, 228, 72, 0.4);
-  transform: translateY(-4px);
 }
 .pillar__icon {
   width: 42px;
@@ -3074,10 +3020,8 @@
 .compare thead th {
   border-top: 0;
   padding-top: 1rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 700;
   color: var(--text-3);
   text-align: center;
 }

@@ -81,9 +81,9 @@
     </noscript>
 
     <link rel="stylesheet" href="styles/tokens.css?v=20260917a" />
-    <link rel="stylesheet" href="styles/base.css?v=20261013a" />
-    <link rel="stylesheet" href="styles/sections.css?v=20261013g" />
-    <link rel="stylesheet" href="styles/animations.css?v=20260917a" />
+    <link rel="stylesheet" href="styles/base.css?v=20261102a" />
+    <link rel="stylesheet" href="styles/sections.css?v=20261102e" />
+    <link rel="stylesheet" href="styles/animations.css?v=20261102a" />
 
     <!-- Google Tag Manager artık burada değil: scripts/consent.js ziyaretçi
          "Kabul et" dedikten sonra yükler (GTM-PLC3D8TR). -->
@@ -222,7 +222,6 @@
             <!-- Etiket, düğme değil: zemin ve kenarlık yok, yoksa tıklanabilir
                  görünüyor. Sayfanın geri kalanındaki .eyebrow ile aynı dil. -->
             <p class="hero__kicker" style="--delay: 0.55s">
-              <i class="hero__pulse" aria-hidden="true"></i>
               <b>Yeni özellik</b><span aria-hidden="true">·</span>Healife Move, GPS'li koşu takibi
             </p>
 
@@ -342,27 +341,6 @@
             <li><b>Yürüyüş ve koşu</b><span>GPS'li Healife Move</span></li>
             <li><b>Günlük takip</b><span>öğün, su ve kalori günlüğü</span></li>
           </ul>
-
-          <div class="marquee" aria-hidden="true">
-            <div class="marquee__track">
-              <div class="marquee__group">
-                <span>AI koç</span><i></i> <span>Kalori takibi</span><i></i>
-                <span>Makro analizi</span><i></i> <span>Yemek fotoğrafı analizi</span
-                ><i></i> <span>HIIT zamanlayıcı</span><i></i>
-                <span>GPS ile koşu</span><i></i> <span>Su takibi</span><i></i>
-                <span>Apple Health</span><i></i> <span>Egzersiz videoları</span><i></i>
-                <span>Uyku planı</span><i></i> <span>Hatırlatıcılar</span><i></i>
-              </div>
-              <div class="marquee__group">
-                <span>AI koç</span><i></i> <span>Kalori takibi</span><i></i>
-                <span>Makro analizi</span><i></i> <span>Yemek fotoğrafı analizi</span
-                ><i></i> <span>HIIT zamanlayıcı</span><i></i>
-                <span>GPS ile koşu</span><i></i> <span>Su takibi</span><i></i>
-                <span>Apple Health</span><i></i> <span>Egzersiz videoları</span><i></i>
-                <span>Uyku planı</span><i></i> <span>Hatırlatıcılar</span><i></i>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -492,16 +470,6 @@
 
           <div class="bento">
             <article class="tile tile--dark b-hero reveal">
-              <img
-                class="tile__art tile__art--athlete"
-                src="assets/img/athlete-abs.webp?v=20260917a"
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                decoding="async"
-                width="620"
-                height="646"
-              />
               <div class="tile__icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M12 3a4 4 0 0 1 4 4v1a4 4 0 0 1-1 2.6V13a5 5 0 0 1-6 0v-2.4A4 4 0 0 1 8 8V7a4 4 0 0 1 4-4Z" />
@@ -527,6 +495,18 @@
                   ortalaman hedefinin altında kaldı (günde ~67 g, hedef 112 g).
                   Bu hafta bir dinlenme günü ekleyip proteini öğünlerine
                   dağıtmayı deneyebilirsin.
+                </p>
+                <!-- Koçun cevabı hangi veriye dayandırdığı: karonun "hepsini
+                     birlikte görür" iddiası metinle değil burada gösteriliyor. -->
+                <ul class="coachchat__src" aria-label="Koçun baktığı veriler">
+                  <li>Son 3 antrenman</li>
+                  <li>Öğün günlüğü</li>
+                  <li>Haftalık plan</li>
+                </ul>
+                <p class="coachchat__msg coachchat__msg--me">Bugün antrenman yapayım mı?</p>
+                <p class="coachchat__msg">
+                  Bugün 20 dakikalık hafif bir mobilite yeterli. Akşam yemeğine
+                  ~30 g protein ekle, yarınki bacak gününe dinlenmiş gir.
                 </p>
               </figure>
 
@@ -567,15 +547,26 @@
                 Yemeğinin fotoğrafını çek; yapay zeka tahmini kaloriyi, protein, karb
                 ve yağ değerlerini çıkarsın, öneriyle birlikte günlüğüne yazsın.
               </p>
-              <div class="tile__shot">
-                <img
-                  src="assets/screens/app/scan.webp?v=20260917a"
-                  alt="Yemek fotoğrafı analizi: 540 kcal, 55 g protein, 34 g karbonhidrat, 18 g yağ"
-                  width="560"
-                  height="1218"
-                  loading="lazy"
-                  decoding="async"
-                />
+              <!-- Ekran görüntüsünün tamamı yerine yalnızca tabak ve sonuç: emoji,
+                   parıltılı çerçeve ve okunmayan küçük metin kart dilini
+                   bozuyordu. Değerler scan.webp'deki analizle aynı. -->
+              <div class="scan" role="img" aria-label="Yemek fotoğrafı analizi: ızgara tavuk bowl, 540 kcal, 55 g protein, 34 g karbonhidrat, 18 g yağ">
+                <div class="scan__photo">
+                  <img src="assets/screens/app/scan.webp?v=20260917a" alt="" width="560" height="1218" loading="lazy" decoding="async" />
+                </div>
+                <div class="scan__card">
+                  <p class="scan__name">Izgara tavuk bowl</p>
+                  <p class="scan__kcal">540 <small>kcal</small></p>
+                  <ul class="scan__macros">
+                    <li style="--c: var(--protein)"><span>Protein</span><b>55 g</b></li>
+                    <li style="--c: var(--carb)"><span>Karb</span><b>34 g</b></li>
+                    <li style="--c: var(--fat)"><span>Yağ</span><b>18 g</b></li>
+                  </ul>
+                  <p class="scan__done">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+                    Analiz tamamlandı
+                  </p>
+                </div>
               </div>
             </article>
 
@@ -1083,9 +1074,6 @@
 
       <!-- ══ Yöntem ════════════════════════════════════════ -->
       <section class="section science" id="bilim">
-        <!-- Three.js nokta alanı; scripts/field.js bölüm yaklaşınca yükler.
-             Yüklenmezse ya da hareket azaltma açıksa bölüm aynen çalışır. -->
-        <canvas class="science__field" id="scienceField" aria-hidden="true"></canvas>
         <div class="wrap science__grid">
           <div>
             <p class="eyebrow">Yöntem</p>
@@ -1202,15 +1190,28 @@
             </a>
           </div>
 
-          <figure class="science__art reveal reveal--right">
-            <img
-              src="assets/img/progress.webp?v=20260917a"
-              alt="İlerlemeyi temsil eden görsel"
-              width="800"
-              height="800"
-              loading="lazy"
-                  decoding="async"
-            />
+          <!-- AI üretimi görsel yerine bölümün iddiasını gösteren akış: formül
+               hesaplar, yapay zeka uyarlar. Sayı Mifflin-St Jeor'dan elle
+               doğrulanabilir (erkek, 82 kg, 178 cm, 30 yaş: BMR ≈ 1.788 ×
+               1,375 hafif aktivite ≈ 2.460); uygulamanın hedef hesabı değildir. -->
+          <figure class="flow reveal reveal--right" aria-label="Örnek hesap: profil bilgileri Mifflin-St Jeor formülüyle günlük kalori ihtiyacına çevrilir, yapay zeka bunu hedef, gün sayısı ve ekipmana göre bir plana uyarlar">
+            <p class="flow__label">Örnek hesap</p>
+            <ol class="flow__steps">
+              <li class="flow__step">
+                <span class="flow__kind">Profil</span>
+                <span class="flow__chips"><span>82 kg</span><span>178 cm</span><span>30 yaş</span><span>Haftada 3 gün</span></span>
+              </li>
+              <li class="flow__step">
+                <span class="flow__kind">Formül hesaplar</span>
+                <span class="flow__value">≈ 2.460 <small>kcal / gün</small></span>
+                <span class="flow__meta">Mifflin-St Jeor × aktivite katsayısı</span>
+              </li>
+              <li class="flow__step flow__step--result">
+                <span class="flow__kind">Yapay zeka uyarlar</span>
+                <span class="flow__plan">Yağ Yakımı · Başlangıç</span>
+                <span class="flow__meta">Hedefine, gün sayına ve ekipmanına göre: 3 gün, ev, dambıl</span>
+              </li>
+            </ol>
           </figure>
         </div>
       </section>
@@ -1525,7 +1526,6 @@
 
       <!-- ══ Final CTA ═════════════════════════════════════ -->
       <section class="section final" id="indir">
-        <img class="final__art" src="assets/img/athlete-run.webp?v=20260917a" alt="" aria-hidden="true" loading="lazy" decoding="async" width="800" height="987" />
         <div class="wrap">
           <h2 class="h1 reveal">İlk planını oluştur.</h2>
           <p class="lead reveal" style="--delay: 0.08s; margin-top: 1.1rem">
@@ -1670,9 +1670,5 @@
 
     <script src="scripts/main.js?v=20261013c" defer></script>
     <script src="scripts/consent.js?v=20261013e" defer></script>
-    <script type="module">
-      import { initField } from "./scripts/field.js?v=20260917a";
-      initField(document.getElementById("scienceField"));
-    </script>
   </body>
 </html>

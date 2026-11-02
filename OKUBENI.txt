@@ -65,8 +65,6 @@ DIS BAGIMLILIKLAR (internet gerekir)
     kartlarinda hover/dokunma ile 2 saniyelik sessiz video (Cloudinary
     video URL'inden so_0,du_2 ile kesiliyor). Video URL'i erisilemezse
     poster gorsel aynen kalir.
-  - cdn.jsdelivr.net: three.js (Yontem bolumundeki nokta alani, tembel
-    yukleme)
   - www.googletagmanager.com / google-analytics.com: YALNIZCA ziyaretci
     cerez bandinda "Kabul et" derse yuklenir.
 

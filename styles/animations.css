@@ -119,15 +119,6 @@
 
 /* ── Diğerleri ────────────────────────────────────────── */
 
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 /* Adımların sıralı girişi */
 .js .steps .reveal:nth-child(1) {
   --delay: 0s;
@@ -157,9 +148,7 @@
     transform: none !important;
     transition: none !important;
   }
-  .js .hero__photo,
-  .hero__pulse::after,
-  .marquee__track {
+  .js .hero__photo {
     animation: none !important;
   }
   .is-visible .macro__bar i {
