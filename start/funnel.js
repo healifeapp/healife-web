@@ -441,9 +441,11 @@ function fit() {
   // görünsün yeter.
   const target = el.dataset.fitTo && app.querySelector(el.dataset.fitTo);
   const dock = app.querySelector(".dock");
+  // Dock'un üst kenarı ekrandan ölçülür: çerez bandı açıkken dock bandın
+  // üstüne kalkar, innerHeight − dock yüksekliği o boşluğu saymıyordu.
   const overflow = () =>
     target
-      ? Math.ceil(target.getBoundingClientRect().bottom + scrollY - (innerHeight - (dock?.offsetHeight || 0)))
+      ? Math.ceil(target.getBoundingClientRect().bottom + scrollY - (dock ? dock.getBoundingClientRect().top : innerHeight))
       : document.scrollingElement.scrollHeight - innerHeight;
   el.style.removeProperty("--fit");
   // Küçültme her zaman taşmayı bire bir azaltmıyor (ortalama, sarılan
@@ -933,48 +935,68 @@ const freeUrl = () => {
   return `/indir.html${q ? `?${q}` : ""}`;
 };
 
-function paywallView() {
-  const plans = CONFIG.plans;
-  if (!S.planId) S.planId = (plans.find((p) => p.preselected) || plans[0]).id;
-  const maxPerWeek = Math.max(...plans.map((p) => p.price / p.weeks));
-  return `
-  <section class="paywall">
-    <div class="pw-hero" aria-hidden="true" data-fit="0" data-fit-to=".plans">
-      <div class="pw-hero__glow"></div>
-      <img src="${IMG(avatar())}" alt="" class="pw-hero__img" />
-    </div>
-    <header class="qhead">
-      <h1 class="q">${esc(withName("planın hazır.", "Planın hazır."))}</h1>
-      <p class="hint">Tam erişimi aç, bugün başla.</p>
-    </header>
-    <ul class="pw-incl" aria-label="Premium'a dahil">
-      <li>${ai("calendarCheck")}Kişisel plan</li>
-      <li>${ai("chat")}7/24 AI koç</li>
-      <li>${ai("playCircle")}176 videolu egzersiz</li>
-    </ul>
+// Tek öneri öne: üç eşit kart arasında gidip gelen ziyaretçi ödemeye
+// basmıyordu (Clarity, Kasım 2026). Öne çıkan plan config'teki preselected;
+// diğerleri "Diğer planlar"ın arkasında.
+const featuredPlan = () => CONFIG.plans.find((p) => p.preselected) || CONFIG.plans[0];
+const WEEKS_PER_MONTH = 52 / 12;
+const ONCE_PER = { yearly: "yılda bir", monthly: "ayda bir", weekly: "haftada bir" };
+let morePlansOpen = false;
 
-    <div class="plans" role="radiogroup" aria-label="Abonelik seçenekleri">
-      ${plans
-        .map((p) => {
-          const perWeek = p.price / p.weeks;
-          const save = Math.round((1 - perWeek / maxPerWeek) * 100);
-          const on = p.id === S.planId;
-          return `
+function planCard(p, maxPerWeek) {
+  const perWeek = p.price / p.weeks;
+  const save = Math.round((1 - perWeek / maxPerWeek) * 100);
+  const on = p.id === S.planId;
+  return `
         <button class="plan${on ? " is-on" : ""}" type="button" role="radio" aria-checked="${on}" data-plan="${p.id}">
           ${p.badge ? `<span class="plan__badge">${p.badge}</span>` : ""}
           <span class="plan__radio">${on ? ai("check") : ""}</span>
           <span class="plan__main"><b>${p.title}</b><small>${p.id === "weekly" ? "7 günlük erişim" : `Haftada ${money(Math.round(perWeek * 100) / 100)}'ye denk`}</small></span>
           <span class="plan__per">${save >= 10 ? `<em>haftalığa göre %${save} tasarruf</em>` : ""}<b>${money(p.price)}</b><small>/ ${UNIT[p.id] || p.periodLabel}</small></span>
         </button>`;
-        })
-        .join("")}
-    </div>
+}
 
-    <ul class="trust">
-      <li>${ai("shieldCheck")}Güvenli ödeme</li>
-      <li>${ai("close")}İstediğin zaman iptal</li>
-      <li>${ai("bolt")}Anında erişim</li>
-    </ul>
+function featuredCard(p) {
+  const on = p.id === S.planId;
+  const perMonth = Math.round(p.price / (p.weeks / WEEKS_PER_MONTH));
+  return `
+        <button class="plan plan--hero${on ? " is-on" : ""}" type="button" role="radio" aria-checked="${on}" data-plan="${p.id}">
+          ${p.badge ? `<span class="plan__badge">${p.badge}</span>` : ""}
+          <span class="plan__radio">${on ? ai("check") : ""}</span>
+          <span class="plan__main"><b>${p.title}</b><small>${money(p.price)} ${ONCE_PER[p.id] || p.periodLabel}</small></span>
+          <span class="plan__per"><b>${money(perMonth)}</b><small>/ ay</small></span>
+        </button>`;
+}
+
+function paywallView() {
+  const plans = CONFIG.plans;
+  const featured = featuredPlan();
+  if (!S.planId) S.planId = featured.id;
+  const others = plans.filter((p) => p !== featured);
+  // Ödemeden "Planı değiştir"le gelen kişinin seçtiği plan gizli kalmasın.
+  const open = morePlansOpen || S.planId !== featured.id;
+  const sel = plans.find((p) => p.id === S.planId) || featured;
+  const maxPerWeek = Math.max(...plans.map((p) => p.price / p.weeks));
+  return `
+  <section class="paywall">
+    <div class="pw-hero" aria-hidden="true" data-fit="0" data-fit-to=".pw-more">
+      <div class="pw-hero__glow"></div>
+      <img src="${IMG(avatar())}" alt="" class="pw-hero__img" />
+    </div>
+    <header class="qhead">
+      <h1 class="q">Planına tam erişim</h1>
+      <p class="hint">Tüm antrenman ve beslenme günleri, sınırsız AI koç, fotoğraftan kalori.</p>
+    </header>
+
+    <div class="plans" role="radiogroup" aria-label="Abonelik seçenekleri">
+      ${featuredCard(featured)}
+      <div class="plans__more" id="morePlans"${open ? "" : " hidden"}>
+        ${others.map((p) => planCard(p, maxPerWeek)).join("")}
+      </div>
+    </div>
+    <button class="pw-more" type="button" aria-expanded="${open}" aria-controls="morePlans" data-more-plans>
+      ${open ? "Diğer planları gizle" : `Diğer planlar <small>${others.map((p) => `${p.title} ${money(p.price)}`).join(" · ")}</small>`}${ai("chevronDown")}
+    </button>
 
     <h2 class="sub">Premium'da neler var?</h2>
     <ul class="feats">${FEATURES.map(([ic, f]) => `<li>${ai(ic)}<span>${f}</span></li>`).join("")}</ul>
@@ -988,12 +1010,13 @@ function paywallView() {
     ${legalFoot()}
   </section>
   <div class="dock dock--pw">
-    <p class="pw-total">${(() => {
-      const p = plans.find((x) => x.id === S.planId) || plans[0];
-      return `Bugün <b>${money(p.price)}</b> · ${UNIT[p.id] || p.periodLabel} başına · yenileme isteğe bağlı`;
-    })()}</p>
-    <button class="btn btn--primary btn--block" type="button" data-next>Devam et${ai("arrowRight")}</button>
-    <a class="free-link" href="${freeUrl()}" data-free>Şimdilik ücretsiz sürümle devam et</a>
+    <ul class="trust pw-trust">
+      <li>${ai("checkCircle")}İstediğin an iptal</li>
+      <li>${ai("checkCircle")}3D Secure ile güvenli ödeme (PayTR)</li>
+      <li>${ai("checkCircle")}Fatura e-postana gelir</li>
+    </ul>
+    <button class="btn btn--primary btn--block" type="button" data-next>${sel.title} planla başla${ai("arrowRight")}</button>
+    <a class="free-link" href="${freeUrl()}" data-free>Ücretsiz sürümle devam et</a>
   </div>`;
 }
 
@@ -1429,11 +1452,22 @@ const BIND = {
     app.querySelectorAll("[data-plan]").forEach((b) =>
       b.addEventListener("click", () => {
         haptic();
+        if (S.planId !== b.dataset.plan) track("plan_select", { plan: b.dataset.plan });
         S.planId = b.dataset.plan;
         save();
         render({ quiet: true });
+        app.querySelector(`[data-plan="${S.planId}"]`)?.focus({ preventScroll: true });
       }),
     );
+    app.querySelector("[data-more-plans]").addEventListener("click", (e) => {
+      morePlansOpen = e.currentTarget.getAttribute("aria-expanded") !== "true";
+      if (morePlansOpen) track("paywall_more_plans");
+      // Kapanan listede seçili plan kalmasın: düğme metni hep görünen kartı söylesin.
+      else S.planId = featuredPlan().id;
+      save();
+      render({ quiet: true });
+      app.querySelector("[data-more-plans]").focus({ preventScroll: true });
+    });
     app.querySelector("[data-free]").addEventListener("click", () => track("free_continue"));
     app.querySelector("[data-next]").addEventListener("click", () => {
       const p = CONFIG.plans.find((x) => x.id === S.planId) || CONFIG.plans[0];

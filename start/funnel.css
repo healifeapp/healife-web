@@ -1767,6 +1767,49 @@ noscript p {
   font-weight: 700;
   color: var(--lime);
 }
+/* Tek öneri: öne çıkan kart diğerlerinden belirgin, aylık karşılığı büyük. */
+.plan--hero {
+  min-height: 88px;
+  padding-block: 1.1rem;
+}
+.plan--hero .plan__per b {
+  font-size: 1.6rem;
+}
+.plans__more {
+  display: grid;
+  gap: 0.7rem;
+}
+.plans__more[hidden] {
+  display: none;
+}
+.pw-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.45rem;
+  min-height: 44px;
+  margin-top: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.pw-more small {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.pw-more .ai {
+  transition: transform 0.25s var(--ease);
+}
+.pw-more[aria-expanded="true"] .ai {
+  transform: rotate(180deg);
+}
+.dock--pw .pw-trust {
+  align-self: stretch;
+  margin: 0 0 0.6rem;
+}
 .trust {
   list-style: none;
   margin: 0.9rem 0 0;
@@ -2715,36 +2758,6 @@ noscript p {
 .dock--pw {
   padding-top: 1.1rem;
   background: linear-gradient(rgba(18, 18, 20, 0), var(--bg) 0.9rem);
-}
-/* Paywall üstü: kutusuz tek satır; fiyat kartlarıyla yarışmasın. */
-.pw-incl {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.35rem 1.1rem;
-  list-style: none;
-  margin: 0 0 1.4rem;
-  padding: 0;
-  font-size: 0.82rem;
-  color: var(--text-2);
-}
-.pw-incl li {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-.pw-incl .ai {
-  font-size: 1rem;
-  color: var(--lime);
-}
-.pw-total {
-  margin: 0 0 0.55rem;
-  text-align: center;
-  font-size: 0.78rem;
-  color: var(--text-2);
-}
-.pw-total b {
-  color: var(--text);
 }
 
 @media (min-width: 1024px) {
