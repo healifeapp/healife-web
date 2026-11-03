@@ -403,6 +403,19 @@ noscript p {
 .stage__inner > :not(.dock):last-of-type {
   margin-bottom: 0.5rem;
 }
+/* Çerez bandı açıkken (scripts/consent.js --consent-h'yi ölçer) bandın
+   kapladığı alt şerit sayfaya boşluk olarak eklenir: tek ekran adımlarında
+   fit() içeriği bu boşluğun üstüne sığdırır, uzun sayfalarda yapışkan dock
+   bandın üstünde durur. Böylece seçim yapılmadan da CTA görünür ve dokunulur. */
+.has-consent-banner {
+  --consent-space: calc(var(--consent-h, 0px) + max(1rem, env(safe-area-inset-bottom)) + 0.75rem);
+}
+.has-consent-banner .main {
+  padding-bottom: var(--consent-space);
+}
+.has-consent-banner .dock {
+  bottom: var(--consent-space);
+}
 .dock--2 {
   display: grid;
   grid-template-columns: 1fr 2fr;

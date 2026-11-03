@@ -463,6 +463,8 @@ addEventListener("resize", () => {
 // Yazı tipi geç gelirse satırlar uzar: yüklenince yeniden ölç.
 document.fonts?.addEventListener?.("loadingdone", fit);
 document.fonts?.ready.then(fit);
+// Çerez bandı açılınca/kapanınca/uzayınca alttaki boş alan değişir.
+document.addEventListener("hl-consent-banner", fit);
 
 function render({ quiet = false } = {}) {
   const step = stepById(S.step) || STEPS[0];

@@ -179,6 +179,11 @@
     max-width: 460px;
     justify-content: space-between;
   }
+  /* Çerez bandı (scripts/consent.js, --consent-h) açıkken dock onun üstünde
+     durur; yoksa bant CTA'yı örter. */
+  .has-consent-banner .dock {
+    bottom: calc(var(--consent-h, 0px) + max(1rem, env(safe-area-inset-bottom)) + 0.75rem);
+  }
   .dock,
   .dock.is-in.is-hidden {
     transform: translateY(160%) scale(0.94);

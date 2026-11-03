@@ -49,6 +49,7 @@
   }
   var banner = null;
   var lastFocus = null;
+  var bannerObserver = null;
 
   function read() {
     try {
@@ -154,11 +155,32 @@
 
   function close() {
     if (!banner) return;
+    if (bannerObserver) bannerObserver.disconnect();
+    bannerObserver = null;
     banner.remove();
     banner = null;
     document.documentElement.classList.remove("has-consent-banner");
+    document.documentElement.style.removeProperty("--consent-h");
+    announceBannerSpace();
     if (lastFocus && lastFocus.focus) lastFocus.focus();
     lastFocus = null;
+  }
+
+  /* Bant sabit ve alttaki düğmeleri (funnel dock'u, mobil dock) örtüyor.
+     Yüksekliği <html> üzerinde --consent-h olarak yayımlanır; sayfalar CSS'te
+     has-consent-banner sınıfıyla bu kadar yer ayırır. Olay, ölçüye göre
+     yerleşim hesaplayan sayfalara (funnel fit()) yeniden ölçme sinyali. */
+  function announceBannerSpace() {
+    document.dispatchEvent(new Event("hl-consent-banner"));
+  }
+
+  function publishBannerHeight() {
+    if (!banner) return;
+    var h = Math.ceil(banner.getBoundingClientRect().height) + "px";
+    var root = document.documentElement;
+    if (root.style.getPropertyValue("--consent-h") === h) return;
+    root.style.setProperty("--consent-h", h);
+    announceBannerSpace();
   }
 
   function decide(analytics, ads) {
@@ -234,6 +256,12 @@
     });
     document.body.appendChild(banner);
     document.documentElement.classList.add("has-consent-banner");
+    publishBannerHeight();
+    /* "Tercihleri seç" bandı uzatır, döndürme/yazı tipi yüksekliği değiştirir. */
+    if (window.ResizeObserver) {
+      bannerObserver = new ResizeObserver(publishBannerHeight);
+      bannerObserver.observe(banner);
+    }
     if (fromUser) {
       lastFocus = document.activeElement;
       banner.querySelector("[data-consent]").focus();
