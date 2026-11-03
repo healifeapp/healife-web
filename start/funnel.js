@@ -972,7 +972,7 @@ const FEATURES = [
 
 const FAQ = [
   ["Abonelik otomatik yenilenir mi?", "Sen istersen. Ödeme adımındaki \"Aboneliğim otomatik yenilensin\" kutusu işaretliyse dönem bitiminde aynı süre ve ücretle, PayTR'de saklanan kartından yenilenir; dönem bitiminden en az 24 saat önce hea-life.com/abonelik.html adresinden (e-postana gelen kodla) ya da uygulamada Ayarlar › Abonelik'ten kapatabilirsin. Kutuyu kaldırırsan tek ödemedir: dönem bitince premium kapanır, kartından tekrar çekim yapılmaz."],
-  ["Uygulamayı nasıl kullanacağım?", "Ödemeden sonra Healife'ı App Store veya Google Play'den indir ve burada kullandığın Apple ya da Google hesabıyla giriş yap. Planın ve premium hazır olur."],
+  ["Uygulamayı nasıl kullanacağım?", "Ödemeden sonra Healife'ı App Store veya Google Play'den indir ve ödemede yazdığın e-postanın bağlı olduğu Apple ya da Google hesabıyla giriş yap; premium'un otomatik açılır. Apple ile girerken \"E-postamı gizle\"yi seçme, yoksa eşleşme olmaz."],
   ["Planım nasıl hazırlanıyor?", "Kalori hedefin yaş, boy, kilo, cinsiyet ve aktivite seviyene göre Mifflin-St Jeor formülüyle hesaplanır. Antrenman seviyen deneyim ve performans cevaplarınla belirlenir; program hedefine ve gün sayına göre seçilir."],
   ["Ödeme güvenli mi?", "Ödemeler PayTR altyapısıyla 3D Secure üzerinden alınır. Kart bilgilerin tarayıcından doğrudan PayTR'ye gider, Healife sunucularına ulaşmaz. Otomatik yenilemeyi seçersen kartın PayTR'de saklanır; Healife yalnızca kartın son 4 hanesini görür."],
 ];
@@ -1217,7 +1217,7 @@ function successView() {
       <span class="burst">${ai("check")}</span>
     </div>
     <h1 class="display display--sm">${esc(withName("hoş geldin!", "Hoş geldin!"))}<br />Premium'un aktif.</h1>
-    <p class="lead">Planın hesabına kaydedildi. Uygulamada planına ulaşmak için:</p>
+    <p class="lead">Ödemen alındı. Uygulamada planına ulaşmak için:</p>
     <ol class="steps">
       <li><span>1</span><div><b>Healife'ı indir</b><small>Ücretsiz, birkaç saniye sürer.</small></div>${ai("download")}</li>
       <li><span>2</span><div><b>“Giriş yap”a dokun</b><small>Açılış ekranının altındaki “Zaten hesabın var mı? Giriş yap”.</small></div>${ai("login")}</li>
@@ -1482,7 +1482,10 @@ const BIND = {
       S.email = v.toLowerCase();
       S.marketing = !!app.querySelector("#marketing")?.checked;
       track("lead", { goal: mainGoal(S.answers) });
-      submitLead({ email: S.email, name: S.answers.name, goal: mainGoal(S.answers), marketing: S.marketing, answers: toOnboardingData(S.answers), utm: S.utm });
+      // Alerjiler özel nitelikli sağlık verisi: bu formda yalnız pazarlama
+      // izni alınıyor, açık rıza yok — aday kaydına gönderilmez.
+      const { allergies: _allergies, ...leadAnswers } = toOnboardingData(S.answers);
+      submitLead({ email: S.email, name: S.answers.name, goal: mainGoal(S.answers), marketing: S.marketing, answers: leadAnswers, utm: S.utm });
       save();
       next();
     });
