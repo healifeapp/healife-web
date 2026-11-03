@@ -82,7 +82,7 @@ const ASIDE = {
   body: ["mot-halfway", "Doğru başlangıç noktası.", "Kalori ihtiyacın yaş, boy, kilo ve aktivitene göre Mifflin-St Jeor formülüyle hesaplanır."],
   train: ["mot-final", "Seviyene uygun program.", "176 egzersizin her biri videolu; doğru formu adım adım görürsün."],
   food: ["mot-almost", "Sana göre beslenme.", "Öğünlerin tercihine ve alerjilerine göre hazırlanır, AI koçla istediğin an değiştirirsin."],
-  result: ["mot-stats", "Planın hazır.", "Uygulamaya girdiğinde aynı plan seni bekliyor olacak."],
+  result: ["mot-stats", "Planın hazır.", "Planının tamamı ve günlük takip uygulamada."],
 };
 
 const STEPS = [
