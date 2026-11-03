@@ -247,8 +247,10 @@ const STEPS = [
   },
   { id: "name", sec: "beslenme", kind: "name", aside: "food", q: "Son olarak, sana nasıl hitap edelim?", hint: "Planını hazırlarken adınla hitap edeceğiz." },
   { id: "loading", kind: "loading", chrome: false },
-  { id: "email", kind: "email", chrome: "minimal", aside: "result" },
-  { id: "result", kind: "result", chrome: "minimal", wide: true },
+  // Plan önce, e-posta sonra: e-posta duvarında soruları bitirenlerin büyük
+  // kısmı çıkıyordu (Clarity, Kasım 2026). E-posta bu adımda isteğe bağlı;
+  // atlanırsa ödeme adımında istenir (PayTR siparişi e-postaya bağlı).
+  { id: "result", kind: "result", chrome: "minimal", aside: "result" },
   { id: "paywall", kind: "paywall", chrome: "minimal" },
   { id: "account", kind: "account", chrome: "minimal", aside: "result", when: () => CONFIG.authProvider !== "pending" },
   { id: "checkout", kind: "checkout", chrome: "minimal" },
@@ -266,6 +268,8 @@ if (S.paid) S.step = "success";
 let dir = "fwd";
 
 const save = () => storage.save(S);
+// Eski sürümün ayrı e-posta adımı: kayıtlı durum ya da yer imi hâlâ onu gösterebilir.
+const LEGACY_EMAIL_STEP = "email";
 const stepById = (id) => STEPS.find((s) => s.id === id);
 const visible = () => STEPS.filter((s) => !s.when || s.when(S.answers));
 // "samed" → "Samed" (Türkçe kurallarıyla: "ilker" → "İlker").
@@ -311,6 +315,7 @@ function back() {
 function restore(id) {
   if (S.paid) return go("success", { replace: true });
   if (id === "loading") id = "name";
+  if (id === LEGACY_EMAIL_STEP) id = "result";
   if (!stepById(id)) id = "intro";
   dir = "back";
   S.step = id;
@@ -332,14 +337,12 @@ const money = (n) => `${fmt(n, n % 1 ? 2 : 0)} ${CONFIG.currency}`;
 const dateLong = (d) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 
 const NEEDS_ANSWERS = new Set(["bmi", "pace", "result", "paywall", "account", "checkout"]);
+// Cevapsız ziyaretçiyi paywall, NEEDS_ANSWERS üzerinden zaten başa gönderir.
 const GUARDS = {
-  result: () => (!S.email ? "email" : null),
-  paywall: () => (!S.email ? "email" : null),
-  account: () => (!S.email ? "email" : !S.planId ? "paywall" : S.user ? "checkout" : null),
-  checkout: () =>
-    !S.email ? "email" : !S.planId ? "paywall" : !S.user && CONFIG.authProvider !== "pending" ? "account" : null,
-  verifying: () => (!S.orderId ? (S.email ? "paywall" : "intro") : null),
-  success: () => (!S.paid ? (S.email ? "paywall" : "intro") : null),
+  account: () => (!S.planId ? "paywall" : S.user ? "checkout" : null),
+  checkout: () => (!S.planId ? "paywall" : !S.user && CONFIG.authProvider !== "pending" ? "account" : null),
+  verifying: () => (!S.orderId ? "paywall" : null),
+  success: () => (!S.paid ? "paywall" : null),
 };
 
 function progress(step) {
@@ -762,31 +765,6 @@ const VIEWS = {
       </ul>
     </section>`,
 
-  email: () => `
-    <section class="email">
-      <div class="badge-ok">${ai("checkCircle")}</div>
-      ${head({}, withName("planın hazır!", "Planın hazır!"), "Planını görmek için e-posta adresini gir. Satın alırsan fatura ve abonelik bilgilerin bu adrese gelir.")}
-      <form id="emailForm" class="grow" novalidate>
-        <label class="field">
-          ${ai("send", "field__ic")}
-          <span class="sr">E-posta</span>
-          <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="ornek@eposta.com" value="${esc(S.email)}" required />
-        </label>
-        <button class="suggest" type="button" id="suggest" hidden></button>
-        <p class="err" id="emailErr" hidden>Geçerli bir e-posta adresi gir.</p>
-        ${
-          CONFIG.collectLeads
-            ? `<label class="optin">
-          <input type="checkbox" id="marketing" ${S.marketing ? "checked" : ""} />
-          <span>Kampanya ve ipuçlarını ticari elektronik ileti olarak e-postayla almak istiyorum; iznimi istediğim an geri alabilirim. <small>(isteğe bağlı)</small></span>
-        </label>`
-            : ""
-        }
-        <p class="fine">${ai("lock")} Spam yok. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul etmiş ve <a href="${CONFIG.legal.privacy}" target="_blank" rel="noopener">Gizlilik Politikası</a> ile <a href="${CONFIG.legal.kvkk}" target="_blank" rel="noopener">KVKK Aydınlatma Metni</a>'ni okumuş olursun.</p>
-        <div class="dock"><button class="btn btn--primary btn--block" type="submit">Planımı göster${ai("arrowRight")}</button></div>
-      </form>
-    </section>`,
-
   result: () => resultView(),
   paywall: () => paywallView(),
 
@@ -806,7 +784,7 @@ const VIEWS = {
       </div>
       ${!android && !ios ? `<p class="fine center">Telefonun Android ise <b>Google</b> ile devam et; Apple ile giriş uygulamada yalnızca iPhone'da var.</p>` : ""}
       <p class="err" id="authErr" hidden></p>
-      <div class="tip">${ai("shieldCheck")}<p>Şifre yok, ekstra form yok. E-postan: <b>${esc(S.email)}</b></p></div>
+      <div class="tip">${ai("shieldCheck")}<p>Şifre yok, ekstra form yok.${S.email ? ` E-postan: <b>${esc(S.email)}</b>` : ""}</p></div>
       ${legalFoot()}
     </section>`;
   },
@@ -868,20 +846,13 @@ function projectionChart(p) {
 /* ------------------------------------------------------------ sonuç */
 
 const DAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+const DAY_LONG = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
 const SPLIT_DAYS = { 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 4, 5] };
 const LOCATION = { ev: "Evde", salon: "Salonda", ikisi: "Ev + salon" };
-const DIET = { standart: "", vejetaryen: "vejetaryen", vegan: "vegan", pesketaryen: "pesketaryen" };
-const MEALS = [
-  ["Kahvaltı", 0.25, "sunrise"],
-  ["Öğle", 0.35, "sun"],
-  ["Ara öğün", 0.1, "glass"],
-  ["Akşam", 0.3, "moon"],
-];
-const APP_SHOTS = [
-  ["today", "Günlük hedeflerin tek ekranda"],
-  ["plan", "Cevaplarına göre kurulan plan"],
-  ["scan", "Fotoğraftan kalori hesaplama"],
-];
+// 1. antrenmanın hareket listesi uygulamada, şablondan kurulur; funnel'da
+// hareket adı yok. Önizlemede gerçek olan gösterilir (gün, seviye, yer),
+// hareket satırları kilitli yer tutucudur.
+const LOCKED_MOVES = 4;
 
 function resultView() {
   const a = S.answers;
@@ -890,16 +861,8 @@ function resultView() {
   // Hedef sonradan "forma/sağlık"a dönerse eski hedef kilo kalmasın.
   const pr = needsTarget(a) ? projection(a) : null;
   const days = SPLIT_DAYS[lv.days];
-  const kc = { p: t.protein * 4, c: t.carbs * 4, f: t.fat * 9 };
-  const tot = kc.p + kc.c + kc.f;
-  let mealSum = 0;
-  const meals = MEALS.map(([n, r, ic], i) => {
-    const v = i === MEALS.length - 1 ? t.calories - mealSum : Math.round((t.calories * r) / 10) * 10;
-    mealSum += v;
-    return [n, v, ic];
-  });
-  const diet = DIET[a.diet_preference];
-  const allergic = a.allergies?.length && !a.allergies.includes("none");
+  const perWeek = pr ? (pr.to - pr.from) / pr.weeks : 0;
+  const focus = a.focus_areas?.length ? a.focus_areas.map((f) => FOCUS_LABEL[f]).slice(0, 3).join(", ") : null;
 
   return `
   <section class="result">
@@ -908,56 +871,42 @@ function resultView() {
       <h1 class="q">${esc(withName(`${GOAL_LABEL[mainGoal(a)].toLowerCase()} için planın hazır.`, `${GOAL_LABEL[mainGoal(a)]} için planın hazır.`))}</h1>
     </header>
 
-    <div class="grid">
+    <ul class="stats">
+      <li><b><span data-count="${t.calories}">${fmt(t.calories)}</span></b><span>kcal / gün</span></li>
+      <li><b>${lv.days} gün</b><span>antrenman / hafta</span></li>
       ${
         pr
-          ? `<article class="card card--hero">
-              <div class="hero__copy">
-                <div class="card__t">${ai("calendarCheck")}Tahmini hedef tarihi</div>
-                <div class="big">${dateLong(pr.end)}</div>
-                <p class="fine">${fmt(pr.from, 1)} kg → ${fmt(pr.to, 1)} kg · haftada ~${fmt(Math.abs(pr.to - pr.from) / pr.weeks, 2)} kg. Tahmindir.</p>
-              </div>
-              ${projectionChart(pr)}
-            </article>`
+          ? `<li><b>${perWeek < 0 ? "−" : "+"}${fmt(Math.abs(perWeek), 2)}</b><span>kg / hafta hedef</span></li>`
+          : `<li><b>${lv.label}</b><span>seviye</span></li>`
+      }
+    </ul>
+
+    <article class="card d1">
+      <div class="card__t">${ai("dumbbell")}1. antrenman · ${DAY_LONG[days[0]]}</div>
+      <p class="d1__meta">${lv.label} seviye · ${LOCATION[a.workout_location] || "—"}${focus ? ` · Odak: ${esc(focus)}` : ""}</p>
+      <div class="week" aria-label="Antrenman günlerin">${DAY_NAMES.map((n, i) => `<span class="${days.includes(i) ? "on" : ""}">${n}</span>`).join("")}</div>
+      <div class="d1__moves" aria-hidden="true">${"<i></i>".repeat(LOCKED_MOVES)}</div>
+      <p class="d1__lock">${ai("lock")}Hareketler, set ve tekrarlar planında</p>
+    </article>
+
+    <form id="emailForm" class="save" novalidate>
+      <p class="save__lead">Planını e-postanla kaydet. Satın alırsan fatura ve abonelik bilgilerin de bu adrese gelir.</p>
+      ${emailField()}
+      ${
+        CONFIG.collectLeads
+          ? `<label class="optin">
+        <input type="checkbox" id="marketing" ${S.marketing ? "checked" : ""} />
+        <span>Kampanya ve ipuçlarını ticari elektronik ileti olarak e-postayla almak istiyorum; iznimi istediğim an geri alabilirim. <small>(isteğe bağlı)</small></span>
+      </label>`
           : ""
       }
-      <article class="card">
-        <div class="card__t">${ai("fire")}Günlük kalori hedefin</div>
-        <div class="big"><span data-count="${t.calories}">${fmt(t.calories)}</span> <small>kcal</small></div>
-        <div class="macro-bar" aria-hidden="true">
-          <i style="flex:${kc.p / tot};background:var(--protein)"></i>
-          <i style="flex:${kc.c / tot};background:var(--carb)"></i>
-          <i style="flex:${kc.f / tot};background:var(--fat)"></i>
-        </div>
-        <ul class="macros">
-          <li><span style="--c:var(--protein)"></span>Protein <b>${t.protein} g</b></li>
-          <li><span style="--c:var(--carb)"></span>Karbonhidrat <b>${t.carbs} g</b></li>
-          <li><span style="--c:var(--fat)"></span>Yağ <b>${t.fat} g</b></li>
-        </ul>
-      </article>
-      <article class="card">
-        <div class="card__t">${ai("dumbbell")}Antrenman programın</div>
-        <div class="big">Haftada ${lv.days} gün</div>
-        <div class="week">${DAY_NAMES.map((n, i) => `<span class="${days.includes(i) ? "on" : ""}">${n}</span>`).join("")}</div>
-        <ul class="kv">
-          <li>Seviye <b>${lv.label}</b></li>
-          <li>Yer <b>${LOCATION[a.workout_location] || "—"}</b></li>
-          ${a.focus_areas?.length ? `<li>Odak <b>${a.focus_areas.map((f) => FOCUS_LABEL[f]).slice(0, 3).join(", ")}</b></li>` : ""}
-        </ul>
-      </article>
-      <article class="card card--meals">
-        <div class="card__t">${ai("menuFood")}Örnek bir gün</div>
-        <ul class="meals">${meals.map(([n, v, ic]) => `<li>${ai(ic)}<span>${n}</span><b>${fmt(v)} kcal</b></li>`).join("")}</ul>
-        <p class="fine">Öğünlerin${diet ? ` ${diet}` : ""} menülerden${allergic ? ", alerjilerin çıkarılarak" : ""} uygulamada hazırlanır.</p>
-      </article>
-    </div>
-
-    <h2 class="sub">Uygulamada seni bekleyenler</h2>
-    <div class="shots" tabindex="0" aria-label="Uygulama ekran görüntüleri">
-      ${APP_SHOTS.map(([f, c]) => `<figure class="shot"><img src="/assets/screens/app/${f}.webp" alt="${c}" loading="lazy" width="560" height="1218" /><figcaption>${c}</figcaption></figure>`).join("")}
-    </div>
+      <p class="fine">${ai("lock")} Spam yok. Devam ederek <a href="${CONFIG.legal.terms}" target="_blank" rel="noopener">Kullanım Koşulları</a>'nı kabul etmiş ve <a href="${CONFIG.legal.privacy}" target="_blank" rel="noopener">Gizlilik Politikası</a> ile <a href="${CONFIG.legal.kvkk}" target="_blank" rel="noopener">KVKK Aydınlatma Metni</a>'ni okumuş olursun.</p>
+    </form>
   </section>
-  ${cta("Planımı aç")}`;
+  <div class="dock dock--save">
+    <button class="btn btn--primary btn--block" type="submit" form="emailForm">Planımı kaydet</button>
+    <button class="free-link" type="button" data-skip>Şimdilik geç</button>
+  </div>`;
 }
 
 /* ------------------------------------------------------------ paywall */
@@ -1141,7 +1090,9 @@ function checkoutView() {
 
       <div class="co__form">
         <h1 class="co__title">Ödeme</h1>
-        <div class="co__acct">
+        ${
+          S.email
+            ? `<div class="co__acct">
           ${
             via
               ? `<span class="co__acct-ic">${BRAND[via[0]]}</span>
@@ -1150,7 +1101,10 @@ function checkoutView() {
               : `<span class="co__acct-ic co__acct-ic--mail">${ai("send")}</span>
           <div><small>Fatura ve abonelik e-postası</small><b>${esc(email || "—")}</b></div>`
           }
-        </div>
+        </div>`
+            : `<p class="co__lbl">E-posta <small>fatura ve abonelik bilgilerin buraya gelir</small></p>
+        <div class="co__email">${emailField(S.user?.email || "")}</div>`
+        }
         <p class="co__lbl">Ad Soyad <small>sipariş kaydı için</small></p>
         <label class="field co__name">
           ${ai("person", "field__ic")}
@@ -1448,52 +1402,27 @@ const BIND = {
       requestAnimationFrame(tick);
     });
     await wait(350);
-    if (S.step === "loading") go("email", { replace: true });
-  },
-
-  email: () => {
-    const form = app.querySelector("#emailForm");
-    const input = app.querySelector("#email");
-    const err = app.querySelector("#emailErr");
-    const sug = app.querySelector("#suggest");
-    sug.addEventListener("click", () => {
-      input.value = sug.dataset.v;
-      sug.hidden = true;
-      input.focus();
-    });
-    input.addEventListener("input", () => {
-      err.hidden = true;
-      sug.hidden = true;
-    });
-    input.addEventListener("blur", () => {
-      const s = suggestEmail(input.value.trim());
-      sug.hidden = !s;
-      if (s) sug.innerHTML = `Bunu mu demek istedin? <b>${esc(s)}</b>`;
-      sug.dataset.v = s || "";
-    });
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const v = input.value.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
-        err.hidden = false;
-        input.focus();
-        return;
-      }
-      S.email = v.toLowerCase();
-      S.marketing = !!app.querySelector("#marketing")?.checked;
-      track("lead", { goal: mainGoal(S.answers) });
-      // Alerjiler özel nitelikli sağlık verisi: bu formda yalnız pazarlama
-      // izni alınıyor, açık rıza yok — aday kaydına gönderilmez.
-      const { allergies: _allergies, ...leadAnswers } = toOnboardingData(S.answers);
-      submitLead({ email: S.email, name: S.answers.name, goal: mainGoal(S.answers), marketing: S.marketing, answers: leadAnswers, utm: S.utm });
-      save();
-      next();
-    });
+    if (S.step === "loading") go("result", { replace: true });
   },
 
   result: () => {
     countUp(app.querySelector("[data-count]"));
-    app.querySelector("[data-next]").addEventListener("click", () => (track("result_cta"), next()));
+    const readEmail = bindEmail();
+    // result_cta, Meta'daki "FunnelPlanViewed" olayını besliyor: iki çıkışta da gider.
+    app.querySelector("#emailForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = readEmail();
+      if (!email) return;
+      S.marketing = !!app.querySelector("#marketing")?.checked;
+      saveLead(email);
+      track("result_cta");
+      next();
+    });
+    app.querySelector("[data-skip]").addEventListener("click", () => {
+      track("result_cta");
+      track("email_skipped");
+      next();
+    });
   },
 
   paywall: () => {
@@ -1546,6 +1475,16 @@ const BIND = {
     const nameIn = app.querySelector("#fullName");
     const nameErr = app.querySelector("#nameErr");
     const paytr = CONFIG.paymentProvider === "paytr";
+
+    // Plan adımında e-posta atlandıysa sipariş (PayTR) için burada alınır.
+    const readEmail = app.querySelector("#email") ? bindEmail() : null;
+    const requireEmail = () => {
+      if (S.email || !readEmail) return true;
+      const email = readEmail();
+      if (!email) return false;
+      saveLead(email);
+      return true;
+    };
 
     // PayTR'ye ve siparişe gidecek ad soyad: en az iki kelime.
     nameIn.addEventListener("input", () => (nameErr.hidden = true));
@@ -1619,7 +1558,7 @@ const BIND = {
       });
 
       pay.addEventListener("click", async () => {
-        if (!requireName() || !requireLegal()) return;
+        if (!requireEmail() || !requireName() || !requireLegal()) return;
         const v = validateCard({ number: num.value, expiry: exp.value, cvv: cvv.value, holder: cname.value });
         if (!v.ok) {
           let first = null;
@@ -1666,7 +1605,7 @@ const BIND = {
         ${live ? `<p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>` : ""}
       </div>`;
     pay.addEventListener("click", async (e) => {
-      if (!requireName() || !requireLegal()) return;
+      if (!requireEmail() || !requireName() || !requireLegal()) return;
       if (!live) {
         track("payment_pending_click", { plan: plan.id });
         dock.querySelector("#soon").hidden = false;
@@ -1820,7 +1759,59 @@ function paintAtlas(on) {
   app.querySelectorAll("#atlas path.m").forEach((p) => p.classList.toggle("on", on.has(p.dataset.area)));
 }
 
-/* ------------------------------------------------------------ e-posta önerisi */
+/* ------------------------------------------------------------ e-posta */
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// Plan adımında ve (orada atlandıysa) ödeme adımında aynı alan.
+const emailField = (value = S.email) => `
+  <label class="field">
+    ${ai("send", "field__ic")}
+    <span class="sr">E-posta</span>
+    <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="ornek@eposta.com" value="${esc(value)}" required />
+  </label>
+  <button class="suggest" type="button" id="suggest" hidden></button>
+  <p class="err" id="emailErr" hidden>Geçerli bir e-posta adresi gir.</p>`;
+
+/** emailField'ı bağlar. Dönen fonksiyon adres geçerliyse küçük harfle verir, değilse hatayı gösterip null döner. */
+function bindEmail() {
+  const input = app.querySelector("#email");
+  const err = app.querySelector("#emailErr");
+  const sug = app.querySelector("#suggest");
+  sug.addEventListener("click", () => {
+    input.value = sug.dataset.v;
+    sug.hidden = true;
+    input.focus();
+  });
+  input.addEventListener("input", () => {
+    err.hidden = true;
+    sug.hidden = true;
+  });
+  input.addEventListener("blur", () => {
+    const s = suggestEmail(input.value.trim());
+    sug.hidden = !s;
+    if (s) sug.innerHTML = `Bunu mu demek istedin? <b>${esc(s)}</b>`;
+    sug.dataset.v = s || "";
+  });
+  return () => {
+    const v = input.value.trim();
+    if (EMAIL_RE.test(v)) return v.toLowerCase();
+    err.hidden = false;
+    shake(input.closest("label"));
+    input.focus();
+    return null;
+  };
+}
+
+function saveLead(email) {
+  S.email = email;
+  track("lead", { goal: mainGoal(S.answers) });
+  // Alerjiler özel nitelikli sağlık verisi: bu formda yalnız pazarlama
+  // izni alınıyor, açık rıza yok — aday kaydına gönderilmez.
+  const { allergies: _allergies, ...leadAnswers } = toOnboardingData(S.answers);
+  submitLead({ email: S.email, name: S.answers.name, goal: mainGoal(S.answers), marketing: S.marketing, answers: leadAnswers, utm: S.utm });
+  save();
+}
 
 const DOMAINS = ["gmail.com", "hotmail.com", "outlook.com", "icloud.com", "yahoo.com", "yandex.com", "live.com"];
 function suggestEmail(v) {
@@ -1872,7 +1863,7 @@ const utm = {};
 params.forEach((v, k) => /^(utm_|fbclid$|gclid$|gbraid$|wbraid$|ttclid$)/.test(k) && (utm[k] = v));
 if (Object.keys(utm).length) S.utm = utm;
 
-if (S.step === "loading") S.step = "email";
+if (S.step === "loading" || S.step === LEGACY_EMAIL_STEP) S.step = "result";
 // Eski sürümden kalmış ve artık olmayan bir adım kaydedildiyse başa dön.
 if (!stepById(S.step)) S.step = "intro";
 history.replaceState({ step: S.step, d: 0 }, "", `${location.pathname}#${S.step}`);
