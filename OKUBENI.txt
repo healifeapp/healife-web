@@ -102,7 +102,7 @@ YAPILACAKLAR — YONETIM KARARI BEKLEYENLER (site tarafinda hazir)
   B-20       Egzersiz sayisi sitede 176 olarak kaldi; 211 kararlanirsa
              index.html'de "176" gecen yerler (8 adet) ve "168 hareket
              daha" degistirilecek.
-  D-43       Egzersiz adlari (Barbell Bench Press vb.) Ingilizce kaldi;
+  D-43       Egzersiz adlari (Incline Dumbbell Press vb.) Ingilizce kaldi;
              uygulamadaki Turkce karsiliklar geldiginde figcaption ve alt
              metinleri degistirilecek.
   D-45       Kurucu hikayesi / Hakkimizda sayfasi icerik bekliyor.
