@@ -26,7 +26,7 @@ import {
   submitLead,
   wait,
   submitToPaytr,
-} from "./services.js?v=20261102a";
+} from "./services.js?v=20261110a";
 import { formatCardNumber, formatExpiry, cardBrand, validateCard } from "./card.js?v=20261016a";
 
 /* ============================================================ ikonlar */
@@ -262,7 +262,16 @@ const QUESTION_KINDS = new Set(["gender", "multi", "single", "days", "focus", "w
 
 /* ============================================================ durum */
 
-const fresh = () => ({ step: "intro", answers: {}, email: "", fullName: "", marketing: false, planId: null, user: null, paid: false, orderId: null });
+// 05XXXXXXXXX biçimine indirir; Türkiye cep numarası değilse null.
+const normalizeTrMobile = (raw) => {
+  let d = String(raw || "").replace(/\D/g, "");
+  if (d.startsWith("0090")) d = d.slice(4);
+  else if (d.startsWith("90") && d.length === 12) d = d.slice(2);
+  if (d.length === 10 && d[0] === "5") d = "0" + d;
+  return /^05\d{9}$/.test(d) ? d : null;
+};
+
+const fresh = () => ({ step: "intro", answers: {}, email: "", fullName: "", phone: "", marketing: false, planId: null, user: null, paid: false, orderId: null });
 let S = Object.assign(fresh(), storage.load() || {});
 if (S.paid) S.step = "success";
 let dir = "fwd";
@@ -1135,6 +1144,13 @@ function checkoutView() {
           <input id="fullName" type="text" autocomplete="name" autocapitalize="words" maxlength="60" placeholder="Ad Soyad" value="${esc(S.fullName || S.answers.name || "")}" required />
         </label>
         <p class="err" id="nameErr" hidden>Sipariş için ad ve soyadını gir.</p>
+        <p class="co__lbl">Cep telefonu <small>ödeme kuruluşu sipariş kaydında istiyor</small></p>
+        <label class="field co__name">
+          ${ai("chat", "field__ic")}
+          <span class="sr">Cep telefonu</span>
+          <input id="phoneInput" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="05XX XXX XX XX" value="${esc(S.phone || "")}" required />
+        </label>
+        <p class="err" id="phoneErr" hidden>Geçerli bir cep telefonu gir (05XX XXX XX XX).</p>
         <label class="optin optin--legal">
           <input type="checkbox" id="legalOk" />
           <span><a href="${CONFIG.legal.preInfo}" target="_blank" rel="noopener">Ön Bilgilendirme Formu</a>'nu ve <a href="${CONFIG.legal.distanceSale}" target="_blank" rel="noopener">Mesafeli Satış Sözleşmesi</a>'ni okudum, kabul ediyorum. Aboneliğin ödemeyle birlikte hemen başlamasını ve bu nedenle cayma hakkımın sona ereceğini onaylıyorum.</span>
@@ -1535,6 +1551,23 @@ const BIND = {
       return false;
     };
 
+    // PayTR müşteri telefonu istiyor; eskiden boş geçince 0000000000 gidiyordu.
+    const phoneIn = app.querySelector("#phoneInput");
+    const phoneErr = app.querySelector("#phoneErr");
+    phoneIn.addEventListener("input", () => (phoneErr.hidden = true));
+    const requirePhone = () => {
+      const phone = normalizeTrMobile(phoneIn.value);
+      if (phone) {
+        S.phone = phone;
+        save();
+        return true;
+      }
+      phoneErr.hidden = false;
+      shake(phoneIn.closest("label"));
+      phoneIn.focus();
+      return false;
+    };
+
     // Dönüş hatası (?odeme=hata) ya da sunucunun "failed" demesi.
     if (S.payError) {
       box.insertAdjacentHTML("afterbegin", `<p class="err">${esc(S.payError)}</p>`);
@@ -1592,7 +1625,7 @@ const BIND = {
       });
 
       pay.addEventListener("click", async () => {
-        if (!requireEmail() || !requireName() || !requireLegal()) return;
+        if (!requireEmail() || !requireName() || !requirePhone() || !requireLegal()) return;
         const v = validateCard({ number: num.value, expiry: exp.value, cvv: cvv.value, holder: cname.value });
         if (!v.ok) {
           let first = null;
@@ -1611,7 +1644,7 @@ const BIND = {
         pay.disabled = true;
         pay.innerHTML = `<span class="spin"></span>PayTR'ye yönlendiriliyorsun…`;
         try {
-          const co = await createCheckout({ plan, email: S.email, name: S.fullName, autoRenew: renew.checked });
+          const co = await createCheckout({ plan, email: S.email, name: S.fullName, phone: S.phone, autoRenew: renew.checked });
           S.orderId = co.merchantOid;
           save();
           track("checkout_form_open", { plan: plan.id, auto_renew: renew.checked });
@@ -1639,7 +1672,7 @@ const BIND = {
         ${live ? `<p class="demo-note">${ai("info")}Demo kipi — PayTR bağlanınca bu alanda gerçek ödeme formu açılacak.</p>` : ""}
       </div>`;
     pay.addEventListener("click", async (e) => {
-      if (!requireEmail() || !requireName() || !requireLegal()) return;
+      if (!requireEmail() || !requireName() || !requirePhone() || !requireLegal()) return;
       if (!live) {
         track("payment_pending_click", { plan: plan.id });
         dock.querySelector("#soon").hidden = false;

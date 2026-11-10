@@ -233,14 +233,14 @@ export async function signIn(method, answers) {
  * Web'de giriş yok: sipariş e-postaya bağlıdır, kullanıcı uygulamaya aynı
  * e-postayla girince backend premium'u açar.
  */
-export async function createCheckout({ plan, email, name, autoRenew = true }) {
+export async function createCheckout({ plan, email, name, phone, autoRenew = true }) {
   if (CONFIG.paymentProvider === "demo") return { mode: "demo" };
   if (CONFIG.paymentProvider === "pending") return { mode: "pending" };
 
   const res = await fetch(`${CONFIG.apiBase}/api/billing/web/checkout/paytr`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ planId: plan.id, email, name: name || "", autoRenew: !!autoRenew, flow: "direct" }),
+    body: JSON.stringify({ planId: plan.id, email, name: name || "", phone: phone || "", autoRenew: !!autoRenew, flow: "direct" }),
   });
   const data = await res.json().catch(() => null);
   const r = data?.results;
